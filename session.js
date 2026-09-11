@@ -37,10 +37,30 @@
       return Boolean(user && (!user.role || user.role === 'customer'));
     },
 
+    isBusiness() {
+      const user = this.getUser();
+      return Boolean(user && user.role === 'business');
+    },
+
     setSession(user, token) {
       if (token) localStorage.setItem(TOKEN_KEY, token);
-      if (user) localStorage.setItem(USER_KEY, JSON.stringify(user));
+      if (user) {
+        localStorage.setItem(USER_KEY, JSON.stringify(user));
+        if (user.preferredLanguage && window.SevaSathiI18n && typeof window.SevaSathiI18n.setLanguage === 'function') {
+          window.SevaSathiI18n.setLanguage(user.preferredLanguage, false);
+        }
+      }
       window.dispatchEvent(new CustomEvent('hustle:session-change', { detail: { user, token } }));
+    },
+
+    setUser(user) {
+      if (user) {
+        localStorage.setItem(USER_KEY, JSON.stringify(user));
+        if (user.preferredLanguage && window.SevaSathiI18n && typeof window.SevaSathiI18n.setLanguage === 'function') {
+          window.SevaSathiI18n.setLanguage(user.preferredLanguage, false);
+        }
+      }
+      window.dispatchEvent(new CustomEvent('hustle:session-change', { detail: { user, token: this.getToken() } }));
     },
 
     logOut(redirectUrl = null) {
@@ -55,7 +75,7 @@
     },
 
     getInitials(name) {
-      if (!name) return 'HU';
+      if (!name) return 'SS';
       const parts = name.trim().split(/\s+/);
       if (parts.length > 1) {
         return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
@@ -63,4 +83,7 @@
       return parts[0].slice(0, 2).toUpperCase();
     }
   };
+
+  // SevaSathi Session Alias for full backward and forward compatibility
+  window.SevaSathiSession = window.HustleSession;
 })();

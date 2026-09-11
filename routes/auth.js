@@ -6,6 +6,7 @@ const { OAuth2Client } = require('google-auth-library');
 const db = require('../services/db');
 const { authenticateToken, JWT_SECRET } = require('../middleware/auth');
 const geminiService = require('../services/gemini');
+const PRE_ASSIGNED_WORKERS = require('../services/preassigned-workers');
 
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
@@ -48,7 +49,7 @@ router.get('/status', (req, res) => {
   return res.json({
     success: true,
     status: 'healthy',
-    message: 'Hustle Platform REST API operational',
+    message: 'SevaSathi Platform REST API operational',
     timestamp: new Date().toISOString(),
     isMongoConnected: db.isMongoConnected()
   });
@@ -74,12 +75,21 @@ router.post('/signup', async (req, res) => {
       bio,
       documentFile,
       supportingDocUrl,
-      documentSize
+      documentSize,
+      // Business fields
+      businessName,
+      businessType,
+      contactPerson,
+      address,
+      gstin,
+      businessRegNumber,
+      website
     } = req.body;
 
     // Validation
-    if (!name || !name.trim()) {
-      return res.status(400).json({ success: false, message: 'Full name is required.' });
+    const effectiveName = role === 'business' ? (businessName || name) : name;
+    if (!effectiveName || !effectiveName.trim()) {
+      return res.status(400).json({ success: false, message: role === 'business' ? 'Business/Organization name is required.' : 'Full name is required.' });
     }
     if (!email || !email.trim()) {
       return res.status(400).json({ success: false, message: 'Email address is required.' });
@@ -89,6 +99,16 @@ router.post('/signup', async (req, res) => {
     }
     if (!password || password.length < 6) {
       return res.status(400).json({ success: false, message: 'Password must be at least 6 characters.' });
+    }
+
+    // Business-specific compulsory fields
+    if (role === 'business') {
+      if (!businessType || !businessType.trim()) {
+        return res.status(400).json({ success: false, message: 'Business type (e.g. Hotel, Facility Management, IT Park) is required.' });
+      }
+      if (!address || !address.trim()) {
+        return res.status(400).json({ success: false, message: 'Business operating address is required.' });
+      }
     }
 
     // Worker-specific compulsory fields
@@ -120,15 +140,20 @@ router.post('/signup', async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    // Normalize valid role
+    let normalizedRole = 'customer';
+    if (role === 'worker') normalizedRole = 'worker';
+    else if (role === 'business') normalizedRole = 'business';
+
     // Create user
     const newUser = await db.createUser({
-      name: name.trim(),
+      name: effectiveName.trim(),
       email: email.trim().toLowerCase(),
       phone: phone.trim(),
       password: hashedPassword,
-      role: role === 'worker' ? 'worker' : 'customer',
+      role: normalizedRole,
       city: city ? city.trim() : 'Bengaluru',
-      approvalStatus: role === 'worker' ? 'pending' : 'approved',
+      approvalStatus: normalizedRole === 'worker' ? 'pending' : 'approved',
       skillCategory: skillCategory ? skillCategory.trim() : '',
       specificSkill: specificSkill ? specificSkill.trim() : '',
       experience: experience ? experience.trim() : '',
@@ -137,6 +162,14 @@ router.post('/signup', async (req, res) => {
       documentFile: documentFile ? documentFile.trim() : '',
       supportingDocUrl: (supportingDocUrl && typeof supportingDocUrl === 'string') ? supportingDocUrl.trim() : '',
       documentSize: documentSize ? documentSize.trim() : '',
+      // Business profile fields
+      businessName: (businessName || effectiveName || '').trim(),
+      businessType: (businessType || '').trim(),
+      contactPerson: (contactPerson || name || '').trim(),
+      address: (address || '').trim(),
+      gstin: (gstin || '').trim(),
+      businessRegNumber: (businessRegNumber || '').trim(),
+      website: (website || '').trim(),
       lastLogin: new Date()
     });
 
@@ -145,7 +178,7 @@ router.post('/signup', async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: `${role === 'worker' ? 'Worker' : 'Customer'} account created successfully.`,
+      message: `${normalizedRole === 'worker' ? 'Worker' : normalizedRole === 'business' ? 'Business enterprise' : 'Customer'} account created successfully.`,
       token,
       user: userSafe
     });
@@ -161,9 +194,10 @@ router.post('/signup', async (req, res) => {
  */
 router.post('/signin', async (req, res) => {
   try {
-    const { identifier, password, expectedRole } = req.body;
+    const identifier = req.body.identifier || req.body.email || req.body.phone;
+    const { password, expectedRole } = req.body;
 
-    if (!identifier || !identifier.trim()) {
+    if (!identifier || !String(identifier).trim()) {
       return res.status(400).json({ success: false, message: 'Email or phone number is required.' });
     }
     if (!password) {
@@ -191,11 +225,18 @@ router.post('/signin', async (req, res) => {
       });
     }
 
-    // Role Enforcement: customer portal only allows customer accounts; worker portal only allows worker accounts
+    // Role Enforcement: customer portal only allows customer accounts; worker portal only allows worker accounts; business portal only allows business accounts
     const userRole = user.role || 'customer';
-    if (expectedRole && (expectedRole === 'customer' || expectedRole === 'worker')) {
+    if (expectedRole && (expectedRole === 'customer' || expectedRole === 'worker' || expectedRole === 'business')) {
       if (userRole !== expectedRole) {
-        if (userRole === 'worker') {
+        if (userRole === 'business') {
+          return res.status(403).json({
+            success: false,
+            roleMismatch: true,
+            userRole: 'business',
+            message: 'This account is registered as an Enterprise / Business account. Please switch to the Business Portal to sign in.'
+          });
+        } else if (userRole === 'worker') {
           return res.status(403).json({
             success: false,
             roleMismatch: true,
@@ -207,7 +248,7 @@ router.post('/signin', async (req, res) => {
             success: false,
             roleMismatch: true,
             userRole: 'customer',
-            message: 'This account is registered as a Customer. Please switch to the Customer Portal to sign in, or apply as a Worker Partner.'
+            message: 'This account is registered as a Customer. Please switch to the Customer Portal to sign in.'
           });
         }
       }
@@ -451,7 +492,7 @@ router.post('/forgot-password', async (req, res) => {
     const mockOtp = Math.floor(100000 + Math.random() * 900000).toString();
     await db.createOtp(identifier, mockOtp, 'reset_password', 10);
 
-    console.log(`[Hustle OTP] Verification code for ${identifier}: ${mockOtp}`);
+    console.log(`[SevaSathi OTP] Verification code for ${identifier}: ${mockOtp}`);
 
     return res.json({
       success: true,
@@ -552,11 +593,14 @@ router.get('/me', authenticateToken, async (req, res) => {
  */
 router.patch('/profile', authenticateToken, async (req, res) => {
   try {
-    const { location, city, coords } = req.body;
+    const { location, city, coords, preferredLanguage } = req.body;
     const updates = {};
     if (typeof location === 'string') updates.location = location;
     if (typeof city === 'string') updates.city = city;
     if (coords && typeof coords === 'object') updates.coords = coords;
+    if (preferredLanguage && ['en', 'hi', 'bn'].includes(preferredLanguage)) {
+      updates.preferredLanguage = preferredLanguage;
+    }
 
     const updated = await db.updateUser(req.user.userId, updates);
     return res.json({
@@ -572,7 +616,7 @@ router.patch('/profile', authenticateToken, async (req, res) => {
 
 /**
  * POST /api/auth/admin/login
- * Environment-configured & database authentication for Hustle Operations Admin
+ * Environment-configured & database authentication for SevaSathi Operations Admin
  */
 router.post('/admin/login', async (req, res) => {
   try {
@@ -585,7 +629,7 @@ router.post('/admin/login', async (req, res) => {
     if (!configuredAdminEmail || normalizedEmail !== configuredAdminEmail) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid admin credentials. Access restricted to authorized Hustle staff.'
+        message: 'Invalid admin credentials. Access restricted to authorized SevaSathi staff.'
       });
     }
 
@@ -596,7 +640,7 @@ router.post('/admin/login', async (req, res) => {
       isAuthenticated = true;
       adminPayload = {
         userId: 'admin_master_hustle',
-        name: 'Hustle Operations Admin',
+        name: 'SevaSathi Operations Admin',
         email: configuredAdminEmail,
         role: 'admin'
       };
@@ -623,7 +667,7 @@ router.post('/admin/login', async (req, res) => {
 
     return res.status(401).json({
       success: false,
-      message: 'Invalid admin credentials. Access restricted to authorized Hustle staff.'
+      message: 'Invalid admin credentials. Access restricted to authorized SevaSathi staff.'
     });
   } catch (err) {
     console.error('Admin login error:', err);
@@ -721,7 +765,7 @@ async function handleRemoveWorker(req, res) {
     const deleted = await db.deleteUser(id);
     return res.json({
       success: true,
-      message: `Worker "${worker.name}" was permanently removed from the Hustle directory.`,
+      message: `Worker "${worker.name}" was permanently removed from the SevaSathi directory.`,
       deleted
     });
   } catch (err) {
@@ -976,6 +1020,8 @@ router.get('/services/pricing-overview', async (req, res) => {
       'cleaning',
       'spa',
       'math-tutoring',
+      'tutoring',
+      'maths-tutoring',
       'handyman',
       'electrician',
       'plumbing',
@@ -1055,8 +1101,8 @@ router.post('/bookings', async (req, res) => {
         const decoded = jwt.verify(token, JWT_SECRET);
         cId = decoded.userId || cId;
         cName = decoded.name || cName;
-        cEmail = decoded.email || cEmail;
-        cPhone = decoded.phone || cPhone;
+        cEmail = cEmail || decoded.email || '';
+        cPhone = cPhone || decoded.phone || '';
       } catch (e) {
         // Continue with body details
       }
@@ -1069,17 +1115,47 @@ router.post('/bookings', async (req, res) => {
       if (w) targetWorkerName = w.name;
     }
 
+    // Check duplicate rapid submission within last 20 seconds
+    const existingBookings = await db.findBookingsByCustomer(String(cId));
+    const recentDuplicate = existingBookings.find(b => {
+      const sameService = (b.serviceName || '').toLowerCase() === serviceName.trim().toLowerCase();
+      const sameDate = b.scheduledDate === scheduledDate.trim();
+      const sameWorker = String(b.workerId || '') === String(workerId || '');
+      const recent = b.createdAt && (Date.now() - new Date(b.createdAt).getTime() < 20000);
+      return sameService && sameDate && sameWorker && recent;
+    });
+
+    if (recentDuplicate) {
+      return res.status(200).json({
+        success: true,
+        message: workerId
+          ? `Appointment request sent to ${targetWorkerName || 'worker'}. They will respond shortly.`
+          : 'Open custom service request created! Available professionals can now view and accept.',
+        booking: recentDuplicate
+      });
+    }
+
+    const resolvedLoc = db.resolveCityFromLocation(city);
+    const canonicalCity = (resolvedLoc && resolvedLoc.city) ? resolvedLoc.city : (city ? city.trim() : 'Bengaluru');
+
+    let cleanServiceId = serviceId.trim().toLowerCase();
+    const domain = db.getCanonicalDomain ? db.getCanonicalDomain(cleanServiceId) : null;
+    if (domain && domain.id) {
+      cleanServiceId = domain.id;
+    }
+
     const booking = await db.createBooking({
-      serviceId: serviceId.trim().toLowerCase(),
+      serviceId: cleanServiceId,
       serviceName: serviceName.trim(),
       category: category || 'General Help',
-      city: city ? city.trim() : 'Bengaluru',
+      city: canonicalCity,
       customerId: String(cId),
       customerName: cName,
       customerPhone: cPhone,
       customerEmail: cEmail,
       workerId: workerId ? String(workerId) : null,
       workerName: targetWorkerName || 'Open Pool (Any Available Pro)',
+      customerLocation: locality ? locality.trim() : (city ? `${city.trim()} Local` : 'Local Area'),
       locality: locality ? locality.trim() : (city ? `${city.trim()} Local` : 'Local Area'),
       scheduledDate: scheduledDate.trim(),
       scheduledTime: scheduledTime.trim(),
@@ -1115,11 +1191,37 @@ router.post('/bookings', async (req, res) => {
 /**
  * GET /api/auth/bookings/customer
  * Returns all bookings submitted by the authenticated customer
+ * (Includes worker phone once booking is confirmed: accepted/completed)
  */
 router.get('/bookings/customer', authenticateToken, async (req, res) => {
   try {
     const customerId = req.user.userId;
-    const bookings = await db.findBookingsByCustomer(customerId);
+    const rawBookings = await db.findBookingsByCustomer(customerId);
+    const bookings = await Promise.all(rawBookings.map(async (b) => {
+      const isConfirmed = b.status === 'accepted' || b.status === 'completed';
+      const bObj = typeof b.toObject === 'function' ? b.toObject() : { ...b };
+      if (isConfirmed) {
+        if (!bObj.workerPhone) {
+          if (bObj.workerId) {
+            const w = await db.findUserById(bObj.workerId);
+            if (w && w.phone) bObj.workerPhone = w.phone;
+          }
+          if (!bObj.workerPhone && bObj.workerName) {
+            const prePro = PRE_ASSIGNED_WORKERS.find(pw => (pw.id && String(pw.id) === String(bObj.workerId)) || (pw.name && bObj.workerName && pw.name.toLowerCase().trim() === bObj.workerName.toLowerCase().trim()));
+            if (prePro && prePro.phone) {
+              bObj.workerPhone = prePro.phone;
+            } else {
+              const allWorkers = await db.findUsersByRole('worker');
+              const foundW = allWorkers.find(w => w.name && bObj.workerName && w.name.toLowerCase().trim() === bObj.workerName.toLowerCase().trim());
+              if (foundW && foundW.phone) bObj.workerPhone = foundW.phone;
+            }
+          }
+        }
+      } else {
+        bObj.workerPhone = null;
+      }
+      return bObj;
+    }));
     return res.json({
       success: true,
       count: bookings.length,
@@ -1134,6 +1236,7 @@ router.get('/bookings/customer', authenticateToken, async (req, res) => {
 /**
  * GET /api/auth/bookings/worker
  * Returns incoming booking requests for the authenticated worker
+ * (Includes customer location & phone once booking is confirmed: accepted/completed)
  */
 router.get('/bookings/worker', authenticateToken, async (req, res) => {
   try {
@@ -1143,7 +1246,19 @@ router.get('/bookings/worker', authenticateToken, async (req, res) => {
       return res.status(403).json({ success: false, message: 'Access denied. Worker role required.' });
     }
 
-    const bookings = await db.findBookingsByWorker(workerId, user.skillCategory, user.city, user.name, user.specificSkill);
+    const rawBookings = await db.findBookingsByWorker(workerId, user.skillCategory, user.city, user.name, user.specificSkill);
+    const bookings = rawBookings.map(b => {
+      const isConfirmed = b.status === 'accepted' || b.status === 'completed';
+      const bObj = typeof b.toObject === 'function' ? b.toObject() : { ...b };
+      if (isConfirmed) {
+        bObj.customerPhone = b.customerPhone || '';
+        bObj.customerLocation = b.customerLocation || (b.locality ? `${b.locality}${b.city ? ', ' + b.city : ''}` : (b.city || 'Local Area'));
+      } else {
+        bObj.customerPhone = null;
+        bObj.customerLocation = b.locality || b.city || 'Local Area';
+      }
+      return bObj;
+    });
     return res.json({
       success: true,
       count: bookings.length,
@@ -1164,7 +1279,19 @@ router.get('/worker/bookings', authenticateToken, async (req, res) => {
       return res.status(403).json({ success: false, message: 'Access denied. Worker role required.' });
     }
 
-    const bookings = await db.findBookingsByWorker(workerId, user.skillCategory, user.city, user.name, user.specificSkill);
+    const rawBookings = await db.findBookingsByWorker(workerId, user.skillCategory, user.city, user.name, user.specificSkill);
+    const bookings = rawBookings.map(b => {
+      const isConfirmed = b.status === 'accepted' || b.status === 'completed';
+      const bObj = typeof b.toObject === 'function' ? b.toObject() : { ...b };
+      if (isConfirmed) {
+        bObj.customerPhone = b.customerPhone || '';
+        bObj.customerLocation = b.customerLocation || (b.locality ? `${b.locality}${b.city ? ', ' + b.city : ''}` : (b.city || 'Local Area'));
+      } else {
+        bObj.customerPhone = null;
+        bObj.customerLocation = b.locality || b.city || 'Local Area';
+      }
+      return bObj;
+    });
     return res.json({
       success: true,
       count: bookings.length,
@@ -1223,19 +1350,37 @@ router.post('/bookings/:id/respond', authenticateToken, async (req, res) => {
         });
       }
 
-      if (Object.keys(claimUpdates).length > 0) {
-        await db.updateBooking(id, claimUpdates);
-      }
+      const finalPrice = (lastNeg && lastNeg.proposedPrice) ? lastNeg.proposedPrice : booking.price;
+      const finalTime = (lastNeg && lastNeg.proposedTime) ? lastNeg.proposedTime : booking.scheduledTime;
+      const finalDate = (lastNeg && lastNeg.proposedDate) ? lastNeg.proposedDate : booking.scheduledDate;
+
+      claimUpdates.workerPhone = worker.phone || '';
+      claimUpdates.workerId = String(workerId);
+      claimUpdates.workerName = worker.name;
       const updated = await db.addBookingNegotiation(id, {
         senderRole: 'worker',
         senderName: worker.name,
+        proposedPrice: finalPrice,
+        proposedTime: finalTime,
+        proposedDate: finalDate,
+        workerPhone: worker.phone || '',
+        workerId: String(workerId),
+        workerName: worker.name,
         note: note || 'Worker accepted the appointment.',
         newStatus: 'accepted'
       });
+      if (Object.keys(claimUpdates).length > 0) {
+        await db.updateBooking(id, claimUpdates);
+      }
+      const updatedObj = typeof updated?.toObject === 'function' ? updated.toObject() : { ...updated };
+      updatedObj.workerPhone = worker.phone || '';
+      updatedObj.customerPhone = booking.customerPhone || '';
+      updatedObj.customerLocation = booking.customerLocation || (booking.locality ? `${booking.locality}${booking.city ? ', ' + booking.city : ''}` : (booking.city || 'Local Area'));
+
       return res.json({
         success: true,
         message: 'Appointment accepted! Scheduled with customer.',
-        booking: updated
+        booking: updatedObj
       });
     }
 
@@ -1308,6 +1453,13 @@ router.post('/bookings/:id/respond', authenticateToken, async (req, res) => {
     }
 
     if (action === 'bargain') {
+      if (booking.paymentStatus === 'paid' && proposedPrice && Number(proposedPrice) !== booking.price) {
+        return res.status(400).json({
+          success: false,
+          message: 'Price cannot be adjusted because the customer has already paid and funds are held in escrow.'
+        });
+      }
+
       // Max 1 negotiation for worker
       const workerBargainCount = (booking.negotiations || []).filter(n => n.senderRole === 'worker' && (n.proposedPrice != null || n.proposedTime != null || n.newStatus === 'bargaining')).length;
       if (workerBargainCount >= 1) {
@@ -1363,16 +1515,42 @@ router.post('/bookings/:id/customer-respond', authenticateToken, async (req, res
     const cName = req.user.name || 'Customer';
 
     if (action === 'accept') {
+      const lastNeg = (booking.negotiations && booking.negotiations.length > 0)
+        ? booking.negotiations[booking.negotiations.length - 1]
+        : null;
+      const finalPrice = (lastNeg && lastNeg.proposedPrice) ? lastNeg.proposedPrice : booking.price;
+      const finalTime = (lastNeg && lastNeg.proposedTime) ? lastNeg.proposedTime : booking.scheduledTime;
+      const finalDate = (lastNeg && lastNeg.proposedDate) ? lastNeg.proposedDate : booking.scheduledDate;
+
+      let workerPhone = booking.workerPhone || '';
+      if (!workerPhone && booking.workerId) {
+        const w = await db.findUserById(booking.workerId);
+        if (w && w.phone) workerPhone = w.phone;
+        else {
+          const prePro = PRE_ASSIGNED_WORKERS.find(pw => String(pw.id) === String(booking.workerId) || (pw.name && booking.workerName && pw.name.toLowerCase() === booking.workerName.toLowerCase()));
+          if (prePro && prePro.phone) workerPhone = prePro.phone;
+        }
+        if (workerPhone) {
+          await db.updateBooking(id, { workerPhone });
+        }
+      }
+
       const updated = await db.addBookingNegotiation(id, {
         senderRole: 'customer',
         senderName: cName,
+        proposedPrice: finalPrice,
+        proposedTime: finalTime,
+        proposedDate: finalDate,
         note: note || 'Customer accepted the adjusted terms.',
         newStatus: 'accepted'
       });
+      const updatedObj = typeof updated?.toObject === 'function' ? updated.toObject() : { ...updated };
+      if (workerPhone) updatedObj.workerPhone = workerPhone;
+
       return res.json({
         success: true,
         message: 'Offer accepted! Your appointment is officially scheduled.',
-        booking: updated
+        booking: updatedObj
       });
     }
 
@@ -1386,6 +1564,45 @@ router.post('/bookings/:id/customer-respond', authenticateToken, async (req, res
       return res.json({
         success: true,
         message: 'Appointment cancelled successfully.',
+        booking: updated
+      });
+    }
+
+    if (action === 'update-price' || action === 'update-terms') {
+      if (booking.paymentStatus === 'paid') {
+        return res.status(400).json({
+          success: false,
+          message: 'Price cannot be changed for bookings that have already been paid.'
+        });
+      }
+      if (booking.status === 'completed' || booking.status === 'cancelled') {
+        return res.status(400).json({
+          success: false,
+          message: 'Cannot adjust terms for completed or cancelled bookings.'
+        });
+      }
+
+      const parsedPrice = proposedPrice ? Number(proposedPrice) : booking.price;
+      const parsedTime = proposedTime ? proposedTime.trim() : booking.scheduledTime;
+      const parsedDate = proposedDate ? proposedDate.trim() : booking.scheduledDate;
+
+      const newStatus = (booking.status === 'open-pool' || !booking.workerId)
+        ? 'pending'
+        : (booking.status === 'pending' ? 'pending' : 'bargaining');
+
+      const updated = await db.addBookingNegotiation(id, {
+        senderRole: 'customer',
+        senderName: cName,
+        proposedPrice: parsedPrice,
+        proposedTime: parsedTime,
+        proposedDate: parsedDate,
+        note: note || `Customer updated terms: ₹${parsedPrice}${parsedDate ? ', Date: ' + parsedDate : ''}${parsedTime ? ', Time: ' + parsedTime : ''}.`,
+        newStatus: newStatus
+      });
+
+      return res.json({
+        success: true,
+        message: `Booking terms successfully updated to ₹${parsedPrice}.`,
         booking: updated
       });
     }
@@ -1431,7 +1648,7 @@ router.post('/bookings/:id/customer-respond', authenticateToken, async (req, res
       });
       return res.json({
         success: true,
-        message: `Payment of ₹${booking.price} successful! Funds held securely in Hustle Escrow.`,
+        message: `Payment of ₹${booking.price} successful! Funds held securely in SevaSathi Escrow.`,
         booking: updated
       });
     }
@@ -1528,7 +1745,7 @@ router.post('/bookings/:id/pay', authenticateToken, async (req, res) => {
 
     return res.json({
       success: true,
-      message: `Payment of ₹${booking.price} successful! Funds held securely in Hustle Escrow.`,
+      message: `Payment of ₹${booking.price} successful! Funds held securely in SevaSathi Escrow.`,
       booking: updated
     });
   } catch (err) {
@@ -1654,7 +1871,8 @@ router.get('/bookings/:id/matching-workers', authenticateToken, async (req, res)
       return res.status(404).json({ success: false, message: 'Booking not found.' });
     }
 
-    const canonicalBookingCity = booking.city ? db.resolveCityFromLocation(booking.city).canonicalCity.toLowerCase() : '';
+    const resolvedBookingCity = booking.city ? db.resolveCityFromLocation(booking.city) : null;
+    const canonicalBookingCity = (resolvedBookingCity && resolvedBookingCity.canonicalCity) ? resolvedBookingCity.canonicalCity.toLowerCase() : '';
     const demanded = `${booking.serviceName || ''} ${booking.category || ''}`.trim();
 
     const allWorkers = await db.findUsersByRole('worker');
@@ -1665,7 +1883,8 @@ router.get('/bookings/:id/matching-workers', authenticateToken, async (req, res)
       if (w.approvalStatus !== 'approved') continue;
       // In same city if city specified
       if (canonicalBookingCity && w.city) {
-        const canonicalWorkerCity = db.resolveCityFromLocation(w.city).canonicalCity.toLowerCase();
+        const resolvedWorkerCity = db.resolveCityFromLocation(w.city);
+        const canonicalWorkerCity = (resolvedWorkerCity && resolvedWorkerCity.canonicalCity) ? resolvedWorkerCity.canonicalCity.toLowerCase() : '';
         if (canonicalBookingCity !== canonicalWorkerCity) continue;
       }
 
@@ -1789,10 +2008,10 @@ router.post('/bookings/:id/assign-worker', authenticateToken, async (req, res) =
 });
 
 /**
- * GET /api/auth/worker/dashboard-data
+ * GET /api/auth/worker/dashboard-data & /api/auth/worker/dashboard
  * Returns personalized dashboard data for worker (active gigs, past jobs, earnings)
  */
-router.get('/worker/dashboard-data', authenticateToken, async (req, res) => {
+const getWorkerDashboardHandler = async (req, res) => {
   try {
     const user = await db.findUserById(req.user.userId);
     if (!user || user.role !== 'worker') {
@@ -1809,21 +2028,26 @@ router.get('/worker/dashboard-data', authenticateToken, async (req, res) => {
     const pastCompleted = workerBookings.filter(b => b.status === 'completed' && String(b.workerId) === String(user._id || user.id));
 
     // Current gigs: actual customer requests for this worker or open pool
-    let currentGigs = activeIncoming.map(b => ({
-      id: b._id || b.id,
-      title: `${b.serviceName} (${b.category || 'General'})`,
-      customerName: b.customerName,
-      locality: b.locality,
-      budget: `₹${b.price}`,
-      scheduledDate: b.scheduledDate,
-      scheduledTime: b.scheduledTime,
-      notes: b.notes,
-      status: b.status,
-      paymentStatus: b.paymentStatus || 'unpaid',
-      paidAt: b.paidAt || null,
-      negotiations: b.negotiations || [],
-      isOpenPool: !b.workerId
-    }));
+    let currentGigs = activeIncoming.map(b => {
+      const isConfirmed = b.status === 'accepted';
+      return {
+        id: b._id || b.id,
+        title: `${b.serviceName} (${b.category || 'General'})`,
+        customerName: b.customerName,
+        customerPhone: isConfirmed ? (b.customerPhone || '') : null,
+        customerLocation: isConfirmed ? (b.customerLocation || (b.locality ? `${b.locality}${b.city ? ', ' + b.city : ''}` : (b.city || 'Local Area'))) : (b.locality || b.city || 'Local Area'),
+        locality: b.locality,
+        budget: `₹${b.price}`,
+        scheduledDate: b.scheduledDate,
+        scheduledTime: b.scheduledTime,
+        notes: b.notes,
+        status: b.status,
+        paymentStatus: b.paymentStatus || 'unpaid',
+        paidAt: b.paidAt || null,
+        negotiations: b.negotiations || [],
+        isOpenPool: !b.workerId
+      };
+    });
 
     // Past gigs: only completed from database, with genuine customer rating and review
     const pastGigs = pastCompleted.map(b => {
@@ -1832,6 +2056,8 @@ router.get('/worker/dashboard-data', authenticateToken, async (req, res) => {
         id: b._id || b.id,
         title: b.serviceName,
         customerName: b.customerName,
+        customerPhone: b.customerPhone || '',
+        customerLocation: b.customerLocation || b.locality || '',
         date: b.scheduledDate,
         amount: `₹${b.price}`,
         tip: '₹0 (100% kept)',
@@ -1839,7 +2065,7 @@ router.get('/worker/dashboard-data', authenticateToken, async (req, res) => {
         hasReview: hasRating,
         ratingVoided: !!b.ratingVoided,
         review: b.ratingVoided
-          ? 'Customer rating dismissed by Hustle Admin (Dispute settled in favor of worker).'
+          ? 'Customer rating dismissed by SevaSathi Admin (Dispute settled in favor of worker).'
           : (b.reviewText ? b.reviewText : (hasRating ? `Customer gave a ${b.rating}★ rating.` : 'Awaiting client review submission.'))
       };
     });
@@ -1889,7 +2115,9 @@ router.get('/worker/dashboard-data', authenticateToken, async (req, res) => {
     console.error('Worker dashboard data error:', err);
     return res.status(500).json({ success: false, message: 'Failed to load worker dashboard data.' });
   }
-});
+};
+router.get('/worker/dashboard-data', authenticateToken, getWorkerDashboardHandler);
+router.get('/worker/dashboard', authenticateToken, getWorkerDashboardHandler);
 
 // =========================================================================
 // Support Tickets & Dispute Resolution Endpoints
@@ -2080,7 +2308,7 @@ router.post('/admin/tickets/:id/settle', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Admin token required.' });
     }
 
-    let adminName = 'Hustle Operations Admin';
+    let adminName = 'SevaSathi Operations Admin';
     try {
       const decoded = jwt.verify(token, JWT_SECRET);
       if (decoded.role !== 'admin') {

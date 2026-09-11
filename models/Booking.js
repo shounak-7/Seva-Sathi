@@ -76,13 +76,21 @@ const bookingSchema = new mongoose.Schema(
       type: String,
       default: 'Open Pool (Any Pro)'
     },
+    workerPhone: {
+      type: String,
+      default: ''
+    },
+    customerLocation: {
+      type: String,
+      default: ''
+    },
     locality: {
       type: String,
       default: 'Local Area'
     },
     city: {
       type: String,
-      default: 'Bengaluru',
+      default: '',
       trim: true,
       index: true
     },

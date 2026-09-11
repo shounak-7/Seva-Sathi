@@ -6,7 +6,7 @@ const isMainLandingPath = window.location.pathname.endsWith('index.html') ||
                            !window.location.pathname.includes('welcome'));
 
 function isUserAuthenticated() {
-  if (window.HustleSession && window.HustleSession.isLoggedIn && window.HustleSession.isLoggedIn()) return true;
+  if (window.SevaSathiSession && window.SevaSathiSession.isLoggedIn && window.SevaSathiSession.isLoggedIn()) return true;
   return Boolean(localStorage.getItem('hustleToken') && (localStorage.getItem('hustleCurrentUser') || localStorage.getItem('hustleUser')));
 }
 
@@ -23,8 +23,8 @@ document.querySelectorAll('.heart').forEach((button) => button.addEventListener(
     const isSaved = button.classList.contains('active');
     button.textContent = isSaved ? '♥' : '♡';
     button.style.color = isSaved ? '#ef4444' : '';
-    if (window.showHustleToast) {
-      window.showHustleToast(isSaved ? 'Service saved to favorites!' : 'Removed from favorites', 'info');
+    if (window.showSevaSathiToast) {
+      window.showSevaSathiToast(isSaved ? 'Service saved to favorites!' : 'Removed from favorites', 'info');
     }
   }
 }));
@@ -76,13 +76,13 @@ function syncHeaderSession() {
     return;
   }
 
-  const user = window.HustleSession ? HustleSession.getUser() : JSON.parse(localStorage.getItem('hustleCurrentUser') || 'null');
-  const token = window.HustleSession ? HustleSession.getToken() : localStorage.getItem('hustleToken');
+  const user = window.SevaSathiSession ? SevaSathiSession.getUser() : JSON.parse(localStorage.getItem('hustleCurrentUser') || 'null');
+  const token = window.SevaSathiSession ? SevaSathiSession.getToken() : localStorage.getItem('hustleToken');
   const isLoggedIn = Boolean(user && token);
 
   if (isLoggedIn && user) {
     const isWorker = user.role === 'worker';
-    const initials = window.HustleSession ? HustleSession.getInitials(user.name) : (user.name ? user.name.slice(0, 2).toUpperCase() : 'HU');
+    const initials = window.SevaSathiSession ? SevaSathiSession.getInitials(user.name) : (user.name ? user.name.slice(0, 2).toUpperCase() : 'HU');
     const firstName = user.name ? user.name.trim().split(/\s+/)[0] : 'User';
 
     if (guestBtn) guestBtn.style.display = 'none';
@@ -110,7 +110,7 @@ function syncHeaderSession() {
     }
 
     const dropdownName = document.querySelector('#dropdown-name');
-    if (dropdownName) dropdownName.textContent = user.name || 'Hustle Member';
+    if (dropdownName) dropdownName.textContent = user.name || 'SevaSathi Member';
 
     const dropdownEmail = document.querySelector('#dropdown-email');
     if (dropdownEmail) dropdownEmail.textContent = user.email || user.phone || '';
@@ -139,9 +139,13 @@ function syncHeaderSession() {
         dropdownLinks.innerHTML = `
           <li><a class="dropdown-link" href="#appointments" id="dropdown-link-appointments"><span class="icon">📦</span><span>My Requests &amp; Workspace</span></a></li>
           <li><a class="dropdown-link" href="#services"><span class="icon">🔍</span><span>Explore All Services</span></a></li>
-          <li><a class="dropdown-link" href="terms.html"><span class="icon">🛡️</span><span>How Hustle Works &amp; Safety</span></a></li>
+          <li><a class="dropdown-link" href="terms.html"><span class="icon">🛡️</span><span>How SevaSathi Works &amp; Safety</span></a></li>
         `;
       }
+    }
+
+    if (window.SevaSathiI18n && typeof window.SevaSathiI18n.applyTranslations === 'function' && dropdownMenu) {
+      window.SevaSathiI18n.applyTranslations(dropdownMenu);
     }
 
     // Mobile nav update
@@ -176,13 +180,13 @@ function setupProfileDropdown() {
   document.addEventListener('click', (e) => {
     const apptLink = e.target.closest('#dropdown-link-appointments, [href="#appointments"]');
     if (apptLink && !e.target.closest('.mobile-request')) {
-      const user = window.HustleSession ? HustleSession.getUser() : null;
+      const user = window.SevaSathiSession ? SevaSathiSession.getUser() : null;
       if (user && user.role === 'customer') {
         e.preventDefault();
         dropdownMenu?.classList.remove('open');
         userBtn?.setAttribute('aria-expanded', 'false');
-        if (window.HustleBooking && typeof window.HustleBooking.openCustomerBookingsModal === 'function') {
-          window.HustleBooking.openCustomerBookingsModal();
+        if (window.SevaSathiBooking && typeof window.SevaSathiBooking.openCustomerBookingsModal === 'function') {
+          window.SevaSathiBooking.openCustomerBookingsModal();
         } else {
           window.location.href = 'customer-dashboard.html#appointments';
         }
@@ -204,8 +208,8 @@ function setupProfileDropdown() {
   });
 
   logoutBtn?.addEventListener('click', () => {
-    if (window.HustleSession) {
-      HustleSession.logOut('index.html');
+    if (window.SevaSathiSession) {
+      SevaSathiSession.logOut('index.html');
     } else {
       localStorage.removeItem('hustleToken');
       localStorage.removeItem('hustleCurrentUser');
@@ -249,8 +253,8 @@ async function executeAi18ServiceSearch(query, btn = null) {
   }
 
   const activeCity = localStorage.getItem('hustleSelectedCity') || localStorage.getItem('hustleLocation') || 'Bengaluru';
-  if (window.showHustleToast) {
-    showHustleToast('✦ AI matching with all 18 available services...', 'info', 2200);
+  if (window.showSevaSathiToast) {
+    showSevaSathiToast('✦ AI matching with all 18 available services...', 'info', 2200);
   }
 
   try {
@@ -267,8 +271,8 @@ async function executeAi18ServiceSearch(query, btn = null) {
       if (match18 && match18.matched && match18.service) {
         // CLOSEST MATCH FOUND IN 18 SERVICES
         // 1. Highlight and scroll to the service card in the grid
-        if (window.HustleBooking?.highlight18ServiceCard) {
-          window.HustleBooking.highlight18ServiceCard(match18.service.id || match18.service.name);
+        if (window.SevaSathiBooking?.highlight18ServiceCard) {
+          window.SevaSathiBooking.highlight18ServiceCard(match18.service.id || match18.service.name);
         }
 
         // 2. Filter service cards to highlight the closest matching service
@@ -283,17 +287,17 @@ async function executeAi18ServiceSearch(query, btn = null) {
         });
 
         // 3. Inform user with toast
-        if (window.showHustleToast) {
+        if (window.showSevaSathiToast) {
           if (isGuestLandingPage) {
-            showHustleToast(`✦ Closest Match: ${match18.service.name}. Please log in as customer to book!`, 'info', 3500);
+            showSevaSathiToast(`✦ Closest Match: ${match18.service.name}. Please log in as customer to book!`, 'info', 3500);
           } else {
-            showHustleToast(`✦ Closest Match: ${match18.service.name} (${match18.service.category})`, 'success', 3500);
+            showSevaSathiToast(`✦ Closest Match: ${match18.service.name} (${match18.service.category})`, 'success', 3500);
           }
         }
 
         // 4. Pop up suggestion modal
-        if (window.HustleBooking?.showAiDiagnosisModal) {
-          window.HustleBooking.showAiDiagnosisModal(diagnosis, query);
+        if (window.SevaSathiBooking?.showAiDiagnosisModal) {
+          window.SevaSathiBooking.showAiDiagnosisModal(diagnosis, query);
         }
       } else {
         // NO MATCH FOUND AMONG THE 18 AVAILABLE SERVICES:
@@ -302,8 +306,8 @@ async function executeAi18ServiceSearch(query, btn = null) {
           if (isGuestLandingPage) {
             sessionStorage.setItem('hustlePendingAiDiagnosis', JSON.stringify({ diagnosis, query }));
             location.href = 'auth.html?role=customer';
-          } else if (window.HustleBooking?.openCustomJobModal) {
-            window.HustleBooking.openCustomJobModal(
+          } else if (window.SevaSathiBooking?.openCustomJobModal) {
+            window.SevaSathiBooking.openCustomJobModal(
               diagnosis.estimatedPriceRange?.suggested || 499,
               diagnosis.suggestedNotes || query,
               diagnosis.match18?.suggestedPoolSkill || diagnosis.category || query
@@ -314,7 +318,7 @@ async function executeAi18ServiceSearch(query, btn = null) {
       return;
     }
   } catch (err) {
-    console.warn('[Hustle AI] 18 Service search error:', err);
+    console.warn('[SevaSathi AI] 18 Service search error:', err);
   } finally {
     if (btn) {
       btn.disabled = false;
@@ -325,8 +329,8 @@ async function executeAi18ServiceSearch(query, btn = null) {
   // Fallback if network or error
   if (isGuestLandingPage) {
     location.href = 'auth.html?role=customer';
-  } else if (window.HustleBooking?.openCustomJobModal) {
-    window.HustleBooking.openCustomJobModal(499, query, 'Other');
+  } else if (window.SevaSathiBooking?.openCustomJobModal) {
+    window.SevaSathiBooking.openCustomJobModal(499, query, 'Other');
   }
 }
 
@@ -463,14 +467,14 @@ function setupAiSearchSuggestions(inputEl) {
           <span class="ai-spark-spin">✦</span>
           <span>AI Task Suggestions</span>
         </div>
-        <span style="font-size:10px; color:#9a3412; font-weight:700;">Hustle AI</span>
+        <span style="font-size:10px; color:#15803d; font-weight:700;">SevaSathi AI</span>
       </div>
       <ul class="hustle-ai-suggestions-list">
         ${itemsHtml}
       </ul>
       <div class="hustle-ai-suggestions-footer">
         <span>Use <b>↑ / ↓</b> to navigate, <b>↵</b> to select</span>
-        <span style="color:#ea580c; font-weight:700;">✦ Smart Match</span>
+        <span style="color:#16a34a; font-weight:700;">✦ Smart Match</span>
       </div>
     `;
 
@@ -496,7 +500,7 @@ function setupAiSearchSuggestions(inputEl) {
         }
       }
     } catch (err) {
-      console.warn('[Hustle AI] Suggestions error:', err);
+      console.warn('[SevaSathi AI] Suggestions error:', err);
     }
   }
 
@@ -641,13 +645,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (pendingMatch) {
       const parsedMatch = JSON.parse(pendingMatch);
       sessionStorage.removeItem('hustlePending18Match');
-      if (parsedMatch && parsedMatch.diagnosis && window.HustleBooking) {
+      if (parsedMatch && parsedMatch.diagnosis && window.SevaSathiBooking) {
         setTimeout(() => {
-          if (window.HustleBooking.highlight18ServiceCard) {
-            window.HustleBooking.highlight18ServiceCard(parsedMatch.serviceId || parsedMatch.serviceName);
+          if (window.SevaSathiBooking.highlight18ServiceCard) {
+            window.SevaSathiBooking.highlight18ServiceCard(parsedMatch.serviceId || parsedMatch.serviceName);
           }
-          if (window.HustleBooking.showAiDiagnosisModal) {
-            window.HustleBooking.showAiDiagnosisModal(parsedMatch.diagnosis, parsedMatch.query);
+          if (window.SevaSathiBooking.showAiDiagnosisModal) {
+            window.SevaSathiBooking.showAiDiagnosisModal(parsedMatch.diagnosis, parsedMatch.query);
           }
         }, 350);
       }
@@ -659,13 +663,13 @@ document.addEventListener('DOMContentLoaded', () => {
       sessionStorage.removeItem('hustlePendingAiDiagnosis');
       if (parsed && parsed.diagnosis) {
         const hasMatch = Boolean(parsed.diagnosis.match18?.hasMatch || parsed.diagnosis.match18?.matched);
-        if (hasMatch && window.HustleBooking?.showAiDiagnosisModal) {
+        if (hasMatch && window.SevaSathiBooking?.showAiDiagnosisModal) {
           setTimeout(() => {
-            window.HustleBooking.showAiDiagnosisModal(parsed.diagnosis, parsed.query);
+            window.SevaSathiBooking.showAiDiagnosisModal(parsed.diagnosis, parsed.query);
           }, 300);
-        } else if (window.HustleBooking?.openCustomJobModal) {
+        } else if (window.SevaSathiBooking?.openCustomJobModal) {
           setTimeout(() => {
-            window.HustleBooking.openCustomJobModal(
+            window.SevaSathiBooking.openCustomJobModal(
               parsed.diagnosis.estimatedPriceRange?.suggested || 499,
               parsed.diagnosis.suggestedNotes || parsed.query,
               parsed.diagnosis.match18?.suggestedPoolSkill || parsed.diagnosis.specificSkill || parsed.diagnosis.category || parsed.query
@@ -690,7 +694,7 @@ const locationPicker = document.querySelector('#location-picker');
 const locationName = document.querySelector('#location-name');
 const locationStatus = document.querySelector('#location-status');
 
-const getGoogleMapsKey = () => window.HUSTLE_GOOGLE_MAPS_KEY || localStorage.getItem('hustleGoogleMapsKey') || '';
+const getGoogleMapsKey = () => window.SEVASATHI_GOOGLE_MAPS_KEY || window.HUSTLE_GOOGLE_MAPS_KEY || localStorage.getItem('sevasathiGoogleMapsKey') || localStorage.getItem('hustleGoogleMapsKey') || '';
 
 let detectingLocation = false;
 let savedCoords = null;
@@ -815,6 +819,9 @@ function openLocationSheet() {
   locationSheet.hidden = false;
   locationPicker?.setAttribute('aria-expanded', 'true');
   placeSheet();
+  if (window.SevaSathiI18n && typeof window.SevaSathiI18n.applyTranslations === 'function') {
+    window.SevaSathiI18n.applyTranslations(locationSheet);
+  }
   setTimeout(() => {
     locationSearch?.focus();
   }, 50);
@@ -1242,7 +1249,7 @@ window.addEventListener('scroll', () => {
 }, { passive: true });
 
 // Export location manager API
-window.HustleLocation = {
+window.SevaSathiLocation = {
   openPicker: openLocationSheet,
   closePicker: closeLocationSheet,
   detectLocation: detectCurrentLocation,
@@ -1265,7 +1272,7 @@ window.HustleLocation = {
   let autocompleteDebounce = null;
 
   function isCustomerUser() {
-    const user = window.HustleSession ? HustleSession.getUser() : JSON.parse(localStorage.getItem('hustleCurrentUser') || 'null');
+    const user = window.SevaSathiSession ? SevaSathiSession.getUser() : JSON.parse(localStorage.getItem('hustleCurrentUser') || 'null');
     return user && user.role === 'customer';
   }
 
@@ -1371,7 +1378,7 @@ window.HustleLocation = {
     sessionStorage.removeItem('hustleCustomerNeedsLocation');
 
     // Asynchronously update profile in backend if user has token
-    const token = window.HustleSession ? HustleSession.getToken() : localStorage.getItem('hustleToken');
+    const token = window.SevaSathiSession ? SevaSathiSession.getToken() : localStorage.getItem('hustleToken');
     if (token) {
       fetch('/api/auth/profile', {
         method: 'PATCH',
@@ -1389,24 +1396,24 @@ window.HustleLocation = {
 
     // Trigger dynamic pricing update
     const city = resolveCityString(label);
-    if (window.HustleBooking?.updateServiceCardsPricing) {
-      window.HustleBooking.updateServiceCardsPricing(city);
+    if (window.SevaSathiBooking?.updateServiceCardsPricing) {
+      window.SevaSathiBooking.updateServiceCardsPricing(city);
     }
 
     setTimeout(() => {
       hideGate();
-      if (window.HustleBooking?.showHustleToast) {
-        window.HustleBooking.showHustleToast(`📍 Location confirmed: ${label}`, 'success');
+      if (window.SevaSathiBooking?.showSevaSathiToast) {
+        window.SevaSathiBooking.showSevaSathiToast(`📍 Location confirmed: ${label}`, 'success');
       }
 
       // If a pending service target was clicked before location prompt
-      if (pendingServiceTarget && window.HustleBooking) {
+      if (pendingServiceTarget && window.SevaSathiBooking) {
         const target = pendingServiceTarget;
         pendingServiceTarget = null;
         if (target.serviceId === 'custom-pool' || target.isCustomPool) {
-          window.HustleBooking.openCustomJobModal(target.basePrice || 499);
+          window.SevaSathiBooking.openCustomJobModal(target.basePrice || 499);
         } else {
-          window.HustleBooking.openServiceWorkersModal(target.serviceId, target.serviceName || target.heading, target.basePrice);
+          window.SevaSathiBooking.openServiceWorkersModal(target.serviceId, target.serviceName || target.heading, target.basePrice);
         }
       }
     }, 450);
@@ -1418,6 +1425,9 @@ window.HustleLocation = {
     gateOverlay.classList.add('active');
     document.body.style.overflow = 'hidden';
     setStatus('');
+    if (window.SevaSathiI18n && typeof window.SevaSathiI18n.applyTranslations === 'function' && gateOverlay) {
+      window.SevaSathiI18n.applyTranslations(gateOverlay);
+    }
   }
 
   function hideGate() {
@@ -1625,7 +1635,7 @@ window.HustleLocation = {
   }
 
   // Export gate controller
-  window.HustleLocationGate = {
+  window.SevaSathiLocationGate = {
     open: showGate,
     close: hideGate,
     needsLocationPrompt: needsLocationPrompt

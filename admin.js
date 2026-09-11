@@ -1,5 +1,5 @@
 /**
- * Hustle Administration & Operations Console Controller
+ * SevaSathi Administration & Operations Console Controller
  * Dedicated to /admin portal with role-based security enforcement
  */
 (function initAdminPortal() {
@@ -15,9 +15,11 @@
   const btnTabWorkers = document.querySelector('#btn-tab-workers');
   const btnTabCustomers = document.querySelector('#btn-tab-customers');
   const btnTabDisputes = document.querySelector('#btn-tab-disputes');
+  const btnTabBusiness = document.querySelector('#btn-tab-business');
   const sectionWorkers = document.querySelector('#admin-workers-section');
   const sectionCustomers = document.querySelector('#admin-customers-section');
   const sectionDisputes = document.querySelector('#admin-disputes-section');
+  const sectionBusiness = document.querySelector('#admin-business-section');
 
   // Stats
   const statTotalWorkers = document.querySelector('#stat-total-workers');
@@ -29,11 +31,16 @@
   const statOpenDisputes = document.querySelector('#stat-open-disputes');
   const statResolvedDisputes = document.querySelector('#stat-resolved-disputes');
   const badgeOpenDisputes = document.querySelector('#badge-open-disputes');
+  const statTotalBizReqs = document.querySelector('#stat-total-biz-reqs');
+  const statActiveBizContracts = document.querySelector('#stat-active-biz-contracts');
+  const statTotalBizInvoices = document.querySelector('#stat-total-biz-invoices');
 
   // Tables
   const workersTbody = document.querySelector('#admin-workers-tbody');
   const customersTbody = document.querySelector('#admin-customers-tbody');
   const disputesTbody = document.querySelector('#admin-disputes-tbody');
+  const bizReqsTbody = document.querySelector('#admin-biz-reqs-tbody');
+  const bizContractsTbody = document.querySelector('#admin-biz-contracts-tbody');
 
   // Modals
   const docModal = document.querySelector('#admin-doc-modal');
@@ -67,7 +74,7 @@
   // 1. Initial Access & Role Verification Guard
   function verifyAccessGuard() {
     // Check if user is currently logged in as a normal customer or worker
-    const storedUser = window.HustleSession ? HustleSession.getUser() : null;
+    const storedUser = window.SevaSathiSession ? SevaSathiSession.getUser() : null;
     if (storedUser && storedUser.role !== 'admin') {
       if (roleBanner) {
         roleBanner.innerHTML = `
@@ -124,10 +131,12 @@
     btnTabWorkers?.classList.toggle('active', tab === 'workers');
     btnTabCustomers?.classList.toggle('active', tab === 'customers');
     btnTabDisputes?.classList.toggle('active', tab === 'disputes');
+    btnTabBusiness?.classList.toggle('active', tab === 'business');
 
     if (sectionWorkers) sectionWorkers.hidden = tab !== 'workers';
     if (sectionCustomers) sectionCustomers.hidden = tab !== 'customers';
     if (sectionDisputes) sectionDisputes.hidden = tab !== 'disputes';
+    if (sectionBusiness) sectionBusiness.hidden = tab !== 'business';
 
     if (tab === 'workers') {
       loadWorkers();
@@ -135,12 +144,15 @@
       loadCustomers();
     } else if (tab === 'disputes') {
       loadDisputes();
+    } else if (tab === 'business') {
+      loadBusinessOverview();
     }
   }
 
   btnTabWorkers?.addEventListener('click', () => switchTab('workers'));
   btnTabCustomers?.addEventListener('click', () => switchTab('customers'));
   btnTabDisputes?.addEventListener('click', () => switchTab('disputes'));
+  btnTabBusiness?.addEventListener('click', () => switchTab('business'));
 
   // 3. Admin Authentication
   loginForm?.addEventListener('submit', async (e) => {
@@ -358,7 +370,7 @@
       return `
         <tr>
           <td>
-            <strong>${escapeHtml(c.name || 'Hustle Customer')}</strong>
+            <strong>${escapeHtml(c.name || 'SevaSathi Customer')}</strong>
             <small>ID: #${id.slice(-6)} ${c.preferredCity ? `· 📍 ${escapeHtml(c.preferredCity)}` : ''}</small>
           </td>
           <td>
@@ -369,13 +381,13 @@
           <td>
             <div>
               <span style="font-weight:700; color:var(--admin-ink);">${c.completedBookingsCount || 0} completed</span>
-              ${c.activeBookingsCount > 0 ? `<small style="color:#e56d24; font-weight:700;">(${c.activeBookingsCount} in escrow)</small>` : ''}
+              ${c.activeBookingsCount > 0 ? `<small style="color:#16a34a; font-weight:700;">(${c.activeBookingsCount} in escrow)</small>` : ''}
             </div>
             <div style="margin-top:3px;">
               ${isBanned ? `
                 <span class="admin-badge rejected" style="font-size:10.5px;">🚫 PERMANENTLY BANNED</span>
               ` : (warningsCount > 0 ? `
-                <span class="admin-badge" style="background:#fef3c7; color:#b45309; border:1px solid #fde68a; font-size:10.5px;">⚠️ Warnings: ${warningsCount}/3</span>
+                <span class="admin-badge" style="background:#dcfce7; color:#15803d; border:1px solid #86efac; font-size:10.5px;">⚠️ Warnings: ${warningsCount}/3</span>
               ` : `
                 <span style="color:#059669; font-size:11px; font-weight:600;">✓ Good Standing</span>
               `)}
@@ -446,7 +458,7 @@
             <small>📅 ${dateStr} · Bk: #${escapeHtml(String(t.bookingId).slice(-6))}</small>
           </td>
           <td>
-            <span style="font-weight:700; color:${t.complainantRole === 'worker' ? '#0284c7' : '#e56d24'};">
+            <span style="font-weight:700; color:${t.complainantRole === 'worker' ? '#0284c7' : '#16a34a'};">
               ${t.complainantRole === 'worker' ? '👷 Worker' : '👤 Customer'}
             </span>
             <small>${escapeHtml(t.complainantName || 'Platform User')}</small>
@@ -457,7 +469,7 @@
           </td>
           <td>
             <span style="font-weight:600;">${escapeHtml(t.serviceTitle || 'Task Service')}</span>
-            <small style="color:var(--admin-orange); font-weight:700;">${escapeHtml(t.agreedPrice || 'Escrow Held')}</small>
+            <small style="color:var(--admin-green, #16a34a); font-weight:700;">${escapeHtml(t.agreedPrice || 'Escrow Held')}</small>
           </td>
           <td>
             <strong style="font-size:12px; display:block;">${escapeHtml(t.category || 'General Dispute')}</strong>
@@ -618,10 +630,10 @@
 
     disputeModalTitle.innerHTML = `<span>⚖️</span> Dispute #${escapeHtml(ticket.ticketId)} · Escrow Settle`;
     disputeModalBody.innerHTML = `
-      <div style="background:#fff7ed; border:1px solid #fdba74; border-radius:8px; padding:12px 14px; margin-bottom:14px; font-size:12.5px;">
-        <div><strong>Task:</strong> ${escapeHtml(ticket.serviceTitle || 'Service Task')} · <strong>Held Escrow:</strong> <span style="color:#e56d24; font-weight:700;">${escapeHtml(ticket.agreedPrice || 'Held in Escrow')}</span></div>
+      <div style="background:#f0fdf4; border:1px solid #86efac; border-radius:8px; padding:12px 14px; margin-bottom:14px; font-size:12.5px;">
+        <div><strong>Task:</strong> ${escapeHtml(ticket.serviceTitle || 'Service Task')} · <strong>Held Escrow:</strong> <span style="color:#16a34a; font-weight:700;">${escapeHtml(ticket.agreedPrice || 'Held in Escrow')}</span></div>
         <div><strong>Complainant:</strong> ${ticket.complainantRole === 'worker' ? '👷 Worker' : '👤 Customer'} (${escapeHtml(ticket.complainantName)}) vs ${escapeHtml(ticket.respondentName)}</div>
-        <div style="margin-top:6px; background:#ffffff; padding:8px 10px; border-radius:6px; border:1px solid #fed7aa; color:#78350f;">
+        <div style="margin-top:6px; background:#ffffff; padding:8px 10px; border-radius:6px; border:1px solid #bbf7d0; color:#166534;">
           <strong>Claim Statement:</strong> “${escapeHtml(ticket.description)}”
         </div>
       </div>
@@ -723,6 +735,122 @@
       });
     }
   }
+
+  // 7. Load Business Workforce & Rebalancing Overview
+  async function loadBusinessOverview() {
+    if (!activeAdminToken) return;
+
+    if (bizReqsTbody) {
+      bizReqsTbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#706d66; padding:24px;">Loading enterprise requisitions...</td></tr>';
+    }
+    if (bizContractsTbody) {
+      bizContractsTbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#706d66; padding:24px;">Loading commercial contracts...</td></tr>';
+    }
+
+    try {
+      const bizApiUrl = API_AUTH.replace(/\/auth$/, '/business');
+      const res = await fetch(`${bizApiUrl}/admin/overview`, {
+        headers: { 'Authorization': `Bearer ${activeAdminToken}` }
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Failed to load corporate overview.');
+      }
+
+      const reqs = data.requirements || [];
+      const contracts = data.contracts || [];
+      const invoices = data.invoices || [];
+
+      if (statTotalBizReqs) statTotalBizReqs.textContent = reqs.length;
+      if (statActiveBizContracts) statActiveBizContracts.textContent = contracts.filter(c => c.status === 'active').length;
+      if (statTotalBizInvoices) statTotalBizInvoices.textContent = invoices.length;
+
+      // Render Requisitions
+      if (bizReqsTbody) {
+        if (reqs.length === 0) {
+          bizReqsTbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#706d66; padding:20px;">No enterprise requisitions submitted yet.</td></tr>';
+        } else {
+          bizReqsTbody.innerHTML = reqs.map(r => {
+            const allocatedNames = (r.allocatedWorkers || []).map(w => w.name).join(', ') || 'None assigned';
+            return `
+              <tr>
+                <td><strong>#${escapeHtml(r.requirementId)}</strong></td>
+                <td><strong>${escapeHtml(r.businessName)}</strong></td>
+                <td><span style="font-weight:600;">${escapeHtml(r.serviceCategory)}</span></td>
+                <td><strong style="color:#16a34a;">${escapeHtml(String(r.workersNeeded))}</strong> Pros</td>
+                <td>₹${escapeHtml(String(r.ratePerWorker))}/day</td>
+                <td><span class="status-pill ${r.status}">${escapeHtml(r.status)}</span></td>
+                <td><small style="color:#334155;">${escapeHtml(allocatedNames)}</small></td>
+                <td>
+                  <button type="button" class="btn-table-action approve" onclick="window.rebalanceRequirement('${r.requirementId}')" style="font-size:11px; padding:4px 8px;">
+                    ⚖️ Rebalance
+                  </button>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+      }
+
+      // Render Contracts
+      if (bizContractsTbody) {
+        if (contracts.length === 0) {
+          bizContractsTbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#706d66; padding:20px;">No commercial contracts active yet.</td></tr>';
+        } else {
+          bizContractsTbody.innerHTML = contracts.map(c => `
+            <tr>
+              <td><strong>#${escapeHtml(c.contractId)}</strong></td>
+              <td><strong>${escapeHtml(c.businessName)}</strong></td>
+              <td>${escapeHtml(c.serviceCategory)} (${escapeHtml(String(c.workerCount))} workers)</td>
+              <td><strong style="color:#166534;">₹${escapeHtml(Number(c.totalEstimatedAmount || 0).toLocaleString('en-IN'))}</strong></td>
+              <td><small>${escapeHtml(c.duration?.startDate || '')} → ${escapeHtml(c.duration?.endDate || '')}</small></td>
+              <td><span class="status-pill ${c.status}">${escapeHtml(c.status)}</span></td>
+            </tr>
+          `).join('');
+        }
+      }
+    } catch (err) {
+      if (bizReqsTbody) {
+        bizReqsTbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#dc2626; padding:20px;">${escapeHtml(err.message)}</td></tr>`;
+      }
+    }
+  }
+
+  window.rebalanceRequirement = async function(reqId) {
+    if (!confirm(`Trigger cooperative workforce rebalancing for Requisition #${reqId}?\nThis evaluates cooperative members with low active workloads to ensure fair gig allocation.`)) {
+      return;
+    }
+
+    try {
+      const bizApiUrl = API_AUTH.replace(/\/auth$/, '/business');
+      // Fetch available approved workers
+      const workersRes = await adminFetch('/admin/workers');
+      const workersData = await workersRes.json();
+      const approved = (workersData.workers || []).filter(w => w.approvalStatus === 'approved');
+
+      // Pick workers who need jobs (lowest active jobs)
+      const workerIds = approved.slice(0, 3).map(w => w._id || w.id);
+
+      const res = await fetch(`${bizApiUrl}/admin/requirements/${reqId}/rebalance`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${activeAdminToken}`
+        },
+        body: JSON.stringify({ workerIds })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert('Success: ' + data.message);
+        await loadBusinessOverview();
+      } else {
+        alert('Rebalance error: ' + data.message);
+      }
+    } catch (err) {
+      alert('Error during rebalance: ' + err.message);
+    }
+  };
 
   function escapeHtml(str) {
     if (!str) return '';

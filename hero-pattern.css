@@ -1,25 +1,125 @@
-/* Quiet background line art: a task list, completed task, compass, toolbox and motion path. */
-.hero-copy { position: relative; isolation: isolate; }
-.hero-copy::before {
+/* ==========================================================================
+   SevaSathi — Premium Indian / Local-Services Hero Background
+   Soft off-white → very pale mint (#F5FBF7) with subtle edge-concentrated organic
+   radial shapes and delicate 5-10% opacity #16A34A geometric outlines.
+   Center behind typography is kept ultra-clean and light.
+   ========================================================================== */
+
+.hero {
+  position: relative;
+  isolation: isolate;
+}
+
+/* 1. Organic Edge Radial Shapes & Pale Mint Base Layer */
+.hero::before {
   content: "";
   position: absolute;
-  z-index: -1;
-  inset: -36px -25px -24px -45px;
-  width: min(100% + 70px, 520px);
-  opacity: .52;
+  inset: -28px -36px -32px -36px;
+  z-index: -2;
   pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg width='430' height='390' viewBox='0 0 430 390' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cg stroke='%23e6a052' stroke-width='1.3'%3E%3Crect x='270' y='28' width='86' height='104' rx='10'/%3E%3Cpath d='M292 61h42M292 78h26M292 96h35M292 116h19'/%3E%3Cpath d='M53 267l18-18 18 18-18 18-18-18Z'/%3E%3Cpath d='M286 241c0-15 12-27 27-27s27 12 27 27-12 27-27 27-27-12-27-27Zm15 0 8 8 15-17'/%3E%3Cpath d='M70 88h66M103 55v66M75 60l56 56M131 60l-56 56'/%3E%3Cpath d='M182 305c15-11 35-9 47 5 12 14 11 34-2 46M186 338l-6 18 18-4'/%3E%3Cpath d='M232 143c23 0 42 19 42 42s-19 42-42 42' stroke-dasharray='4 7'/%3E%3C/g%3E%3Cg fill='%23f5c98a'%3E%3Ccircle cx='376' cy='187' r='5'/%3E%3Ccircle cx='151' cy='52' r='4'/%3E%3Ccircle cx='58' cy='169' r='3'/%3E%3C/g%3E%3C/svg%3E");
+  border-radius: 36px;
+  background:
+    /* Pristine clean off-white core right behind the text to ensure effortless contrast */
+    radial-gradient(ellipse 62% 74% at 34% 48%, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.72) 48%, transparent 80%),
+    /* Top-left edge subtle organic radial glow */
+    radial-gradient(ellipse 460px 360px at 0% 8%, rgba(22, 163, 74, 0.065) 0%, rgba(22, 163, 74, 0.015) 55%, transparent 75%),
+    /* Top-right edge subtle organic radial glow behind art corner */
+    radial-gradient(ellipse 420px 320px at 100% 6%, rgba(22, 163, 74, 0.055) 0%, rgba(22, 163, 74, 0.01) 50%, transparent 70%),
+    /* Mid-left edge subtle ambient curve wash */
+    radial-gradient(ellipse 340px 280px at -2% 54%, rgba(22, 163, 74, 0.04) 0%, transparent 65%),
+    /* Mid-right edge subtle ambient curve wash */
+    radial-gradient(ellipse 360px 300px at 102% 52%, rgba(22, 163, 74, 0.038) 0%, transparent 60%),
+    /* Bottom-left edge subtle organic curve wash */
+    radial-gradient(ellipse 450px 280px at 6% 96%, rgba(22, 163, 74, 0.045) 0%, transparent 65%),
+    /* Bottom-right edge subtle dark-green organic wash */
+    radial-gradient(ellipse 440px 300px at 96% 92%, rgba(22, 101, 52, 0.04) 0%, transparent 60%),
+    /* Soft off-white to very pale mint gradient base (#F5FBF7 -> #F2FAF5) */
+    linear-gradient(180deg, #FFFFFF 0%, #F5FBF7 32%, #F2FAF5 100%);
+}
+
+/* 2. Delicate #16A34A Abstract Design Elements at 4-8% Opacity Concentrated at Edges */
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: -28px -36px -32px -36px;
+  z-index: -1;
+  pointer-events: none;
   background-repeat: no-repeat;
-  background-position: top right;
-  background-size: min(100%, 430px);
+  background-position: center;
+  background-size: 100% 100%;
+  background-image: url("data:image/svg+xml,%3Csvg width='1200' height='560' viewBox='0 0 1200 560' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3C!-- TOP-LEFT EDGE: Concentric precision rings, faint orbit circles %26 geometric 8-point star --%3E%3Ccircle cx='65' cy='60' r='38' stroke='%2316A34A' stroke-opacity='0.08' stroke-width='1.2'/%3E%3Ccircle cx='65' cy='60' r='72' stroke='%2316A34A' stroke-opacity='0.06' stroke-width='1' stroke-dasharray='3 5'/%3E%3Ccircle cx='65' cy='60' r='112' stroke='%2316A34A' stroke-opacity='0.05' stroke-width='1'/%3E%3Ccircle cx='65' cy='60' r='158' stroke='%2316A34A' stroke-opacity='0.038' stroke-width='1' stroke-dasharray='4 8'/%3E%3Cpath d='M65 24 L72 52 L100 60 L72 68 L65 96 L58 68 L30 60 L58 52 Z' stroke='%2316A34A' stroke-opacity='0.08' stroke-width='1.2'/%3E%3Ccircle cx='65' cy='60' r='2.5' fill='%2316A34A' fill-opacity='0.09'/%3E%3Ccircle cx='160' cy='48' r='3.5' fill='%2316A34A' fill-opacity='0.07'/%3E%3Ccircle cx='92' cy='182' r='2.5' fill='%2316A34A' fill-opacity='0.07'/%3E%3Ccircle cx='188' cy='102' r='5' stroke='%2316A34A' stroke-opacity='0.06' stroke-width='1'/%3E%3Ccircle cx='38' cy='125' r='1.5' fill='%2316A34A' fill-opacity='0.08'/%3E%3Cpath d='M130 60 H235' stroke='%2316A34A' stroke-opacity='0.055' stroke-width='1' stroke-dasharray='4 6'/%3E%3C!-- FAR-LEFT EDGE: Continuous undulating organic curves, parallel ribbon %26 rounded pill frame --%3E%3Cpath d='M-10 110 C60 160 30 240 75 300 C120 360 45 425 80 490 C100 525 60 550 25 565' stroke='%2316A34A' stroke-opacity='0.065' stroke-width='1.2' stroke-linecap='round'/%3E%3Cpath d='M25 150 C85 195 55 270 100 325 C145 380 65 440 95 505' stroke='%2316A34A' stroke-opacity='0.045' stroke-width='1' stroke-dasharray='4 6' stroke-linecap='round'/%3E%3Crect x='44' y='245' width='24' height='70' rx='12' stroke='%2316A34A' stroke-opacity='0.065' stroke-width='1.1'/%3E%3Ccircle cx='56' cy='280' r='2.5' fill='%2316A34A' fill-opacity='0.08'/%3E%3C!-- BOTTOM-LEFT EDGE: Smooth concentric quadrant arcs, tick marks %26 delicate lozenge --%3E%3Cpath d='M42 475 A 50 50 0 0 0 92 525 H 250' stroke='%2316A34A' stroke-opacity='0.065' stroke-width='1'/%3E%3Cpath d='M42 445 A 80 80 0 0 0 122 525' stroke='%2316A34A' stroke-opacity='0.05' stroke-width='1' stroke-dasharray='3 5'/%3E%3Cpath d='M42 415 A 110 110 0 0 0 152 525' stroke='%2316A34A' stroke-opacity='0.04' stroke-width='1'/%3E%3Ccircle cx='135' cy='485' r='7' stroke='%2316A34A' stroke-opacity='0.06' stroke-width='1'/%3E%3Cpath d='M180 500 V512 M174 506 H186' stroke='%2316A34A' stroke-opacity='0.075' stroke-width='1.1' stroke-linecap='round'/%3E%3Cpath d='M275 480 V492 M269 486 H281' stroke='%2316A34A' stroke-opacity='0.065' stroke-width='1.1' stroke-linecap='round'/%3E%3Cpolygon points='115,440 122,450 115,460 108,450' stroke='%2316A34A' stroke-opacity='0.06' stroke-width='1'/%3E%3C!-- TOP-CENTER BOUNDARY: Minimalist Indian arch contour framing top edge --%3E%3Cpath d='M570 55 C570 28 595 12 615 12 C635 12 660 28 660 55' stroke='%2316A34A' stroke-opacity='0.075' stroke-width='1.2' stroke-linecap='round'/%3E%3Cpath d='M580 55 C580 34 598 22 615 22 C632 22 650 34 650 55' stroke='%2316A34A' stroke-opacity='0.05' stroke-width='1' stroke-dasharray='2 4'/%3E%3Ccircle cx='615' cy='12' r='2.5' fill='%2316A34A' fill-opacity='0.085'/%3E%3C!-- TOP-RIGHT EDGE: Concentric orbit rings, faint satellites %26 geometric diamond star --%3E%3Ccircle cx='1140' cy='55' r='42' stroke='%2316A34A' stroke-opacity='0.08' stroke-width='1.2'/%3E%3Ccircle cx='1140' cy='55' r='82' stroke='%2316A34A' stroke-opacity='0.06' stroke-width='1' stroke-dasharray='4 6'/%3E%3Ccircle cx='1140' cy='55' r='122' stroke='%2316A34A' stroke-opacity='0.05' stroke-width='1'/%3E%3Ccircle cx='1140' cy='55' r='165' stroke='%2316A34A' stroke-opacity='0.038' stroke-width='1' stroke-dasharray='5 7'/%3E%3Cpath d='M1140 22 L1146 49 L1173 55 L1146 61 L1140 88 L1134 61 L1107 55 L1134 49 Z' stroke='%2316A34A' stroke-opacity='0.075' stroke-width='1.2'/%3E%3Ccircle cx='1055' cy='78' r='3' fill='%2316A34A' fill-opacity='0.07'/%3E%3Ccircle cx='1178' cy='155' r='2' fill='%2316A34A' fill-opacity='0.07'/%3E%3Ccircle cx='1095' cy='125' r='4.5' stroke='%2316A34A' stroke-opacity='0.055' stroke-width='1'/%3E%3Cpath d='M960 55 H1065' stroke='%2316A34A' stroke-opacity='0.055' stroke-width='1' stroke-dasharray='4 6'/%3E%3C!-- FAR-RIGHT EDGE: Flowing organic curve, slender pill %26 sweep target rings --%3E%3Cpath d='M1215 95 C1130 150 1160 230 1095 290 C1035 350 1145 425 1080 500 C1050 535 1090 565 1150 575' stroke='%2316A34A' stroke-opacity='0.055' stroke-width='1.2' stroke-linecap='round'/%3E%3Crect x='1145' y='265' width='22' height='64' rx='11' stroke='%2316A34A' stroke-opacity='0.06' stroke-width='1'/%3E%3Ccircle cx='1156' cy='297' r='2.5' fill='%2316A34A' fill-opacity='0.075'/%3E%3Cpolygon points='1085,415 1092,425 1085,435 1078,425' stroke='%2316A34A' stroke-opacity='0.06' stroke-width='1'/%3E%3C!-- BOTTOM-RIGHT EDGE: Elegant organic sweep arc, concentric target circles %26 coordinate tick --%3E%3Cpath d='M1000 540 C1060 540 1125 500 1155 445' stroke='%2316A34A' stroke-opacity='0.06' stroke-width='1.2' stroke-linecap='round'/%3E%3Ccircle cx='1120' cy='465' r='26' stroke='%2316A34A' stroke-opacity='0.06' stroke-width='1' stroke-dasharray='3 4'/%3E%3Ccircle cx='1120' cy='465' r='48' stroke='%2316A34A' stroke-opacity='0.045' stroke-width='1'/%3E%3Cpath d='M1040 505 V517 M1034 511 H1046' stroke='%2316A34A' stroke-opacity='0.07' stroke-width='1.1' stroke-linecap='round'/%3E%3Cpath d='M1160 492 V504 M1154 498 H1166' stroke='%2316A34A' stroke-opacity='0.08' stroke-width='1' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
+/* Reset old hero-copy pseudo-element to keep center behind typography completely clean */
+.hero-copy {
+  position: relative;
+  isolation: isolate;
+  z-index: 1;
+}
+.hero-copy::before {
+  display: none !important;
+}
+
+/* Responsive: Ensure seamless layout and legibility on mobile / tablet */
+@media (max-width: 1000px) {
+  .hero::before,
+  .hero::after {
+    inset: -16px -20px -20px -20px;
+  }
 }
 
 @media (max-width: 680px) {
-  .hero-copy::before {
-    inset: -24px -20px -16px -18px;
-    width: calc(100% + 38px);
-    opacity: .38;
-    background-size: 330px auto;
-    background-position: right -42px top;
+  .hero::before,
+  .hero::after {
+    inset: -10px -14px -16px -14px;
+    border-radius: 20px;
   }
+  .hero::after {
+    background-size: cover;
+    opacity: 0.85;
+  }
+}
+
+/* ==========================================================================
+   Need Something Specific (Request Card) Lighter Background & Abstract Elements
+   Ensures seamless text contrast, soft light mint base & subtle green curves
+   ========================================================================== */
+.request-card {
+  background:
+    radial-gradient(ellipse 420px 280px at 0% 0%, rgba(22, 163, 74, 0.055) 0%, rgba(22, 163, 74, 0.015) 60%, transparent 80%),
+    radial-gradient(ellipse 380px 260px at 100% 100%, rgba(34, 197, 94, 0.05) 0%, transparent 70%),
+    radial-gradient(ellipse 260px 200px at 50% 50%, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.75) 50%, transparent 100%),
+    linear-gradient(135deg, #FFFFFF 0%, #F5FBF7 45%, #EFF9F3 100%) !important;
+  border: 1.5px solid #bbf7d0 !important;
+  box-shadow: 0 16px 36px rgba(22, 163, 74, 0.08), 0 2px 8px rgba(0, 0, 0, 0.03) !important;
+  position: relative !important;
+  overflow: hidden !important;
+  isolation: isolate;
+}
+
+.request-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  opacity: 0.85;
+  background-image: url("data:image/svg+xml,%3Csvg width='800' height='360' viewBox='0 0 800 360' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3C!-- Soft organic curves %26 faint circles --%3E%3Ccircle cx='45' cy='45' r='60' stroke='%2316A34A' stroke-opacity='0.06' stroke-width='1.2' stroke-dasharray='4 6'/%3E%3Ccircle cx='45' cy='45' r='105' stroke='%2316A34A' stroke-opacity='0.04' stroke-width='1'/%3E%3Ccircle cx='760' cy='320' r='90' stroke='%2316A34A' stroke-opacity='0.06' stroke-width='1.2' stroke-dasharray='4 8'/%3E%3Ccircle cx='760' cy='320' r='140' stroke='%2316A34A' stroke-opacity='0.035' stroke-width='1'/%3E%3Cpath d='M-20 80 C80 120 60 200 120 250 C180 300 130 350 160 380' stroke='%2316A34A' stroke-opacity='0.055' stroke-width='1.4' stroke-linecap='round' fill='none'/%3E%3Cpath d='M650 -10 C700 60 670 140 730 200 C780 250 820 300 840 370' stroke='%2316A34A' stroke-opacity='0.05' stroke-width='1.4' stroke-linecap='round' fill='none'/%3E%3Ccircle cx='180' cy='60' r='3' fill='%2316A34A' fill-opacity='0.07'/%3E%3Ccircle cx='680' cy='80' r='4' stroke='%2316A34A' stroke-opacity='0.06' stroke-width='1'/%3E%3Cpolygon points='110,290 116,300 110,310 104,300' stroke='%2316A34A' stroke-opacity='0.06' stroke-width='1'/%3E%3C/svg%3E");
+}
+
+.request-card > div {
+  position: relative;
+  z-index: 1;
+}
+
+.request-card h2 {
+  color: #14532d !important;
+}
+
+.request-card > div > p:not(.eyebrow) {
+  color: #374151 !important;
+  font-weight: 500;
 }

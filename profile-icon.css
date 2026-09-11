@@ -35,8 +35,8 @@
 }
 
 .user-profile-btn:hover {
-  border-color: var(--orange);
-  box-shadow: 0 4px 12px rgba(229, 109, 36, 0.12);
+  border-color: var(--green);
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.15);
 }
 
 .user-profile-btn.active {
@@ -61,7 +61,7 @@
 }
 
 .profile-avatar-pill.worker-avatar {
-  background: linear-gradient(135deg, #e56d24, #c65316);
+  background: linear-gradient(135deg, #16a34a, #15803d);
 }
 
 .online-dot {
@@ -143,7 +143,7 @@
 }
 
 .dropdown-avatar.worker {
-  background: linear-gradient(135deg, #e56d24, #c65316);
+  background: linear-gradient(135deg, #16a34a, #15803d);
 }
 
 .dropdown-user-details {
@@ -181,15 +181,15 @@
 }
 
 .dropdown-role-badge.customer {
-  background: #fdf3e7;
-  color: #a85d1d;
-  border: 1px solid #f8dfbe;
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
 }
 
 .dropdown-role-badge.worker {
-  background: #fdf0ea;
-  color: #c65316;
-  border: 1px solid #fbd9c8;
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #86efac;
 }
 
 .dropdown-links {
@@ -212,7 +212,7 @@
 
 .dropdown-link:hover {
   background: #fbf7f0;
-  color: var(--orange-dark);
+  color: var(--green-dark);
 }
 
 .dropdown-link span.icon {

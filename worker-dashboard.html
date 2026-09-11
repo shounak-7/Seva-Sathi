@@ -3,14 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#f48a24" />
-    <title>Gig Partner Hub — Hustle</title>
+    <meta name="theme-color" content="#16a34a" />
+    <title>Gig Partner Hub — SevaSathi</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/png" href="favicon.png" />
     <link rel="stylesheet" href="styles.css" />
     <link rel="stylesheet" href="profile-icon.css" />
     <link rel="stylesheet" href="booking-system.css" />
+    <link rel="stylesheet" href="i18n.css" />
     <style>
       :root {
         --paper: #fffdf8;
@@ -18,8 +20,8 @@
         --ink: #25231f;
         --muted: #706d66;
         --line: #e7dfd2;
-        --orange: #e56d24;
-        --orange-dark: #c65316;
+        --green: #16a34a; --orange: #16a34a;
+        --green-dark: #15803d; --orange-dark: #15803d;
         --gold: #f2b84b;
         --radius: 18px;
         --shadow: 0 12px 35px rgba(73, 49, 21, 0.08);
@@ -57,9 +59,9 @@
       }
 
       .partner-badge-pill {
-        background: #fff7ed;
-        border: 1.5px solid #fdba74;
-        color: #ea580c;
+        background: #f0fdf4;
+        border: 1.5px solid #bbf7d0;
+        color: #15803d;
         padding: 4px 10px;
         border-radius: 999px;
         font-size: 11px;
@@ -104,50 +106,100 @@
         width: 36px;
         height: 36px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #f97316, #ea580c);
+        background: linear-gradient(135deg, #22c55e, #16a34a);
         color: #fff;
         display: flex;
         align-items: center;
         justify-content: center;
         font-weight: 700;
         font-size: 13px;
-        box-shadow: 0 2px 8px rgba(234, 88, 12, 0.25);
+        box-shadow: 0 2px 8px rgba(22, 163, 74, 0.25);
       }
 
-      .btn-hub-logout {
-        background: #ffffff;
-        border: 1px solid var(--line);
+      .worker-info-label {
+        font-size: 11px;
         color: var(--muted);
-        padding: 8px 16px;
-        border-radius: 999px;
-        font-size: 12px;
+        line-height: 1.1;
+      }
+
+      .worker-info-name {
+        font-weight: 800;
+        font-size: 13px;
+        color: var(--ink);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 140px;
+      }
+
+      /* Log Out Button Styling */
+      .btn-hub-logout,
+      .btn-worker-logout,
+      #btn-worker-logout {
+        border: 1.5px solid var(--line);
+        background: #ffffff;
+        color: #475569;
+        font-size: 12.5px;
         font-weight: 700;
+        padding: 7px 14px;
+        border-radius: 9px;
         cursor: pointer;
-        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        white-space: nowrap;
+        line-height: 1.2;
+        font-family: inherit;
+        text-decoration: none;
       }
 
-      .btn-hub-logout:hover {
-        background: #fff1f2;
-        color: #e11d48;
-        border-color: #fecdd3;
+      .btn-hub-logout::before,
+      .btn-worker-logout::before,
+      #btn-worker-logout::before {
+        content: "🚪";
+        font-size: 13px;
+        line-height: 1;
       }
 
+      .btn-hub-logout:hover,
+      .btn-worker-logout:hover,
+      #btn-worker-logout:hover {
+        background: #fef2f2;
+        border-color: #fca5a5;
+        color: #dc2626;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 8px rgba(220, 38, 38, 0.12);
+      }
+
+      .btn-hub-logout:active,
+      .btn-worker-logout:active,
+      #btn-worker-logout:active {
+        transform: translateY(0);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      }
+
+      /* Hub Container */
       .hub-container {
-        max-width: 1200px;
+        max-width: 1184px;
         margin: 0 auto;
         padding: 34px 24px 80px;
+        box-sizing: border-box;
+        width: 100%;
       }
 
       /* Waiting List / Pending Approval Card */
       .approval-gate-card {
         background: #ffffff;
-        border: 1px solid #fed7aa;
+        border: 1px solid #bbf7d0;
         border-radius: 22px;
         padding: 42px 36px;
         margin-bottom: 30px;
         position: relative;
         overflow: hidden;
-        box-shadow: 0 12px 35px rgba(229, 109, 36, 0.07);
+        box-shadow: 0 12px 35px rgba(22, 163, 74, 0.08);
       }
 
       .approval-gate-card::before {
@@ -155,16 +207,14 @@
         position: absolute;
         top: 0; left: 0; right: 0;
         height: 5px;
-        background: linear-gradient(90deg, #ea580c, #f59e0b, #e56d24);
+        background: linear-gradient(90deg, #15803d, #16a34a, #22c55e);
       }
 
       .gate-badge {
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        background: #fffbeb;
-        color: #b45309;
-        border: 1px solid #fde68a;
+        background: #f0fdf4; color: #15803d; border: 1px solid #86efac;
         padding: 5px 12px;
         border-radius: 999px;
         font-size: 12px;
@@ -183,7 +233,7 @@
 
       .gate-title em {
         font-style: italic;
-        color: var(--orange);
+        color: var(--green);
       }
 
       .gate-desc {
@@ -255,7 +305,7 @@
 
       .hub-header h1 em {
         font-style: italic;
-        color: var(--orange);
+        color: var(--green);
       }
 
       /* Metrics Grid */
@@ -278,7 +328,7 @@
       .metric-card:hover {
         transform: translateY(-3px);
         box-shadow: 0 10px 28px rgba(73, 49, 21, 0.08);
-        border-color: #fdba74;
+        border-color: #86efac;
       }
 
       .metric-label {
@@ -313,7 +363,7 @@
       }
 
       .btn-instant-payout {
-        background: var(--orange);
+        background: var(--green);
         color: #fff;
         border: none;
         padding: 8px 16px;
@@ -321,12 +371,12 @@
         font-size: 12px;
         font-weight: 800;
         cursor: pointer;
-        box-shadow: 0 3px 10px rgba(229, 109, 36, 0.3);
+        box-shadow: 0 3px 10px rgba(22, 163, 74, 0.3);
         transition: transform 0.15s ease, background 0.15s ease;
       }
 
       .btn-instant-payout:hover {
-        background: var(--orange-dark);
+        background: var(--green-dark);
         transform: translateY(-1px);
       }
 
@@ -372,9 +422,9 @@
       }
 
       .panel-count {
-        background: #fff7ed;
-        color: #ea580c;
-        border: 1px solid #fed7aa;
+        background: #f0fdf4;
+        color: #15803d;
+        border: 1px solid #bbf7d0;
         font-size: 12px;
         font-weight: 800;
         padding: 3px 10px;
@@ -392,8 +442,8 @@
       }
 
       .gig-item:hover {
-        border-color: #fdba74;
-        box-shadow: 0 6px 20px rgba(229, 109, 36, 0.08);
+        border-color: #86efac;
+        box-shadow: 0 6px 20px rgba(22, 163, 74, 0.08);
       }
 
       .gig-header-row {
@@ -415,7 +465,7 @@
         font-family: 'Fraunces', serif;
         font-size: 20px;
         font-weight: 700;
-        color: var(--orange);
+        color: var(--green);
         white-space: nowrap;
       }
 
@@ -440,35 +490,35 @@
       }
 
       .status-pill.pending { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
-      .status-pill.bargaining { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+      .status-pill.bargaining { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
       .status-pill.accepted { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
 
       .customer-notes-box {
         font-size: 13px;
         color: #475569;
         background: #fdfbf7;
-        border-left: 3px solid var(--orange);
+        border-left: 3px solid var(--green);
         padding: 10px 14px;
         border-radius: 0 8px 8px 0;
         margin-bottom: 12px;
       }
 
       .customer-counter-banner {
-        background: #fffbeb;
-        border: 1px solid #fde68a;
+        background: #f0fdf4;
+        border: 1px solid #86efac;
         border-radius: 10px;
         padding: 12px 14px;
         margin-bottom: 12px;
       }
 
       .worker-awaiting-banner {
-        background: #fff7ed;
-        border: 1px solid #fed7aa;
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
         border-radius: 10px;
         padding: 10px 14px;
         margin-bottom: 12px;
         font-size: 13px;
-        color: #9a3412;
+        color: #15803d;
         font-weight: 600;
       }
 
@@ -498,9 +548,9 @@
       }
 
       .btn-bargain-gig {
-        background: #fff7ed;
-        border: 1.5px solid var(--orange);
-        color: #c2410c;
+        background: #f0fdf4;
+        border: 1.5px solid var(--green);
+        color: #15803d;
         padding: 8px 16px;
         border-radius: 9px;
         font-size: 13px;
@@ -510,7 +560,7 @@
       }
 
       .btn-bargain-gig:hover {
-        background: #ffedd5;
+        background: #dcfce7;
         transform: translateY(-1px);
       }
 
@@ -531,7 +581,7 @@
       }
 
       .btn-complete-gig {
-        background: var(--orange);
+        background: var(--green);
         color: #fff;
         border: none;
         padding: 10px 20px;
@@ -539,25 +589,25 @@
         font-size: 13.5px;
         font-weight: 800;
         cursor: pointer;
-        box-shadow: 0 4px 14px rgba(229, 109, 36, 0.3);
+        box-shadow: 0 4px 14px rgba(22, 163, 74, 0.3);
         transition: all 0.15s ease;
       }
 
       .btn-complete-gig:hover {
-        background: var(--orange-dark);
+        background: var(--green-dark);
         transform: translateY(-1px);
       }
 
       .worker-counter-drawer {
         background: #fdfbf7;
-        border: 1.5px solid #fed7aa;
+        border: 1.5px solid #86efac;
         border-radius: 12px;
         padding: 16px;
         margin-top: 12px;
         display: flex;
         flex-direction: column;
         gap: 12px;
-        box-shadow: 0 4px 14px rgba(229, 109, 36, 0.08);
+        box-shadow: 0 4px 14px rgba(22, 163, 74, 0.08);
       }
 
       .worker-counter-drawer input,
@@ -576,8 +626,8 @@
 
       .worker-counter-drawer input:focus,
       .worker-counter-drawer textarea:focus {
-        border-color: var(--orange);
-        box-shadow: 0 0 0 3px rgba(229, 109, 36, 0.18);
+        border-color: var(--green);
+        box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.18);
         outline: none;
       }
 
@@ -608,7 +658,7 @@
       }
 
       .btn-drawer-submit {
-        background: linear-gradient(135deg, #e56d24, #f59e0b);
+        background: linear-gradient(135deg, #16a34a, #22c55e);
         color: #ffffff;
         border: none;
         padding: 8px 22px;
@@ -616,7 +666,7 @@
         font-size: 13px;
         font-weight: 700;
         cursor: pointer;
-        box-shadow: 0 3px 10px rgba(229, 109, 36, 0.3);
+        box-shadow: 0 3px 10px rgba(22, 163, 74, 0.3);
         transition: all 0.2s ease;
         display: inline-flex;
         align-items: center;
@@ -624,8 +674,8 @@
       }
 
       .btn-drawer-submit:hover {
-        background: linear-gradient(135deg, #d45c15, #d97706);
-        box-shadow: 0 5px 14px rgba(229, 109, 36, 0.4);
+        background: linear-gradient(135deg, #15803d, #16a34a);
+        box-shadow: 0 5px 14px rgba(22, 163, 74, 0.4);
         transform: translateY(-1px);
       }
 
@@ -645,7 +695,7 @@
       }
 
       .rating-stars {
-        color: #f59e0b;
+        color: #16a34a;
         font-size: 13px;
         margin-right: 4px;
       }
@@ -660,11 +710,7 @@
         font-weight: 700;
         letter-spacing: 0.3px;
       }
-      .ticket-badge-pill.open {
-        background: #fef3c7;
-        color: #b45309;
-        border: 1px solid #fde68a;
-      }
+      .ticket-badge-pill.open { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
       .ticket-badge-pill.under_review {
         background: #eff6ff;
         color: #1d4ed8;
@@ -710,12 +756,265 @@
         max-width: 540px;
         line-height: 1.5;
       }
+
+      /* Drawer Inputs Row */
+      .drawer-inputs-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      /* ==========================================================================
+         Worker Hub Responsive Breakdown (Mobile, Tablet & Small Desktop)
+         ========================================================================== */
+      html, body.worker-hub-body {
+        max-width: 100vw;
+        overflow-x: hidden;
+      }
+
+      @media (max-width: 980px) {
+        .worker-topbar {
+          padding: 0 20px;
+        }
+        .gigs-sections-grid {
+          grid-template-columns: 1fr;
+          gap: 22px;
+        }
+        .metrics-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 14px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .utility-bar {
+          font-size: 9px;
+          height: auto;
+          min-height: 26px;
+          padding: 5px 12px;
+          line-height: 1.3;
+          text-align: center;
+          white-space: normal;
+        }
+        .worker-topbar {
+          height: auto;
+          min-height: unset;
+          padding: 12px 16px;
+          flex-direction: column;
+          align-items: stretch;
+          gap: 12px;
+          position: sticky;
+          top: 0;
+        }
+        .brand-group {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          width: 100%;
+        }
+        .partner-badge-pill {
+          font-size: 10px;
+          padding: 3px 8px;
+        }
+        .worker-nav-right {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          width: 100%;
+          gap: 10px;
+          border-top: 1px solid var(--line);
+          padding-top: 10px;
+        }
+        .status-toggle-wrap {
+          font-size: 11px;
+          padding: 5px 10px;
+        }
+        .worker-profile-chip {
+          gap: 8px;
+        }
+        .worker-avatar-box {
+          width: 32px;
+          height: 32px;
+          font-size: 12px;
+        }
+        .worker-info-name {
+          max-width: 110px;
+        }
+        .btn-hub-logout,
+        .btn-worker-logout,
+        #btn-worker-logout {
+          padding: 6px 12px;
+          font-size: 11.5px;
+        }
+        .hub-container {
+          padding: 20px 16px 60px;
+        }
+        .hub-header {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 14px;
+          margin-bottom: 22px;
+        }
+        .hub-header h1 {
+          font-size: clamp(24px, 6.5vw, 32px) !important;
+          letter-spacing: -0.8px;
+        }
+        .hub-header a.button {
+          width: 100%;
+          justify-content: center;
+          box-sizing: border-box;
+          text-align: center;
+        }
+        .metrics-grid {
+          grid-template-columns: 1fr 1fr;
+          gap: 12px;
+          margin-bottom: 20px;
+        }
+        .metric-card {
+          padding: 16px 14px;
+          border-radius: 14px;
+        }
+        .metric-value {
+          font-size: 26px;
+        }
+        .payout-card-action {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 6px;
+        }
+        .btn-instant-payout {
+          width: 100%;
+          text-align: center;
+          justify-content: center;
+        }
+        .gig-panel {
+          padding: 18px 14px;
+          border-radius: 14px;
+        }
+        .panel-header {
+          margin-bottom: 14px;
+          padding-bottom: 10px;
+        }
+        .panel-header h2 {
+          font-size: 17px;
+        }
+        .gig-item {
+          padding: 14px 12px;
+          border-radius: 12px;
+        }
+        .gig-header-row {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 4px;
+        }
+        .gig-price {
+          font-size: 18px;
+        }
+        .gig-meta {
+          gap: 8px;
+          font-size: 12px;
+          margin-bottom: 10px;
+        }
+        .gig-actions {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 8px;
+          width: 100%;
+        }
+        .gig-actions button,
+        .gig-actions a,
+        .gig-actions div {
+          width: 100% !important;
+          box-sizing: border-box;
+          text-align: center;
+          justify-content: center;
+          display: flex;
+        }
+        .worker-counter-drawer {
+          padding: 12px;
+          border-radius: 10px;
+        }
+        .drawer-inputs-row {
+          grid-template-columns: 1fr !important;
+          gap: 8px;
+        }
+        .drawer-action-btns {
+          flex-direction: column-reverse;
+          align-items: stretch;
+          gap: 8px;
+        }
+        .drawer-action-btns button {
+          width: 100%;
+          justify-content: center;
+          text-align: center;
+        }
+        .approval-gate-card {
+          padding: 24px 16px;
+          border-radius: 16px;
+        }
+        .gate-title {
+          font-size: 24px;
+          letter-spacing: -0.6px;
+        }
+        .gate-desc {
+          font-size: 13.5px;
+        }
+        .application-summary-grid {
+          grid-template-columns: 1fr;
+          padding: 14px;
+          gap: 10px;
+        }
+        .explore-marketplace-card {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 14px;
+          padding: 16px;
+        }
+        .explore-marketplace-card a.button {
+          width: 100%;
+          justify-content: center;
+          box-sizing: border-box;
+          text-align: center;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .metrics-grid {
+          grid-template-columns: 1fr;
+        }
+        .worker-nav-right {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 8px;
+        }
+        .status-toggle-wrap {
+          justify-content: center;
+        }
+        .worker-profile-chip {
+          justify-content: space-between;
+          width: 100%;
+        }
+        .btn-hub-logout,
+        .btn-worker-logout,
+        #btn-worker-logout {
+          width: 100%;
+          justify-content: center;
+        }
+        .topbar-city {
+          display: inline-block;
+          max-width: 110px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+      }
     </style>
   </head>
   <body class="worker-hub-body">
     <!-- Utility Bar matching main site -->
     <div class="utility-bar">
-      <span>Hustle Verified Pro Network</span>
+      <span>SevaSathi Verified Pro Network</span>
       <span class="utility-dot">•</span>
       <span>Direct Payouts, Protected Escrow &amp; Two-Way Bargaining</span>
     </div>
@@ -723,9 +1022,9 @@
     <!-- Partner Topbar -->
     <header class="worker-topbar">
       <div class="brand-group">
-        <a class="brand" href="index.html" aria-label="Hustle home">
-          <span class="brand-mark">h</span>
-          <span>hustle</span>
+        <a class="brand" href="index.html" aria-label="SevaSathi home">
+          <img class="brand-mark" src="logo.png" alt="SevaSathi" />
+          <span><span style="color:#16a34a">Seva</span> <span style="color:var(--ink)">Sathi</span></span>
         </a>
         <span class="partner-badge-pill">GIG PARTNER HUB</span>
       </div>
@@ -740,7 +1039,7 @@
           <div style="display:flex; flex-direction:column;">
             <div style="display:flex; align-items:center; gap:6px;">
               <span id="topbar-name" style="font-size:13.5px; font-weight:700; color:var(--ink);">Worker Partner</span>
-              <span id="topbar-city" style="font-size:11.5px; color:#c2410c; background:#fff7ed; padding:1px 8px; border-radius:6px; font-weight:700; border:1px solid #ffedd5;">📍 Bengaluru</span>
+              <span id="topbar-city" style="font-size:11.5px; color: #15803d; background: #f0fdf4; padding:1px 8px; border-radius:6px; font-weight:700; border:1px solid #bbf7d0;">📍 Bengaluru</span>
             </div>
             <small id="topbar-trade" style="font-size:11.5px; color:var(--muted); font-weight:500;">Trade Specialist</small>
           </div>
@@ -755,7 +1054,7 @@
         <div class="gate-badge">⏳ APPLICATION UNDER REVIEW</div>
         <h2 class="gate-title">Partner ID &amp; Skill Verification <em>in Progress</em></h2>
         <p class="gate-desc">
-          Thank you for joining Hustle as a Gig Worker Partner! Our operations team manually verifies each partner’s credentials, ID documents, and trade skills to ensure safe, top-quality service for customers.
+          Thank you for joining SevaSathi as a Gig Worker Partner! Our operations team manually verifies each partner’s credentials, ID documents, and trade skills to ensure safe, top-quality service for customers.
         </p>
 
         <div class="application-summary-grid">
@@ -777,7 +1076,7 @@
           </div>
           <div class="app-field">
             <small>Verification Status</small>
-            <strong style="color:#d97706;">Pending Admin Approval</strong>
+            <strong style="color:#15803d;">Pending Admin Approval</strong>
           </div>
         </div>
 
@@ -786,7 +1085,7 @@
             <strong><span>🧭</span> Explore Marketplace</strong>
             <p>Browse on-demand trade requests, view service categories, and explore the platform as a guest while operations reviews your application.</p>
           </div>
-          <a href="index.html" class="button button-orange" style="display:inline-flex; align-items:center; gap:6px; padding:10px 20px; font-weight:700; border-radius:10px; text-decoration:none;">
+          <a href="index.html" class="button button-green" style="display:inline-flex; align-items:center; gap:6px; padding:10px 20px; font-weight:700; border-radius:10px; text-decoration:none;">
             <span>Explore as Guest</span> <b>→</b>
           </a>
         </div>
@@ -802,7 +1101,7 @@
             <p style="color:var(--muted); font-size:14.5px; margin:4px 0 0;">Here are your live customer appointments, counter-offers, and instant payouts.</p>
           </div>
           <div>
-            <a href="index.html" class="button button-orange" style="font-size:13px; padding:11px 18px; border-radius:10px;">View Customer Marketplace <b>↗</b></a>
+            <a href="index.html" class="button button-green" style="font-size:13px; padding:11px 18px; border-radius:10px;">View Customer Marketplace <b>↗</b></a>
           </div>
         </div>
 
@@ -838,7 +1137,7 @@
           <!-- Live Available Gigs -->
           <div class="gig-panel">
             <div class="panel-header">
-              <h2><span style="color:var(--orange);">⚡</span> Live Available Gigs Nearby</h2>
+              <h2><span style="color:var(--green);">⚡</span> Live Available Gigs Nearby</h2>
               <span class="panel-count" id="count-live-gigs">0 active</span>
             </div>
             <div id="live-gigs-container">
@@ -849,7 +1148,7 @@
           <!-- Past Completed Gigs -->
           <div class="gig-panel">
             <div class="panel-header">
-              <h2><span style="color:#b45309;">📜</span> Past Completed Gigs &amp; Reviews</h2>
+              <h2><span style="color:#15803d;">📜</span> Past Completed Gigs &amp; Reviews</h2>
               <span class="panel-count" id="count-past-gigs">0 completed</span>
             </div>
             <div id="past-gigs-container">
@@ -857,10 +1156,28 @@
             </div>
           </div>
         </div>
+
+        <!-- 3. Commercial Enterprise & Hotel Opportunities Panel -->
+        <div class="gig-panel" style="margin-top:28px; border:1.5px solid #86efac; background: linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%);">
+          <div class="panel-header" style="border-bottom-color:#bbf7d0;">
+            <h2>
+              <span style="color:#15803d;">🏢</span>
+              <span>Commercial &amp; Cooperative Opportunities (Hotels &amp; Enterprises)</span>
+            </h2>
+            <span class="panel-count" id="count-biz-gigs" style="background:#dcfce7; color:#15803d; border-color:#86efac;">0 available</span>
+          </div>
+          <p style="margin:0 0 16px; font-size:13.5px; color:#475569; line-height:1.5;">
+            Multi-day staff deployment requisitions from verified enterprise partners. Guaranteed daily rates held safely in SevaSathi Cooperative Escrow.
+          </p>
+          <div id="biz-opportunities-container">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
       </section>
     </main>
 
     <script src="session.js"></script>
+    <script src="i18n.js"></script>
     <script>
       const API_BASE = (function() {
         if (typeof window === 'undefined') return '/api/auth';
@@ -873,6 +1190,8 @@
         return '/api/auth';
       })();
 
+      const BIZ_API_BASE = API_BASE.replace(/\/auth$/, '/business');
+
       let isDashboardLoading = false;
 
       async function loadWorkerDashboard() {
@@ -880,8 +1199,8 @@
         isDashboardLoading = true;
 
         try {
-          const user = window.HustleSession ? HustleSession.getUser() : JSON.parse(localStorage.getItem('hustleCurrentUser') || 'null');
-          const token = window.HustleSession ? HustleSession.getToken() : localStorage.getItem('hustleToken');
+          const user = window.SevaSathiSession ? SevaSathiSession.getUser() : JSON.parse(localStorage.getItem('hustleCurrentUser') || 'null');
+          const token = window.SevaSathiSession ? SevaSathiSession.getToken() : localStorage.getItem('hustleToken');
 
           if (!user || !token) {
             window.location.href = 'auth.html?role=worker&mode=signin';
@@ -895,7 +1214,7 @@
 
           // Set Topbar info
           const firstName = (user.name || 'Pro').split(' ')[0];
-          const initials = window.HustleSession ? HustleSession.getInitials(user.name) : 'GP';
+          const initials = window.SevaSathiSession ? SevaSathiSession.getInitials(user.name) : 'GP';
           document.querySelector('#topbar-name').textContent = user.name || 'Worker Partner';
           document.querySelector('#topbar-avatar').textContent = initials;
           document.querySelector('#topbar-trade').textContent = user.skillCategory ? `${user.skillCategory} Pro` : 'Verified Pro';
@@ -1044,6 +1363,27 @@
                           <span>👤 ${g.customerName}</span>
                           <span>📅 ${g.scheduledDate} · ${g.scheduledTime}</span>
                         </div>
+                        ${g.status === 'accepted' ? `
+                          <div class="confirmed-customer-details" style="background:#ecfdf5; border:1.5px solid #86efac; border-radius:10px; padding:10px 14px; margin:8px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                            <div>
+                              <div style="font-size:12.5px; color:#065f46; font-weight:700;">
+                                📍 Exact Service Address: <strong style="color:#047857;">${g.customerLocation || g.locality}</strong>
+                              </div>
+                              <div style="font-size:12.5px; color:#065f46; font-weight:700; margin-top:3px;">
+                                📞 Customer Contact: <a href="tel:${g.customerPhone || ''}" style="color:#059669; font-weight:800; text-decoration:none;">${g.customerPhone || 'Verified Customer'}</a>
+                              </div>
+                            </div>
+                            ${g.customerPhone ? `
+                              <a href="tel:${g.customerPhone}" style="background:#16a34a; color:#fff; padding:6px 14px; border-radius:999px; font-size:12px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:4px; box-shadow:0 2px 6px rgba(22,163,74,0.25);">
+                                📞 Call Customer
+                              </a>
+                            ` : ''}
+                          </div>
+                        ` : `
+                          <div style="font-size:11.5px; color:#64748b; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:8px; padding:6px 10px; margin:6px 0;">
+                            🔒 Customer phone number and exact street address unlock upon booking confirmation.
+                          </div>
+                        `}
                       </div>
                       <div class="gig-price">${g.budget}</div>
                     </div>
@@ -1056,7 +1396,7 @@
 
                     ${customerCounter ? `
                       <div class="customer-counter-banner">
-                        <strong style="color:#b45309; font-size:12.5px; display:block; margin-bottom:2px;">💬 Customer Proposed Counter-Terms:</strong>
+                        <strong style="color:#15803d; font-size:12.5px; display:block; margin-bottom:2px;">💬 Customer Proposed Counter-Terms:</strong>
                         <span style="color:var(--ink); font-size:14px; font-weight:800;">${lastNeg.proposedPrice ? '₹' + lastNeg.proposedPrice : g.budget} ${lastNeg.proposedTime ? '· at ' + lastNeg.proposedTime : ''}</span>
                         ${lastNeg.note ? `<p style="color:#575249; font-size:12px; margin:4px 0 0 0; font-style:italic;">“${lastNeg.note}”</p>` : ''}
                       </div>
@@ -1072,16 +1412,16 @@
                       ${g.status === 'accepted' ? `
                         ${isPaid ? `
                           <div style="background:#ecfdf5; border:1px solid #a7f3d0; border-radius:10px; padding:10px 14px; margin-bottom:8px; width:100%; box-sizing:border-box;">
-                            <strong style="color:#065f46; font-size:13px; display:block;">💳 Payment Verified: ${g.budget} Secured in Hustle Escrow</strong>
+                            <strong style="color:#065f46; font-size:13px; display:block;">💳 Payment Verified: ${g.budget} Secured in SevaSathi Escrow</strong>
                             <span style="color:#047857; font-size:11.5px;">Customer has completed payment. Once you finish the service, mark it complete to release funds into your earnings!</span>
                           </div>
                           <button type="button" class="btn-complete-gig" data-id="${g.id}" data-action="complete" style="background:#059669; color:#fff; border:none; padding:10px 22px; border-radius:999px; font-weight:700; cursor:pointer; box-shadow:0 4px 12px rgba(5,150,105,0.25);">
                             ✓ Mark Work Completed (Release ${g.budget})
                           </button>
                         ` : `
-                          <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:10px; padding:10px 14px; margin-bottom:8px; width:100%; box-sizing:border-box;">
-                            <strong style="color:#92400e; font-size:13px; display:block;">⏳ Awaiting Customer Payment (${g.budget})</strong>
-                            <span style="color:#b45309; font-size:11.5px;">Task completion unlocks automatically once the customer completes their payment.</span>
+                          <div style="background:#f0fdf4; border:1px solid #86efac; border-radius:10px; padding:10px 14px; margin-bottom:8px; width:100%; box-sizing:border-box;">
+                            <strong style="color:#15803d; font-size:13px; display:block;">⏳ Awaiting Customer Payment (${g.budget})</strong>
+                            <span style="color:#166534; font-size:11.5px;">Task completion unlocks automatically once the customer completes their payment.</span>
                           </div>
                           <button type="button" class="btn-complete-gig" disabled style="opacity:0.5; cursor:not-allowed; background:#f1f5f9; color:#94a3b8; border:1px solid #cbd5e1; padding:10px 20px; border-radius:999px; font-weight:700;" title="Customer must complete payment before you can mark this task complete">
                             🔒 Mark as Complete (Awaiting Customer Payment)
@@ -1118,7 +1458,7 @@
                     <!-- Inline Drawer for Bargaining -->
                     ${canWorkerAdjust ? `
                       <div class="worker-counter-drawer" id="drawer-${g.id}" style="display:none;">
-                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                        <div class="drawer-inputs-row">
                           <div>
                             <label style="font-size:11.5px; font-weight:700; color:var(--muted); display:block; margin-bottom:4px;">Your Counter Price (₹)</label>
                             <input type="number" id="drawer-price-${g.id}" min="1" step="any" value="${lastNeg?.proposedPrice || g.budget.replace(/[^0-9]/g,'')}" placeholder="Amount in ₹" />
@@ -1181,7 +1521,7 @@
                               ✓ Dispute Settled in Your Favor (Client Rating Dismissed)
                             </span>
                           ` : (g.hasReview ? `
-                            <span style="color:#d97706; font-weight:700;"><span class="rating-stars">${starStr}</span> ${displayRating} ★</span>
+                            <span style="color:#16a34a; font-weight:700;"><span class="rating-stars">${starStr}</span> ${displayRating} ★</span>
                           ` : `
                             <span style="color:#64748b; font-size:12px; font-weight:600;">⏳ Rating pending from client</span>
                           `)}
@@ -1197,7 +1537,7 @@
                     <!-- Worker Dispute Ticket Section -->
                     <div style="margin-top:12px; border-top:1px dashed var(--line); padding-top:10px;">
                       ${gigTicket ? `
-                        <div style="background:#ffffff; border:1.5px solid ${gigTicket.status === 'resolved' ? '#86efac' : (gigTicket.status === 'dismissed' ? '#cbd5e1' : '#fcd34d')}; border-radius:10px; padding:12px 14px;">
+                        <div style="background:#ffffff; border:1.5px solid ${gigTicket.status === 'resolved' ? '#86efac' : (gigTicket.status === 'dismissed' ? '#cbd5e1' : '#86efac')}; border-radius:10px; padding:12px 14px;">
                           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
                             <span style="font-weight:700; font-size:12.5px; color:#1e293b;">🎫 Support Ticket #${gigTicket.ticketId}</span>
                             <span class="ticket-badge-pill ${gigTicket.status}">
@@ -1214,7 +1554,7 @@
                             <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px; padding:8px 10px; font-size:11.5px; color:#166534; margin-top:6px;">
                               <strong style="display:block; margin-bottom:2px;">🛡️ Admin Settlement (${gigTicket.resolutionAction || 'Resolved'}):</strong>
                               <div>${gigTicket.adminNotes || 'Dispute reviewed and settled according to platform standards.'}</div>
-                              <small style="display:block; margin-top:4px; color:#15803d; font-size:10.5px;">Settled by ${gigTicket.settledBy || 'Hustle Operations Staff'}</small>
+                              <small style="display:block; margin-top:4px; color:#15803d; font-size:10.5px;">Settled by ${gigTicket.settledBy || 'SevaSathi Operations Staff'}</small>
                             </div>
                           ` : ''}
                         </div>
@@ -1225,16 +1565,16 @@
                             <span>⚠️</span> Report Customer / Raise Dispute
                           </button>
                         </div>
-                        <div class="worker-dispute-drawer" id="worker-dispute-drawer-${g.id}" style="display:none; background:#fff7ed; border:1.5px solid #fdba74; border-radius:10px; padding:12px 14px; margin-top:10px;">
-                          <div style="font-size:12.5px; font-weight:700; color:#9a3412; margin-bottom:4px; display:flex; align-items:center; gap:6px;">
+                        <div class="worker-dispute-drawer" id="worker-dispute-drawer-${g.id}" style="display:none; background: #f0fdf4; border:1.5px solid #86efac; border-radius:10px; padding:12px 14px; margin-top:10px;">
+                          <div style="font-size:12.5px; font-weight:700; color: #15803d; margin-bottom:4px; display:flex; align-items:center; gap:6px;">
                             <span>🛡️</span> File Dispute Against Customer (${g.customerName})
                           </div>
-                          <p style="font-size:11.5px; color:#78350f; margin:0 0 10px 0; line-height:1.4;">
-                            Notice an issue or false claim? File an official dispute. Hustle Operations staff will inspect the facts and settle escrow accordingly.
+                          <p style="font-size:11.5px; color:#166534; margin:0 0 10px 0; line-height:1.4;">
+                            Notice an issue or false claim? File an official dispute. SevaSathi Operations staff will inspect the facts and settle escrow accordingly.
                           </p>
-                          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:8px;">
+                          <div class="drawer-inputs-row" style="margin-bottom:8px;">
                             <div>
-                              <label style="font-size:11px; font-weight:700; color:#431407; display:block; margin-bottom:3px;">Issue Category</label>
+                              <label style="font-size:11px; font-weight:700; color:#14532d; display:block; margin-bottom:3px;">Issue Category</label>
                               <select id="worker-dispute-category-${g.id}" style="width:100%; box-sizing:border-box; padding:6px 8px; border:1px solid #cbd5e1; border-radius:6px; font-size:11.5px; background:#fff;">
                                 <option value="Scope Creep / Demanded Extra Unpaid Work">Scope Creep / Extra Unpaid Work</option>
                                 <option value="Rude / Abusive Behavior">Rude / Abusive Behavior</option>
@@ -1245,7 +1585,7 @@
                               </select>
                             </div>
                             <div>
-                              <label style="font-size:11px; font-weight:700; color:#431407; display:block; margin-bottom:3px;">Desired Settlement</label>
+                              <label style="font-size:11px; font-weight:700; color:#14532d; display:block; margin-bottom:3px;">Desired Settlement</label>
                               <select id="worker-dispute-resolution-${g.id}" style="width:100%; box-sizing:border-box; padding:6px 8px; border:1px solid #cbd5e1; border-radius:6px; font-size:11.5px; background:#fff;">
                                 <option value="Release Full Escrow to Worker">Release Full Escrow to Worker</option>
                                 <option value="Customer Account Warning">Customer Account Warning</option>
@@ -1254,7 +1594,7 @@
                             </div>
                           </div>
                           <div style="margin-bottom:8px;">
-                            <label style="font-size:11px; font-weight:700; color:#431407; display:block; margin-bottom:3px;">Detailed Explanation</label>
+                            <label style="font-size:11px; font-weight:700; color:#14532d; display:block; margin-bottom:3px;">Detailed Explanation</label>
                             <textarea id="worker-dispute-desc-${g.id}" rows="2" placeholder="Detail what occurred with the client..." style="width:100%; box-sizing:border-box; padding:6px 8px; border:1px solid #cbd5e1; border-radius:6px; font-size:11.5px; font-family:inherit;"></textarea>
                           </div>
                           <div style="display:flex; justify-content:flex-end; gap:6px;">
@@ -1268,11 +1608,123 @@
                 `;
               }).join('');
             }
+
+            // Load Commercial / Business Opportunities for this Worker
+            await loadWorkerBusinessOpportunities(token);
+
+            if (window.SevaSathiI18n && typeof window.SevaSathiI18n.applyTranslations === 'function') {
+              window.SevaSathiI18n.applyTranslations();
+            }
           }
         } finally {
           isDashboardLoading = false;
         }
       }
+
+      // Load Commercial / Enterprise Opportunities
+      async function loadWorkerBusinessOpportunities(token) {
+        const container = document.getElementById('biz-opportunities-container');
+        const countEl = document.getElementById('count-biz-gigs');
+        if (!container) return;
+
+        try {
+          const res = await fetch(`${BIZ_API_BASE}/worker/opportunities`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (!res.ok) return;
+          const data = await res.json();
+          const opps = data.opportunities || [];
+          if (countEl) countEl.textContent = `${opps.length} available`;
+
+          if (opps.length === 0) {
+            container.innerHTML = `
+              <div style="text-align:center; padding: 26px 18px; border: 1.5px dashed #bbf7d0; border-radius: 14px; background: #ffffff;">
+                <span style="font-size:26px; display:block; margin-bottom:6px;">🏢</span>
+                <strong style="color:var(--ink); font-size:14.5px; display:block; margin-bottom:4px;">No Open Commercial Requisitions in Your Trade</strong>
+                <p style="color:var(--muted); font-size:13px; max-width:480px; margin:0 auto; line-height:1.45;">
+                  When hotels or enterprises post multi-worker requisitions matching your trade category, you will receive invitation alerts here with guaranteed daily rates!
+                </p>
+              </div>
+            `;
+            return;
+          }
+
+          container.innerHTML = opps.map(op => {
+            return `
+              <div class="gig-item" style="border-left: 4px solid var(--primary-green, #16a34a); background: #ffffff; margin-bottom:14px;">
+                <div class="gig-header-row">
+                  <div>
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                      <h3 class="gig-title" style="margin:0; font-size:16px;">🏢 ${op.businessName}</h3>
+                      <span class="status-pill open" style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; font-size:11px; padding:2px 8px; border-radius:999px;">
+                        ${op.serviceCategory} · ${op.workersNeeded} Pro(s) Needed
+                      </span>
+                    </div>
+                    <div class="gig-meta" style="font-size:12px; color:#64748b; margin-bottom:8px; gap:12px;">
+                      <span>📍 <strong>${op.location}, ${op.city}</strong></span>
+                      <span>📅 <strong>${op.startDate} to ${op.endDate}</strong></span>
+                      <span>⏰ ${op.schedule}</span>
+                    </div>
+                  </div>
+                  <div style="text-align:right;">
+                    <div class="gig-price" style="color:#166534; font-size:18px;">₹${op.ratePerWorker}</div>
+                    <small style="color:var(--muted); font-size:11px; display:block;">per pro / day guaranteed</small>
+                  </div>
+                </div>
+
+                ${op.additionalRequirements ? `
+                  <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:8px 12px; font-size:12px; color:#475569; margin-bottom:12px;">
+                    <strong>Enterprise Notes:</strong> ${op.additionalRequirements}
+                  </div>
+                ` : ''}
+
+                <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
+                  ${op.hasAccepted ? `
+                    <span style="display:inline-flex; align-items:center; gap:6px; background:#dcfce7; color:#15803d; font-weight:700; font-size:12px; padding:6px 14px; border-radius:999px; border:1px solid #86efac;">
+                      ✓ Opportunity Accepted &amp; Scheduled
+                    </span>
+                  ` : `
+                    <button type="button" class="btn-biz-decline" onclick="respondToBizOpportunity('${op.requirementId}', 'decline')" style="background:#f1f5f9; border:1px solid #cbd5e1; color:#475569; padding:7px 16px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer;">
+                      ✕ Decline
+                    </button>
+                    <button type="button" class="btn-biz-accept" onclick="respondToBizOpportunity('${op.requirementId}', 'accept')" style="background:linear-gradient(135deg, #16a34a, #15803d); border:none; color:#fff; padding:7px 18px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; box-shadow:0 2px 8px rgba(22,163,74,0.3);">
+                      ✓ Accept Commercial Gig (₹${op.ratePerWorker}/day)
+                    </button>
+                  `}
+                </div>
+              </div>
+            `;
+          }).join('');
+        } catch (err) {
+          console.error('Error loading business opportunities:', err);
+        }
+      }
+
+      async function respondToBizOpportunity(reqId, action) {
+        const token = window.SevaSathiSession ? SevaSathiSession.getToken() : localStorage.getItem('hustleToken');
+        if (!token) return;
+
+        try {
+          const res = await fetch(`${BIZ_API_BASE}/worker/opportunities/${reqId}/respond`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ action })
+          });
+          const data = await res.json();
+          if (data.success) {
+            showWorkerToast(data.message, 'success');
+            await loadWorkerBusinessOpportunities(token);
+          } else {
+            showWorkerToast(data.message || 'Failed to update response', 'error');
+          }
+        } catch (err) {
+          showWorkerToast(err.message || 'Network error', 'error');
+        }
+      }
+      window.respondToBizOpportunity = respondToBizOpportunity;
 
       // Toast notification helper
       function showWorkerToast(msg, type = 'success') {
@@ -1350,7 +1802,7 @@
       }
 
       async function handleWorkerBookingAction(bookingId, action, extra = {}, triggerBtn = null) {
-        const token = window.HustleSession ? HustleSession.getToken() : localStorage.getItem('hustleToken');
+        const token = window.SevaSathiSession ? SevaSathiSession.getToken() : localStorage.getItem('hustleToken');
         if (!token) {
           showWorkerToast('Session expired. Please sign in again.', 'error');
           window.location.href = 'auth.html?role=worker&mode=signin';
@@ -1455,7 +1907,7 @@
           btn.textContent = 'Submitting...';
 
           try {
-            const token = window.HustleSession ? HustleSession.getToken() : localStorage.getItem('hustleToken');
+            const token = window.SevaSathiSession ? SevaSathiSession.getToken() : localStorage.getItem('hustleToken');
             const res = await fetch(`${API_BASE}/tickets`, {
               method: 'POST',
               headers: {
@@ -1489,8 +1941,8 @@
 
       // Logout handler
       document.querySelector('#btn-worker-logout')?.addEventListener('click', () => {
-        if (window.HustleSession) {
-          HustleSession.logOut('index.html');
+        if (window.SevaSathiSession) {
+          SevaSathiSession.logOut('index.html');
         } else {
           localStorage.removeItem('hustleToken');
           localStorage.removeItem('hustleCurrentUser');

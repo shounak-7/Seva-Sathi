@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#16a34a" />
+    <title>Enterprise Business Portal — SevaSathi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&display=swap"
+      rel="stylesheet"
+    />
+    <base href="/" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="stylesheet" href="/business-dashboard.css" />
+    <link rel="stylesheet" href="/i18n.css" />
+  </head>
+  <body class="biz-body">
+    <!-- Utility Bar -->
+    <div class="biz-utility-bar">
+      <div>
+        <span class="badge">COOPERATIVE ENTERPRISE</span>
+        <span style="margin-left:8px;">Fair Workforce Allocation · Multi-Worker Staffing · Secured Escrow Contracts</span>
+      </div>
+      <div>
+        <span>Helpdesk: <strong style="color:#86EFAC;">enterprise@sevasathi.in</strong></span>
+      </div>
+    </div>
+
+    <!-- Topbar -->
+    <header class="biz-topbar">
+      <a class="biz-brand" href="/index.html" aria-label="SevaSathi Home">
+        <div class="biz-brand-logo"><img src="/logo.png" alt="SevaSathi" /></div>
+        <div class="biz-brand-text">
+          <span class="biz-brand-title"><span style="color:#16a34a">Seva</span> Sathi</span>
+          <span class="biz-brand-sub">Enterprise Workforce</span>
+        </div>
+      </a>
+
+      <div class="biz-nav-actions">
+        <span class="biz-pill-enterprise">🏢 Commercial Partner</span>
+        <div class="biz-profile-chip">
+          <div class="biz-avatar" id="nav-avatar">GH</div>
+          <div class="biz-user-details">
+            <span class="biz-user-org" id="nav-org-name">Grand Heritage Hotel</span>
+            <span class="biz-user-contact" id="nav-contact-person">Operations Manager</span>
+          </div>
+        </div>
+        <button type="button" class="btn-biz-logout" id="btn-biz-logout">Sign Out</button>
+      </div>
+    </header>
+
+    <!-- Main Shell -->
+    <div class="biz-shell">
+      <!-- Sidebar Navigation -->
+      <aside class="biz-sidebar">
+        <div class="biz-sidebar-card">
+          <button type="button" class="biz-nav-item active" data-tab="overview">
+            <span class="icon">📊</span>
+            <span>Dashboard Overview</span>
+          </button>
+          <button type="button" class="biz-nav-item" data-tab="post-requirement">
+            <span class="icon">➕</span>
+            <span>Post Requirement</span>
+          </button>
+          <button type="button" class="biz-nav-item" data-tab="requirements">
+            <span class="icon">📋</span>
+            <span>My Requirements</span>
+            <span class="badge-count" id="badge-req-count">0</span>
+          </button>
+          <button type="button" class="biz-nav-item" data-tab="workforce">
+            <span class="icon">👥</span>
+            <span>Workforce Roster</span>
+            <span class="badge-count" id="badge-workforce-count">0</span>
+          </button>
+          <button type="button" class="biz-nav-item" data-tab="contracts">
+            <span class="icon">📑</span>
+            <span>Active Contracts</span>
+            <span class="badge-count" id="badge-contract-count">0</span>
+          </button>
+          <button type="button" class="biz-nav-item" data-tab="invoices">
+            <span class="icon">💳</span>
+            <span>Invoices &amp; Escrow</span>
+            <span class="badge-count" id="badge-invoice-count">0</span>
+          </button>
+          <button type="button" class="biz-nav-item" data-tab="profile">
+            <span class="icon">⚙️</span>
+            <span>Organization Profile</span>
+          </button>
+        </div>
+
+        <!-- Cooperative Fairness Algorithm Callout -->
+        <div class="biz-coop-callout">
+          <h4><span>⚖️</span> Fair Allocation System</h4>
+          <p>SevaSathi uses a balanced scoring model to allocate gig workers fairly without monopolization:</p>
+          <ul>
+            <li><strong>Skill Match:</strong> 40%</li>
+            <li><strong>Availability:</strong> 25%</li>
+            <li><strong>Proximity:</strong> 15%</li>
+            <li><strong>Fair Workload (Rotation):</strong> 10%</li>
+            <li><strong>Rating &amp; Reliability:</strong> 10%</li>
+          </ul>
+        </div>
+      </aside>
+
+      <!-- Main Content Area -->
+      <main class="biz-main">
+        <!-- TAB 1: OVERVIEW -->
+        <section id="tab-overview" class="biz-tab-content">
+          <div class="biz-page-header">
+            <div>
+              <h1 class="biz-page-title">Enterprise Workforce Dashboard</h1>
+              <p class="biz-page-desc" id="welcome-subheading">Manage multi-worker deployments, team rosters, and consolidated billing.</p>
+            </div>
+            <div>
+              <button type="button" class="biz-btn-primary" id="btn-quick-post-req">
+                <span>➕ Post Workforce Requirement</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- KPI Cards -->
+          <div class="biz-kpi-grid">
+            <div class="biz-kpi-card accent-green">
+              <span class="biz-kpi-label">Active Requirements</span>
+              <span class="biz-kpi-value" id="kpi-active-reqs">0</span>
+              <span class="biz-kpi-sub">Commercial requisitions</span>
+            </div>
+            <div class="biz-kpi-card">
+              <span class="biz-kpi-label">Pending Requests</span>
+              <span class="biz-kpi-value" id="kpi-pending-reqs">0</span>
+              <span class="biz-kpi-sub">Matching candidates</span>
+            </div>
+            <div class="biz-kpi-card accent-green">
+              <span class="biz-kpi-label">Assigned Workers</span>
+              <span class="biz-kpi-value" id="kpi-assigned-workers">0</span>
+              <span class="biz-kpi-sub">Deployed on active contracts</span>
+            </div>
+            <div class="biz-kpi-card">
+              <span class="biz-kpi-label">Active Contracts</span>
+              <span class="biz-kpi-value" id="kpi-active-contracts">0</span>
+              <span class="biz-kpi-sub">Live service agreements</span>
+            </div>
+            <div class="biz-kpi-card accent-green">
+              <span class="biz-kpi-label">Total Spending</span>
+              <span class="biz-kpi-value" id="kpi-total-spending">₹0</span>
+              <span class="biz-kpi-sub">Paid through escrow</span>
+            </div>
+            <div class="biz-kpi-card">
+              <span class="biz-kpi-label">Completed Deployments</span>
+              <span class="biz-kpi-value" id="kpi-completed-jobs">0</span>
+              <span class="biz-kpi-sub">Fulfilled contracts</span>
+            </div>
+          </div>
+
+          <!-- Active Requirements Quick Table -->
+          <div class="biz-panel">
+            <div class="biz-panel-header">
+              <h3><span>📋</span> Recent Requirements</h3>
+              <button type="button" class="biz-btn-secondary" style="font-size:12px; padding:6px 12px;" onclick="switchTab('requirements')">View All</button>
+            </div>
+            <div class="biz-table-wrap">
+              <table class="biz-table">
+                <thead>
+                  <tr>
+                    <th>Req ID</th>
+                    <th>Trade Category</th>
+                    <th>Workers Needed</th>
+                    <th>Duration</th>
+                    <th>Rate / Worker</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="overview-recent-reqs-tbody">
+                  <tr><td colspan="7" style="text-align:center; color:var(--muted);">Loading requirements...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Active Contracts Quick Table -->
+          <div class="biz-panel">
+            <div class="biz-panel-header">
+              <h3><span>📑</span> Active Contracts Overview</h3>
+              <button type="button" class="biz-btn-secondary" style="font-size:12px; padding:6px 12px;" onclick="switchTab('contracts')">View All</button>
+            </div>
+            <div class="biz-table-wrap">
+              <table class="biz-table">
+                <thead>
+                  <tr>
+                    <th>Contract ID</th>
+                    <th>Department</th>
+                    <th>Team Size</th>
+                    <th>Duration</th>
+                    <th>Total Budget</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="overview-recent-contracts-tbody">
+                  <tr><td colspan="6" style="text-align:center; color:var(--muted);">Loading contracts...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 2: POST REQUIREMENT -->
+        <section id="tab-post-requirement" class="biz-tab-content" style="display:none;">
+          <div class="biz-page-header">
+            <div>
+              <h1 class="biz-page-title">Post Workforce Requirement</h1>
+              <p class="biz-page-desc">Submit a multi-worker staffing request. Our cooperative engine matches verified trade professionals fairly.</p>
+            </div>
+          </div>
+
+          <div class="biz-panel">
+            <form id="form-post-requirement">
+              <div class="biz-form-grid">
+                <div class="biz-form-group">
+                  <label class="biz-form-label" for="req-category">Service Category <span class="req">*</span></label>
+                  <select id="req-category" class="biz-select" required>
+                    <option value="">Select trade category</option>
+                    <option value="Cleaning & Housekeeping">Cleaning &amp; Housekeeping</option>
+                    <option value="Electrical & Maintenance">Electrical &amp; Maintenance</option>
+                    <option value="Plumbing & Sanitation">Plumbing &amp; Sanitation</option>
+                    <option value="Security & Guarding">Security &amp; Guarding</option>
+                    <option value="Painting & Renovation">Painting &amp; Renovation</option>
+                    <option value="Event & Hospitality Staff">Event &amp; Hospitality Staff</option>
+                    <option value="Logistics & Heavy Lifting">Logistics &amp; Heavy Lifting</option>
+                    <option value="General Cooperative Labor">General Cooperative Labor</option>
+                  </select>
+                </div>
+
+                <div class="biz-form-group">
+                  <label class="biz-form-label" for="req-workers-needed">Workers Needed <span class="req">*</span></label>
+                  <input type="number" id="req-workers-needed" class="biz-input" min="1" max="50" value="3" required />
+                  <span class="biz-hint">e.g. 3 cleaners or 1 electrician</span>
+                </div>
+
+                <div class="biz-form-group col-span-2">
+                  <label class="biz-form-label" for="req-skills">Required Skills &amp; Qualifications</label>
+                  <input type="text" id="req-skills" class="biz-input" placeholder="e.g. Industrial Floor Polishing, High-Voltage Wiring, Restroom Sanitation" />
+                </div>
+
+                <div class="biz-form-group">
+                  <label class="biz-form-label" for="req-location">Deployment Address / Facility <span class="req">*</span></label>
+                  <input type="text" id="req-location" class="biz-input" placeholder="e.g. Grand Heritage Hotel, Salt Lake Sector V" required />
+                </div>
+
+                <div class="biz-form-group">
+                  <label class="biz-form-label" for="req-city">City <span class="req">*</span></label>
+                  <select id="req-city" class="biz-select" required>
+                    <option value="Kolkata">Kolkata</option>
+                    <option value="Bengaluru">Bengaluru</option>
+                    <option value="Mumbai">Mumbai</option>
+                    <option value="Delhi NCR">Delhi NCR</option>
+                    <option value="Hyderabad">Hyderabad</option>
+                    <option value="Pune">Pune</option>
+                    <option value="Chennai">Chennai</option>
+                  </select>
+                </div>
+
+                <div class="biz-form-group">
+                  <label class="biz-form-label" for="req-start-date">Start Date <span class="req">*</span></label>
+                  <input type="date" id="req-start-date" class="biz-input" required />
+                </div>
+
+                <div class="biz-form-group">
+                  <label class="biz-form-label" for="req-end-date">End Date <span class="req">*</span></label>
+                  <input type="date" id="req-end-date" class="biz-input" required />
+                </div>
+
+                <div class="biz-form-group">
+                  <label class="biz-form-label" for="req-schedule">Shift / Daily Schedule <span class="req">*</span></label>
+                  <input type="text" id="req-schedule" class="biz-input" placeholder="e.g. 08:00 AM - 04:00 PM (8 Hours)" value="08:00 AM - 04:00 PM (8 Hours)" required />
+                </div>
+
+                <div class="biz-form-group">
+                  <label class="biz-form-label" for="req-rate">Estimated Daily Rate per Worker (₹) <span class="req">*</span></label>
+                  <input type="number" id="req-rate" class="biz-input" min="300" max="10000" step="50" value="850" required />
+                  <span class="biz-hint">Cooperative minimum wage standards apply</span>
+                </div>
+
+                <div class="biz-form-group col-span-2">
+                  <label class="biz-form-label" style="display:flex; align-items:center; gap:8px;">
+                    <input type="checkbox" id="req-is-recurring" />
+                    <span>Recurring Workforce Contract (e.g. Monthly / Weekly staffing)</span>
+                  </label>
+                </div>
+
+                <div class="biz-form-group col-span-2" id="group-recurrence" style="display:none;">
+                  <label class="biz-form-label" for="req-recurrence-freq">Recurrence Frequency</label>
+                  <select id="req-recurrence-freq" class="biz-select">
+                    <option value="weekly">Weekly Rotation</option>
+                    <option value="monthly">Monthly Recurring Roster</option>
+                    <option value="quarterly">Quarterly Retainer</option>
+                  </select>
+                </div>
+
+                <div class="biz-form-group col-span-2">
+                  <label class="biz-form-label" for="req-notes">Additional Instructions &amp; Safety Equipment</label>
+                  <textarea id="req-notes" class="biz-textarea" rows="3" placeholder="Specify any uniform requirements, security clearance, entry gate pass, or safety gear needed on site."></textarea>
+                </div>
+              </div>
+
+              <!-- Live Cost Estimation Preview -->
+              <div class="biz-cost-calculator-card" id="post-cost-preview">
+                <div class="biz-calc-metric">
+                  <small>Requested Squad</small>
+                  <strong id="calc-squad-text">3 Pros</strong>
+                </div>
+                <div class="biz-calc-metric">
+                  <small>Duration</small>
+                  <strong id="calc-duration-text">7 Days</strong>
+                </div>
+                <div class="biz-calc-metric">
+                  <small>Labor Subtotal</small>
+                  <strong id="calc-subtotal-text">₹17,850</strong>
+                </div>
+                <div class="biz-calc-metric">
+                  <small>Coop Reserve (5%)</small>
+                  <strong id="calc-fee-text">₹893</strong>
+                </div>
+                <div class="biz-calc-metric biz-calc-total">
+                  <small>Total Estimated Budget</small>
+                  <strong id="calc-total-text">₹18,743</strong>
+                </div>
+              </div>
+
+              <div style="margin-top:24px; display:flex; justify-content:flex-end; gap:12px;">
+                <button type="reset" class="biz-btn-secondary">Reset Form</button>
+                <button type="submit" class="biz-btn-primary" id="btn-submit-requirement">
+                  <span>🚀 Submit &amp; Run Fair Matcher</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <!-- TAB 3: MY REQUIREMENTS -->
+        <section id="tab-requirements" class="biz-tab-content" style="display:none;">
+          <div class="biz-page-header">
+            <div>
+              <h1 class="biz-page-title">Workforce Requisitions</h1>
+              <p class="biz-page-desc">Track all commercial requisitions, view algorithmic worker matches, and confirm team allocations.</p>
+            </div>
+            <div>
+              <button type="button" class="biz-btn-primary" onclick="switchTab('post-requirement')">
+                <span>➕ New Requisition</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="biz-panel">
+            <div class="biz-table-wrap">
+              <table class="biz-table">
+                <thead>
+                  <tr>
+                    <th>Req ID</th>
+                    <th>Category</th>
+                    <th>Workers</th>
+                    <th>Dates</th>
+                    <th>Daily Rate</th>
+                    <th>Status</th>
+                    <th>Allocated Team</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="requirements-tbody">
+                  <tr><td colspan="8" style="text-align:center; color:var(--muted);">Loading requirements...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 4: WORKFORCE ROSTER -->
+        <section id="tab-workforce" class="biz-tab-content" style="display:none;">
+          <div class="biz-page-header">
+            <div>
+              <h1 class="biz-page-title">Workforce Department Roster</h1>
+              <p class="biz-page-desc">View currently deployed trade workers grouped by department/service, shifts, and attendance status.</p>
+            </div>
+          </div>
+
+          <div id="workforce-teams-container">
+            <!-- Dynamic Teams Grouped by Category -->
+            <div class="biz-panel" style="text-align:center; color:var(--muted);">
+              Loading active department teams...
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 5: CONTRACTS -->
+        <section id="tab-contracts" class="biz-tab-content" style="display:none;">
+          <div class="biz-page-header">
+            <div>
+              <h1 class="biz-page-title">Commercial Contracts</h1>
+              <p class="biz-page-desc">Official service agreements between your organization and the SevaSathi Cooperative Workforce.</p>
+            </div>
+          </div>
+
+          <div class="biz-panel">
+            <div class="biz-table-wrap">
+              <table class="biz-table">
+                <thead>
+                  <tr>
+                    <th>Contract ID</th>
+                    <th>Service Category</th>
+                    <th>Workers</th>
+                    <th>Duration &amp; Days</th>
+                    <th>Daily Rate</th>
+                    <th>Total Contract Value</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="contracts-tbody">
+                  <tr><td colspan="8" style="text-align:center; color:var(--muted);">Loading contracts...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 6: INVOICES & ESCROW -->
+        <section id="tab-invoices" class="biz-tab-content" style="display:none;">
+          <div class="biz-page-header">
+            <div>
+              <h1 class="biz-page-title">Invoices &amp; Escrow Payments</h1>
+              <p class="biz-page-desc">Consolidated multi-worker billing. Funds are secured in escrow and disbursed directly to workers upon shift sign-off.</p>
+            </div>
+          </div>
+
+          <div id="invoices-list-container">
+            <!-- Dynamic Invoices -->
+            <div class="biz-panel" style="text-align:center; color:var(--muted);">
+              Loading consolidated invoices...
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 7: PROFILE -->
+        <section id="tab-profile" class="biz-tab-content" style="display:none;">
+          <div class="biz-page-header">
+            <div>
+              <h1 class="biz-page-title">Organization Profile &amp; Compliance</h1>
+              <p class="biz-page-desc">Verified commercial registration, GSTIN compliance, and billing contacts.</p>
+            </div>
+          </div>
+
+          <div class="biz-panel">
+            <div class="biz-form-grid">
+              <div class="biz-form-group">
+                <label class="biz-form-label">Business / Organization Name</label>
+                <input type="text" id="prof-biz-name" class="biz-input" readonly />
+              </div>
+              <div class="biz-form-group">
+                <label class="biz-form-label">Business Type</label>
+                <input type="text" id="prof-biz-type" class="biz-input" />
+              </div>
+              <div class="biz-form-group">
+                <label class="biz-form-label">Contact Person</label>
+                <input type="text" id="prof-contact" class="biz-input" />
+              </div>
+              <div class="biz-form-group">
+                <label class="biz-form-label">Email Address</label>
+                <input type="text" id="prof-email" class="biz-input" readonly style="background:#F8FAFC;" />
+              </div>
+              <div class="biz-form-group">
+                <label class="biz-form-label">Phone Number</label>
+                <input type="text" id="prof-phone" class="biz-input" />
+              </div>
+              <div class="biz-form-group">
+                <label class="biz-form-label">Facility / HQ Address</label>
+                <input type="text" id="prof-address" class="biz-input" />
+              </div>
+              <div class="biz-form-group">
+                <label class="biz-form-label">GSTIN</label>
+                <input type="text" id="prof-gstin" class="biz-input" />
+              </div>
+              <div class="biz-form-group">
+                <label class="biz-form-label">Registration / CIN</label>
+                <input type="text" id="prof-reg" class="biz-input" />
+              </div>
+            </div>
+
+            <div style="margin-top:24px; display:flex; justify-content:flex-end;">
+              <button type="button" class="biz-btn-primary" id="btn-save-profile">
+                <span>💾 Save Profile Updates</span>
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- MATCHING CANDIDATES MODAL -->
+    <div id="modal-matches" class="biz-modal-overlay" style="display:none;">
+      <div class="biz-modal">
+        <div class="biz-modal-header">
+          <div>
+            <h3 id="modal-match-title">Algorithmic Fair Matches</h3>
+            <p style="margin:4px 0 0; font-size:12.5px; color:var(--muted);" id="modal-match-subtitle">
+              Fair weighted scoring based on Skill (40%), Availability (25%), Proximity (15%), Workload Rotation (10%), and Rating (10%).
+            </p>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button type="button" class="biz-btn-secondary" id="btn-auto-select-top" style="font-size:12px; padding:6px 12px;">
+              <span>⚡ Auto-Select Top Picks</span>
+            </button>
+            <button type="button" class="biz-modal-close" onclick="closeMatchModal()">&times;</button>
+          </div>
+        </div>
+        <div class="biz-modal-body" id="modal-matches-body">
+          <!-- Populated dynamically with candidate cards -->
+        </div>
+        <div class="biz-modal-footer">
+          <div>
+            <span style="font-size:13px; font-weight:700; color:#334155;">
+              Selected: <span id="selected-workers-count" style="color:var(--primary-green);">0</span> / <span id="needed-workers-count">0</span> Workers
+            </span>
+          </div>
+          <div style="display:flex; gap:10px;">
+            <button type="button" class="biz-btn-secondary" onclick="closeMatchModal()">Cancel</button>
+            <button type="button" class="biz-btn-primary" id="btn-confirm-allocation">
+              <span>Confirm Allocation &amp; Generate Contract</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="biz-toast-container" class="biz-toast-container"></div>
+
+    <script src="/session.js"></script>
+    <script src="/i18n.js"></script>
+    <script src="/business-dashboard.js"></script>
+  </body>
+</html>

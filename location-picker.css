@@ -58,8 +58,8 @@
 }
 
 .location-sheet input:focus {
-  border-color: var(--orange);
-  box-shadow: 0 0 0 3px #f9e4cf;
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px #dcfce7;
 }
 
 .location-use {
@@ -81,8 +81,8 @@
 }
 
 .location-use:hover:not(:disabled) {
-  background: #eedec9;
-  color: var(--orange-dark);
+  background: #dcfce7;
+  color: var(--green-dark);
 }
 
 .location-use:disabled {
@@ -92,7 +92,7 @@
 
 .location-use .use-pin {
   font-size: 16px;
-  color: var(--orange);
+  color: var(--green);
   line-height: 1;
 }
 
@@ -106,7 +106,7 @@
 .location-hint:empty { display: none; }
 
 .location-hint.hint-error {
-  color: #b83d1c;
+  color: #15803d;
 }
 
 .location-suggestions {
@@ -235,9 +235,9 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(249, 115, 22, 0.2);
-  border: 1px solid rgba(249, 115, 22, 0.45);
-  color: #fdba74;
+  background: rgba(22, 163, 74, 0.15);
+  border: 1px solid rgba(22, 163, 74, 0.45);
+  color: #86efac;
   padding: 4px 10px;
   border-radius: 999px;
   font-size: 11px;
@@ -277,7 +277,7 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  background: linear-gradient(135deg, #15803d 0%, #16a34a 100%);
   color: #ffffff;
   border: none;
   padding: 13px 20px;
@@ -285,13 +285,13 @@
   font-size: 0.95rem;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(249, 115, 22, 0.35);
+  box-shadow: 0 4px 14px rgba(22, 163, 74, 0.35);
   transition: all 0.2s ease;
 }
 
 .btn-gate-gps:hover {
-  background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
-  box-shadow: 0 6px 20px rgba(249, 115, 22, 0.45);
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  box-shadow: 0 6px 20px rgba(22, 163, 74, 0.45);
   transform: translateY(-1px);
 }
 
@@ -393,9 +393,9 @@
 }
 
 .gate-search-input:focus {
-  border-color: #f97316;
+  border-color: #16a34a;
   background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
 }
 
 .gate-search-icon {
@@ -443,8 +443,8 @@
 
 .gate-autocomplete-item:hover,
 .gate-autocomplete-item:focus {
-  background: #fff7ed;
-  color: #ea580c;
+  background: #f0fdf4;
+  color: #16a34a;
 }
 
 .gate-popular-label {
@@ -486,9 +486,9 @@
 }
 
 .btn-gate-city:hover {
-  border-color: #f97316;
-  background: #fff7ed;
-  color: #ea580c;
+  border-color: #16a34a;
+  background: #f0fdf4;
+  color: #16a34a;
   transform: translateY(-1px);
 }
 

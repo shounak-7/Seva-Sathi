@@ -4,7 +4,7 @@
 
 /* ---------- CTA Banner (top of footer) ----------------------------------- */
 .footer-cta-band {
-  background: linear-gradient(110deg, #d96020 0%, #f2a63b 55%, #d96020 100%);
+  background: linear-gradient(110deg, #15803d 0%, #22c55e 55%, #15803d 100%);
   background-size: 200% 100%;
   animation: footerCtaShimmer 7s ease-in-out infinite;
   padding: 52px max(28px, calc((100vw - 1184px) / 2));
@@ -87,7 +87,7 @@
 .footer-stat:not(:last-child) { border-right: 1px solid #262420; }
 .footer-stat-num {
   font-family: Fraunces, serif; font-size: 30px; font-weight: 700;
-  color: #f2a63b; letter-spacing: -1px; line-height: 1.1;
+  color: #4ade80; letter-spacing: -1px; line-height: 1.1;
 }
 .footer-stat-label {
   font-size: 10px; letter-spacing: 1.3px; color: #6a6660;
@@ -110,9 +110,26 @@
   color: #f5f0e8; letter-spacing: -1.4px; text-decoration: none;
 }
 .hf-brand .brand-mark {
-  width: 31px; height: 31px; background: #e56d24; color: #fff;
-  border-radius: 10px 10px 10px 3px; display: inline-grid; place-items: center;
-  font-family: Fraunces; font-size: 22px; line-height: 1; letter-spacing: -2px;
+  width: 36px; height: 36px;
+  background: #000000 url('logo.png') center/cover no-repeat;
+  color: transparent !important;
+  font-size: 0 !important;
+  line-height: 0;
+  border-radius: 10px;
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.22);
+  border: 1.5px solid #16a34a;
+  padding: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+.hf-brand .brand-mark img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  display: block;
 }
 .hf-brand-tagline { font-size: 13px; color: #7a7570; line-height: 1.55; margin: 0; max-width: 220px; }
 
@@ -143,7 +160,7 @@
   color: #7a7570; text-decoration: none; margin-bottom: 12px;
   transition: color .16s, gap .16s;
 }
-.hf-col a:hover { color: #f2a63b; gap: 12px; }
+.hf-col a:hover { color: #4ade80; gap: 12px; }
 .hf-col a .hf-link-icon { font-size: 13px; opacity: 0.55; }
 
 /* ---------- Footer Bottom Bar -------------------------------------------- */
@@ -157,7 +174,7 @@
 .hf-legal { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
 .hf-copy { font-size: 11px; color: #4a4844; }
 .hf-legal a { font-size: 11px; color: #4a4844; text-decoration: none; transition: color .15s; }
-.hf-legal a:hover { color: #f2a63b; }
+.hf-legal a:hover { color: #4ade80; }
 .hf-legal-sep { font-size: 11px; color: #333027; }
 
 .hf-social { display: flex; gap: 8px; align-items: center; }
@@ -170,8 +187,8 @@
   transition: background .16s, color .16s, transform .16s, border-color .16s;
 }
 .hf-social a:hover {
-  background: #e56d24; color: #fff;
-  border-color: #e56d24; transform: translateY(-2px);
+  background: #16a34a; color: #fff;
+  border-color: #16a34a; transform: translateY(-2px);
 }
 
 /* ---------- Override old footer tag when new structure is inside ---------- */

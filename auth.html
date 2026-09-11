@@ -3,19 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Authentication — Hustle</title>
+    <title>Authentication — SevaSathi</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/png" href="favicon.png" />
     <link rel="stylesheet" href="auth.css" />
+    <link rel="stylesheet" href="i18n.css" />
   </head>
   <body>
     <main class="auth-shell">
       <header class="auth-topbar">
-        <a class="brand" href="index.html" aria-label="Hustle home">
-          <span class="brand-mark">h</span>hustle
+        <a class="brand" href="index.html" aria-label="SevaSathi home">
+          <img class="brand-mark" src="logo.png" alt="SevaSathi" /><span><span style="color:#16a34a">Seva</span> <span style="color:var(--ink, #25231f)">Sathi</span></span>
         </a>
-        <a class="back-link" href="index.html">← Back to Marketplace</a>
+        <div class="auth-nav-right" style="display:flex;align-items:center;gap:12px">
+          <a class="back-link" href="index.html">← Back to Marketplace</a>
+        </div>
       </header>
 
       <div class="auth-layout">
@@ -50,17 +53,17 @@
               </div>
             </button>
 
-            <!-- Role 3: Business (Disabled / Coming Soon) -->
-            <div class="role-button role-disabled" data-role="business" aria-disabled="true" title="Hustle for Business is launching soon">
+            <!-- Role 3: Business -->
+            <button type="button" class="role-button" data-role="business" aria-checked="false">
               <span class="role-icon business-icon">▦</span>
               <div class="role-text">
                 <div class="role-header-row">
                   <b>I'm here for my business</b>
-                  <span class="role-badge coming-soon-badge">COMING SOON</span>
+                  <span class="role-badge business-badge" style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd; font-size:9.5px; padding:2px 7px; border-radius:4px; font-weight:700;">BUSINESS</span>
                 </div>
-                <small>Corporate workplace &amp; facility solutions — launching soon</small>
+                <small>Hire workforce teams, facilities &amp; enterprise staffing</small>
               </div>
-            </div>
+            </button>
           </div>
 
           <!-- Dynamic Role Highlights & Perks -->
@@ -82,7 +85,7 @@
             <div class="highlight-item">
               <span class="hl-check">✦</span>
               <div>
-                <strong id="hl-title-3">Hustle Trust Guarantee</strong>
+                <strong id="hl-title-3">SevaSathi Trust Guarantee</strong>
                 <small id="hl-desc-3">Secure escrow protection with same-day resolution</small>
               </div>
             </div>
@@ -112,7 +115,7 @@
           </div>
 
           <h2 id="form-title">Find the help you need.</h2>
-          <p id="form-help">Join Hustle to discover verified local professionals right in your neighborhood.</p>
+          <p id="form-help">Join SevaSathi to discover verified local professionals right in your neighborhood.</p>
 
           <!-- Mode Switcher Tabs (Create account vs Sign in) -->
           <div class="mode-tabs">
@@ -172,7 +175,7 @@
                 <option value="Custom Carpentry & Woodwork">Custom Carpentry &amp; Woodwork</option>
                 <option value="AC, Fridge & Appliance Repair">AC, Fridge &amp; Appliance Repair</option>
                 <option value="Spa, Massage & Grooming">Spa, Massage &amp; Grooming</option>
-                <option value="Maths & Science Tutoring">Maths &amp; Science Tutoring</option>
+                <option value="Tutoring">Tutoring</option>
                 <option value="Laptop & Wi-Fi Tech Support">Laptop &amp; Wi-Fi Tech Support</option>
                 <option value="Wall Painting & Waterproofing">Wall Painting &amp; Waterproofing</option>
                 <option value="Babysitting & Childcare">Babysitting &amp; Childcare</option>
@@ -185,7 +188,7 @@
                 <option value="Senior Companion & Support">Senior Companion &amp; Support</option>
                 <option value="Other">Other Specialized Skill</option>
               </select>
-              <input type="text" id="input-specific-skill" name="specificSkill" placeholder="Specify your trade (e.g. Master Carpenter, High School Maths, AC Tech)" style="margin-top: 7px;" />
+              <input type="text" id="input-specific-skill" name="specificSkill" placeholder="Specify your trade (e.g. Master Carpenter, Academic Tutoring, AC Tech)" style="margin-top: 7px;" />
             </div>
 
             <!-- WORKER COMPULSORY FIELD: Years of Experience -->
@@ -252,6 +255,59 @@
               <textarea id="input-bio" name="bio" rows="2" placeholder="Tell customers what makes your service stand out..."></textarea>
             </div>
 
+            <!-- BUSINESS COMPULSORY FIELD: Business / Organization Name -->
+            <div class="form-group business-field" id="group-biz-name" hidden>
+              <label for="input-biz-name">Business / Organization Name <span class="req">* (Compulsory)</span></label>
+              <input type="text" id="input-biz-name" name="businessName" placeholder="e.g. Grand Heritage Hotel, CloudNine Tech Park" />
+            </div>
+
+            <!-- BUSINESS COMPULSORY FIELD: Business Type -->
+            <div class="form-group business-field" id="group-biz-type" hidden>
+              <label for="select-biz-type">Business Type <span class="req">* (Compulsory)</span></label>
+              <select id="select-biz-type" name="businessType" class="form-select">
+                <option value="" disabled selected>Select business category...</option>
+                <option value="Hotel / Hospitality">Hotel / Hospitality &amp; Resorts</option>
+                <option value="Facility Management">Facility &amp; Property Management</option>
+                <option value="IT Park / Corporate">IT Park &amp; Corporate Office</option>
+                <option value="Retail / Commercial">Retail, Malls &amp; Commercial Complexes</option>
+                <option value="Restaurant / Cafe">Restaurant, Cafe &amp; Catering</option>
+                <option value="Construction & Real Estate">Construction &amp; Real Estate Development</option>
+                <option value="Event Venue & Staging">Event Venue, Exhibition &amp; Staging</option>
+                <option value="Healthcare & Clinic">Healthcare, Clinic &amp; Wellness Centre</option>
+                <option value="Other">Other Enterprise</option>
+              </select>
+            </div>
+
+            <!-- BUSINESS COMPULSORY FIELD: Contact Person -->
+            <div class="form-group business-field" id="group-biz-contact" hidden>
+              <label for="input-biz-contact">Contact Person Name <span class="req">* (Compulsory)</span></label>
+              <input type="text" id="input-biz-contact" name="contactPerson" placeholder="Full name of authorized manager or HR" />
+            </div>
+
+            <!-- BUSINESS COMPULSORY FIELD: Business Address -->
+            <div class="form-group business-field" id="group-biz-address" hidden>
+              <label for="input-biz-address">Operating Address &amp; City <span class="req">* (Compulsory)</span></label>
+              <input type="text" id="input-biz-address" name="address" placeholder="e.g. Plot 14, Sector V, Salt Lake, Kolkata" />
+            </div>
+
+            <!-- BUSINESS OPTIONAL FIELDS: GSTIN, Registration Number, Website -->
+            <div class="form-group business-field" id="group-biz-tax" hidden>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <div>
+                  <label for="input-biz-gstin">GSTIN <span class="opt">(Optional)</span></label>
+                  <input type="text" id="input-biz-gstin" name="gstin" placeholder="e.g. 19AAACH7409R1ZZ" />
+                </div>
+                <div>
+                  <label for="input-biz-regno">CIN / Reg No <span class="opt">(Optional)</span></label>
+                  <input type="text" id="input-biz-regno" name="businessRegNumber" placeholder="e.g. U55101WB2018PTC224810" />
+                </div>
+              </div>
+              <div style="margin-top:10px;">
+                <label for="input-biz-website">Company Website <span class="opt">(Optional)</span></label>
+                <input type="url" id="input-biz-website" name="website" placeholder="https://yourcompany.com" />
+              </div>
+            </div>
+
             <!-- Field: Password (Signup & Signin) -->
             <div class="form-group" id="group-password">
               <div class="label-row">
@@ -279,7 +335,7 @@
           </form>
 
           <p class="privacy">
-            By continuing, you agree to Hustle's <a href="terms.html">Terms &amp; Conditions</a> and <a href="terms.html#privacy">Privacy Policy</a>.
+            By continuing, you agree to SevaSathi's <a href="terms.html">Terms &amp; Conditions</a> and <a href="terms.html#privacy">Privacy Policy</a>.
           </p>
         </section>
       </div>
@@ -307,9 +363,9 @@
 
           <!-- Step 2: Enter OTP & New Password -->
           <div id="forgot-step-2" hidden>
-            <div class="otp-banner" id="otp-demo-banner" style="background:#fef5ea;border:1.5px dashed #f2b84b;padding:12px;border-radius:10px;margin-bottom:14px;font-size:12.5px;">
+            <div class="otp-banner" id="otp-demo-banner" style="background:#f0fdf4;border:1.5px dashed #86efac;padding:12px;border-radius:10px;margin-bottom:14px;font-size:12.5px;">
               <div style="display:flex;justify-content:space-between;align-items:center;">
-                <span>OTP Sent: <strong id="demo-otp-code" style="font-size:15px;color:var(--orange)">482910</strong></span>
+                <span>OTP Sent: <strong id="demo-otp-code" style="font-size:15px;color:var(--green)">482910</strong></span>
                 <button type="button" id="btn-autofill-otp" style="border:0;background:var(--ink);color:#fff;border-radius:6px;padding:4px 9px;font-size:11px;cursor:pointer;font-weight:700">Auto-fill</button>
               </div>
               <small style="display:block;color:var(--muted);margin-top:4px">Standard verification code 123456 is also accepted.</small>
@@ -334,6 +390,7 @@
     </div>
 
     <script src="session.js"></script>
+    <script src="i18n.js"></script>
     <script src="https://accounts.google.com/gsi/client" defer></script>
     <script src="hustle-db.js"></script>
     <script src="auth.js" defer></script>

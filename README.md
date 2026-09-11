@@ -1,6 +1,6 @@
-# Hustle - On-Demand Local Services & Gig Marketplace
+# SevaSathi - On-Demand Local Services & Gig Marketplace
 
-Hustle is a full-stack on-demand local services platform connecting customers with verified trade specialists across home care, repairs, beauty, tutoring, and tech support. Built with modern Node.js, Express, MongoDB Atlas, and client-side web technologies, featuring AI-assisted price estimation, real-time bargaining, secure escrow payments, location-based service filtering, and an Operations Admin Console with dispute arbitrations.
+SevaSathi is a full-stack on-demand local services platform connecting customers with verified trade specialists across home care, repairs, beauty, tutoring, and tech support. Built with modern Node.js, Express, MongoDB Atlas, and client-side web technologies, featuring AI-assisted price estimation, real-time bargaining, secure escrow payments, location-based service filtering, and an Operations Admin Console with dispute arbitrations.
 
 ---
 
@@ -28,7 +28,7 @@ Hustle is a full-stack on-demand local services platform connecting customers wi
 - **Real-Time Notification Badges**: Visual indicators alert customers immediately when an offer is accepted or countered.
 
 ### 5. Secure Escrow & Payout System
-- **Escrow Holding**: Customer payments (UPI, Cards) are held securely in Hustle Escrow upon acceptance.
+- **Escrow Holding**: Customer payments (UPI, Cards) are held securely in SevaSathi Escrow upon acceptance.
 - **Completion Confirmation**: Specialists mark jobs complete; funds are safeguarded in escrow pending verified completion or resolution.
 
 ### 6. Confidential Dispute Resolution & Admin Settlement

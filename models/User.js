@@ -27,7 +27,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['customer', 'worker', 'admin'],
+      enum: ['customer', 'worker', 'admin', 'business'],
       default: 'customer',
       index: true
     },
@@ -91,7 +91,7 @@ const userSchema = new mongoose.Schema(
     },
     city: {
       type: String,
-      default: 'Bengaluru',
+      default: '',
       trim: true
     },
     customCity: {
@@ -139,6 +139,47 @@ const userSchema = new mongoose.Schema(
     lastLogin: {
       type: Date,
       default: Date.now
+    },
+    preferredLanguage: {
+      type: String,
+      enum: ['en', 'hi', 'bn'],
+      default: 'en'
+    },
+    // Business organization fields
+    businessName: {
+      type: String,
+      default: '',
+      trim: true
+    },
+    businessType: {
+      type: String,
+      default: '',
+      trim: true
+    },
+    contactPerson: {
+      type: String,
+      default: '',
+      trim: true
+    },
+    address: {
+      type: String,
+      default: '',
+      trim: true
+    },
+    gstin: {
+      type: String,
+      default: '',
+      trim: true
+    },
+    businessRegNumber: {
+      type: String,
+      default: '',
+      trim: true
+    },
+    website: {
+      type: String,
+      default: '',
+      trim: true
     }
   },
   {

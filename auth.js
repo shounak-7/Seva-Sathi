@@ -1,4 +1,4 @@
-/* Hustle Authentication Logic — Customer & Worker Portals */
+/* SevaSathi Authentication Logic — Customer & Worker Portals */
 /* Connects seamlessly to Express + MongoDB / Bcrypt / JWT backend with dual-mode resilience */
 
 (async function () {
@@ -18,9 +18,9 @@
   const params = new URLSearchParams(window.location.search);
 
   // Initialize local fallback DB if present
-  if (typeof HustleDB !== 'undefined') {
+  if (typeof SevaSathiDB !== 'undefined') {
     try {
-      await HustleDB.init();
+      await SevaSathiDB.init();
     } catch (e) {
       console.warn('Local DB init note:', e);
     }
@@ -54,6 +54,20 @@
   const groupDocument = document.querySelector('#group-document');
   const groupArea = document.querySelector('#group-area');
   const groupBio = document.querySelector('#group-bio');
+  // Business field groups
+  const groupBizName = document.querySelector('#group-biz-name');
+  const groupBizType = document.querySelector('#group-biz-type');
+  const groupBizContact = document.querySelector('#group-biz-contact');
+  const groupBizAddress = document.querySelector('#group-biz-address');
+  const groupBizTax = document.querySelector('#group-biz-tax');
+  const inputBizName = document.querySelector('#input-biz-name');
+  const selectBizType = document.querySelector('#select-biz-type');
+  const inputBizContact = document.querySelector('#input-biz-contact');
+  const inputBizAddress = document.querySelector('#input-biz-address');
+  const inputBizGstin = document.querySelector('#input-biz-gstin');
+  const inputBizRegNo = document.querySelector('#input-biz-regno');
+  const inputBizWebsite = document.querySelector('#input-biz-website');
+
   const labelEmail = document.querySelector('#label-email');
   const inputEmail = document.querySelector('#input-email');
   const inputName = document.querySelector('#input-name');
@@ -146,6 +160,22 @@
         ['✦ Keep 100% of Your Tips', 'Transparent earnings with absolute compensation fairness'],
         ['✓ Set Your Own Hours', 'Accept jobs in your neighborhood on full-time, part-time, or weekend basis']
       ]
+    },
+    business: {
+      eyebrow: 'WORKFORCE AT SCALE',
+      introTitle: 'Cooperative staffing for <em>your enterprise.</em>',
+      introDesc: 'Hire verified multi-worker teams for hotels, facilities, tech parks, and commercial spaces with guaranteed fair allocation and consolidated billing.',
+      banner: 'BUSINESS & ENTERPRISE PORTAL',
+      bannerHint: 'Deploy reliable multi-worker teams',
+      signupTitle: 'Register your organization.',
+      signupHelp: 'Create your enterprise business account to request and deploy cooperative workforce teams.',
+      signinTitle: 'Welcome back, business partner.',
+      signinHelp: 'Sign in to manage your active workforce, recurring contracts, and consolidated invoices.',
+      highlights: [
+        ['👥 Multi-Worker Team Hiring', 'Request and deploy 1 to 50+ vetted cooperative workers with one brief'],
+        ['📜 Recurring Corporate Contracts', 'Predictable daily, weekly, or monthly deployment agreements'],
+        ['🧾 Consolidated Invoicing', 'Single itemized corporate bill with secure escrow protection']
+      ]
     }
   };
 
@@ -234,8 +264,9 @@
     if (formHelp) formHelp.textContent = signingIn ? info.signinHelp : info.signupHelp;
 
     // Fields visibility
-    if (groupName) groupName.hidden = signingIn;
-    if (inputName) inputName.required = !signingIn;
+    const isBusiness = currentRole === 'business';
+    if (groupName) groupName.hidden = signingIn || isBusiness;
+    if (inputName) inputName.required = !signingIn && !isBusiness;
 
     if (groupPhone) groupPhone.hidden = signingIn;
     if (inputPhone) inputPhone.required = !signingIn;
@@ -249,6 +280,16 @@
     if (selectWorkerCity) selectWorkerCity.required = showWorkerFields;
     if (selectSkill) selectSkill.required = showWorkerFields;
     if (selectExp) selectExp.required = showWorkerFields;
+
+    // Business specific fields (compulsory + optional)
+    const showBusinessFields = isBusiness && !signingIn;
+    [groupBizName, groupBizType, groupBizContact, groupBizAddress, groupBizTax].forEach((el) => {
+      if (el) el.hidden = !showBusinessFields;
+    });
+    if (inputBizName) inputBizName.required = showBusinessFields;
+    if (selectBizType) selectBizType.required = showBusinessFields;
+    if (inputBizContact) inputBizContact.required = showBusinessFields;
+    if (inputBizAddress) inputBizAddress.required = showBusinessFields;
 
     // Email label & input format
     if (labelEmail) {
@@ -265,16 +306,16 @@
     // Button text
     if (submitText) {
       if (signingIn) {
-        submitText.textContent = currentRole === 'worker' ? 'Sign in to Partner Portal' : 'Sign in to Hustle';
+        submitText.textContent = currentRole === 'worker' ? 'Sign in to Partner Portal' : currentRole === 'business' ? 'Sign in to Business Portal' : 'Sign in to SevaSathi';
       } else {
-        submitText.textContent = currentRole === 'worker' ? 'Submit Partner Application' : 'Create Customer Account';
+        submitText.textContent = currentRole === 'worker' ? 'Submit Partner Application' : currentRole === 'business' ? 'Create Business Account' : 'Create Customer Account';
       }
     }
 
-    // Google Auth — only for customers, hidden for workers
+    // Google Auth — only for customers, hidden for workers and business
     const googleAuthWrapper = document.querySelector('#google-auth-btn');
     const authDivider = document.querySelector('.auth-divider');
-    if (currentRole === 'worker') {
+    if (currentRole === 'worker' || currentRole === 'business') {
       if (googleAuthWrapper) googleAuthWrapper.style.display = 'none';
       if (authDivider) authDivider.style.display = 'none';
     } else {
@@ -289,9 +330,13 @@
     const switchCopy = document.querySelector('#switch-copy');
     if (switchCopy) {
       switchCopy.innerHTML = signingIn
-        ? 'New to Hustle? <button type="button" id="login-toggle">Create an account</button>'
+        ? 'New to SevaSathi? <button type="button" id="login-toggle">Create an account</button>'
         : 'Already have an account? <button type="button" id="login-toggle">Sign in</button>';
       document.querySelector('#login-toggle')?.addEventListener('click', () => setMode(!signingIn));
+    }
+
+    if (window.SevaSathiI18n && typeof window.SevaSathiI18n.applyTranslations === 'function') {
+      window.SevaSathiI18n.applyTranslations();
     }
   }
 
@@ -302,7 +347,7 @@
 
   // Business Disabled Notice
   document.querySelector('.role-disabled')?.addEventListener('click', () => {
-    setErrorMessage('Hustle for Business is launching soon! Please join as a Customer or Gig Worker partner in the meantime.');
+    setErrorMessage('SevaSathi for Business is launching soon! Please join as a Customer or Gig Worker partner in the meantime.');
   });
 
   // Mode Tabs
@@ -465,8 +510,8 @@
           throw backendErr;
         }
         // If backend offline, use local DB
-        if (typeof HustleDB !== 'undefined') {
-          const localResult = await HustleDB.generatePasswordResetOTP(target);
+        if (typeof SevaSathiDB !== 'undefined') {
+          const localResult = await SevaSathiDB.generatePasswordResetOTP(target);
           otpCode = localResult.otp;
           requestSucceeded = true;
         }
@@ -564,8 +609,8 @@
           throw backendErr;
         }
         // If backend offline, fallback to local DB
-        if (typeof HustleDB !== 'undefined') {
-          await HustleDB.resetPasswordWithOTP(activeResetTarget, enteredOtp, newPassword);
+        if (typeof SevaSathiDB !== 'undefined') {
+          await SevaSathiDB.resetPasswordWithOTP(activeResetTarget, enteredOtp, newPassword);
           resetDone = true;
         }
       }
@@ -632,8 +677,8 @@
         throw new Error(data.message || 'Google sign-in failed.');
       }
 
-      if (window.HustleSession) {
-        HustleSession.setSession(data.user, data.token);
+      if (window.SevaSathiSession) {
+        SevaSathiSession.setSession(data.user, data.token);
       } else {
         localStorage.setItem('hustleToken', data.token);
         localStorage.setItem('hustleCurrentUser', JSON.stringify(data.user));
@@ -738,9 +783,9 @@
           }
 
           // If backend server is unreachable (offline/file://), fallback to local store
-          console.warn('[Hustle Auth] Backend unreachable, trying local fallback...');
-          if (typeof HustleDB !== 'undefined') {
-            authenticatedUser = await HustleDB.authenticate(emailOrPhone, password);
+          console.warn('[SevaSathi Auth] Backend unreachable, trying local fallback...');
+          if (typeof SevaSathiDB !== 'undefined') {
+            authenticatedUser = await SevaSathiDB.authenticate(emailOrPhone, password);
             authToken = 'local_token_' + Date.now();
           } else {
             // LocalStorage check
@@ -770,8 +815,8 @@
 
         const userRole = authenticatedUser.role || 'customer';
         if (userRole !== currentRole) {
-          const registeredAs = userRole === 'worker' ? 'Gig Worker Partner' : 'Customer';
-          const switchPortal = userRole === 'worker' ? 'Worker Partner Portal' : 'Customer Portal';
+          const registeredAs = userRole === 'worker' ? 'Gig Worker Partner' : userRole === 'business' ? 'Enterprise / Business account' : 'Customer';
+          const switchPortal = userRole === 'worker' ? 'Worker Partner Portal' : userRole === 'business' ? 'Business Portal' : 'Customer Portal';
           throw new Error(`This account is registered as a ${registeredAs}. Please switch to the ${switchPortal} to sign in.`);
         }
 
@@ -779,21 +824,25 @@
         if (authenticatedUser.city) {
           localStorage.setItem('hustleSelectedCity', authenticatedUser.city);
         }
-        if (window.HustleSession) {
-          HustleSession.setSession(authenticatedUser, authToken || ('jwt_' + Date.now()));
+        if (window.SevaSathiSession) {
+          SevaSathiSession.setSession(authenticatedUser, authToken || ('jwt_' + Date.now()));
         } else {
           localStorage.setItem('hustleToken', authToken || ('jwt_' + Date.now()));
           localStorage.setItem('hustleCurrentUser', JSON.stringify(authenticatedUser));
         }
 
-        if ((authenticatedUser.role || currentRole) !== 'worker') {
+        if ((authenticatedUser.role || currentRole) === 'customer') {
           sessionStorage.setItem('hustleCustomerNeedsLocation', 'true');
           sessionStorage.removeItem('hustleLocationConfirmed');
         }
 
-        const targetUrl = ((authenticatedUser.role || currentRole) === 'worker')
-          ? 'worker-dashboard.html'
-          : 'customer-dashboard.html';
+        let targetUrl = 'customer-dashboard.html';
+        const effectiveRole = authenticatedUser.role || currentRole;
+        if (effectiveRole === 'worker') {
+          targetUrl = 'worker-dashboard.html';
+        } else if (effectiveRole === 'business') {
+          targetUrl = '/business/dashboard';
+        }
         window.location.href = targetUrl;
       } catch (err) {
         setErrorMessage(err.message || 'Authentication failed. Please check your credentials.');
@@ -802,13 +851,30 @@
       }
     } else {
       // ================= SIGN UP FLOW =================
-      const name = (data.name || '').trim();
+      const name = (currentRole === 'business' ? (data.businessName || data.contactPerson) : data.name || '').trim();
       const phone = (data.phone || '').trim();
 
       if (!name) {
-        setErrorMessage('Please enter your full name.');
-        inputName?.focus();
+        setErrorMessage(currentRole === 'business' ? 'Please enter your business/organization name.' : 'Please enter your full name.');
+        if (currentRole === 'business') inputBizName?.focus(); else inputName?.focus();
         return;
+      }
+      if (currentRole === 'business') {
+        if (!data.businessType) {
+          setErrorMessage('Please select your business category.');
+          selectBizType?.focus();
+          return;
+        }
+        if (!data.contactPerson) {
+          setErrorMessage('Please enter the authorized contact person name.');
+          inputBizContact?.focus();
+          return;
+        }
+        if (!data.address) {
+          setErrorMessage('Please enter your business operating address.');
+          inputBizAddress?.focus();
+          return;
+        }
       }
       if (!emailOrPhone || !emailOrPhone.includes('@')) {
         setErrorMessage('Please enter a valid email address (e.g. you@example.com).');
@@ -868,7 +934,15 @@
         bio: data.bio || '',
         documentFile: attachedDocName || '',
         supportingDocUrl: attachedDocData || '',
-        documentSize: attachedDocSize || ''
+        documentSize: attachedDocSize || '',
+        // Business profile fields
+        businessName: (data.businessName || name).trim(),
+        businessType: (data.businessType || '').trim(),
+        contactPerson: (data.contactPerson || name).trim(),
+        address: (data.address || '').trim(),
+        gstin: (data.gstin || '').trim(),
+        businessRegNumber: (data.businessRegNumber || '').trim(),
+        website: (data.website || '').trim()
       };
 
       try {
@@ -900,9 +974,9 @@
           }
 
           // If backend offline, register in local store
-          console.warn('[Hustle Auth] Backend unreachable, saving locally...');
-          if (typeof HustleDB !== 'undefined') {
-            await HustleDB.registerUser(payload);
+          console.warn('[SevaSathi Auth] Backend unreachable, saving locally...');
+          if (typeof SevaSathiDB !== 'undefined') {
+            await SevaSathiDB.registerUser(payload);
           } else {
             const users = JSON.parse(localStorage.getItem('hustleUsers') || '[]');
             users.push(payload);
@@ -920,21 +994,25 @@
         if (newUser.city) {
           localStorage.setItem('hustleSelectedCity', newUser.city);
         }
-        if (window.HustleSession) {
-          HustleSession.setSession(newUser, authToken || ('jwt_' + Date.now()));
+        if (window.SevaSathiSession) {
+          SevaSathiSession.setSession(newUser, authToken || ('jwt_' + Date.now()));
         } else {
           localStorage.setItem('hustleToken', authToken || ('jwt_' + Date.now()));
           localStorage.setItem('hustleCurrentUser', JSON.stringify(newUser));
         }
 
-        if ((newUser.role || currentRole) !== 'worker') {
+        if ((newUser.role || currentRole) === 'customer') {
           sessionStorage.setItem('hustleCustomerNeedsLocation', 'true');
           sessionStorage.removeItem('hustleLocationConfirmed');
         }
 
-        const targetUrl = ((newUser.role || currentRole) === 'worker')
-          ? 'worker-dashboard.html'
-          : 'customer-dashboard.html';
+        let targetUrl = 'customer-dashboard.html';
+        const effectiveRole = newUser.role || currentRole;
+        if (effectiveRole === 'worker') {
+          targetUrl = 'worker-dashboard.html';
+        } else if (effectiveRole === 'business') {
+          targetUrl = '/business/dashboard';
+        }
         window.location.href = targetUrl;
       } catch (err) {
         setErrorMessage(err.message || 'Registration failed. Please check your information.');
@@ -943,25 +1021,6 @@
       }
     }
   });
-
-  // Check URL params for error or preselection
-  const urlError = params.get('error');
-  if (urlError) {
-    setErrorMessage(`Notice: ${decodeURIComponent(urlError)}`);
-  }
-
-  // Initialization from Query Parameters or Active Session
-  const initialRole = params.get('role');
-  if (initialRole === 'worker' || initialRole === 'customer') {
-    selectRole(initialRole);
-  } else {
-    const activeUser = window.HustleSession ? HustleSession.getUser() : JSON.parse(localStorage.getItem('hustleCurrentUser') || 'null');
-    if (activeUser && activeUser.role === 'worker') {
-      selectRole('worker');
-    } else {
-      selectRole('customer');
-    }
-  }
 
   // Active session check & UI handler
   const activeSessionBox = document.querySelector('#active-session-box');
@@ -972,8 +1031,8 @@
 
   function renderActiveSession() {
     if (!activeSessionBox) return;
-    const user = window.HustleSession ? HustleSession.getUser() : JSON.parse(localStorage.getItem('hustleCurrentUser') || 'null');
-    const token = window.HustleSession ? HustleSession.getToken() : localStorage.getItem('hustleToken');
+    const user = window.SevaSathiSession ? SevaSathiSession.getUser() : JSON.parse(localStorage.getItem('hustleCurrentUser') || 'null');
+    const token = window.SevaSathiSession ? SevaSathiSession.getToken() : localStorage.getItem('hustleToken');
     const isLoggedIn = Boolean(user && token);
 
     if (isLoggedIn && user) {
@@ -988,7 +1047,7 @@
       if (sessionBadge) {
         if (isMismatch) {
           sessionBadge.textContent = 'SESSION NOTICE · DIFFERENT ROLE';
-          sessionBadge.style.background = '#ea580c';
+          sessionBadge.style.background = '#16a34a';
           sessionBadge.style.color = '#ffffff';
         } else {
           sessionBadge.textContent = 'ACTIVE SESSION DETECTED';
@@ -1001,7 +1060,7 @@
         if (isMismatch) {
           const registeredLabel = isWorker ? 'Gig Worker Partner' : 'Customer';
           const currentPortalLabel = currentRole === 'worker' ? 'Worker Partner' : 'Customer';
-          sessionUserMeta.innerHTML = `<span style="color:#c2410c; font-weight:600;">Signed in as ${registeredLabel} (${user.email || user.phone}).</span><br><span style="color:#64748b; font-size:12px;">This is the ${currentPortalLabel} portal. Log out to switch, or continue to your portal below.</span>`;
+          sessionUserMeta.innerHTML = `<span style="color:#15803d; font-weight:600;">Signed in as ${registeredLabel} (${user.email || user.phone}).</span><br><span style="color:#64748b; font-size:12px;">This is the ${currentPortalLabel} portal. Log out to switch, or continue to your portal below.</span>`;
         } else {
           sessionUserMeta.textContent = `${user.email || user.phone || ''} · ${isWorker ? 'Gig Worker Partner (' + (user.skillCategory || 'Pro') + ')' : 'Verified Customer'}`;
         }
@@ -1023,8 +1082,8 @@
   }
 
   btnSessionLogout?.addEventListener('click', () => {
-    if (window.HustleSession) {
-      HustleSession.logOut('index.html');
+    if (window.SevaSathiSession) {
+      SevaSathiSession.logOut('index.html');
     } else {
       localStorage.removeItem('hustleToken');
       localStorage.removeItem('hustleCurrentUser');
@@ -1033,6 +1092,27 @@
     renderActiveSession();
     setErrorMessage('Logged out successfully. You can now sign in with another account.');
   });
+
+  // Check URL params for error or preselection
+  const urlError = params.get('error');
+  if (urlError) {
+    setErrorMessage(`Notice: ${decodeURIComponent(urlError)}`);
+  }
+
+  // Initialization from Query Parameters or Active Session
+  const initialRole = params.get('role');
+  if (initialRole === 'worker' || initialRole === 'customer' || initialRole === 'business') {
+    selectRole(initialRole);
+  } else {
+    const activeUser = window.SevaSathiSession ? SevaSathiSession.getUser() : JSON.parse(localStorage.getItem('hustleCurrentUser') || 'null');
+    if (activeUser && activeUser.role === 'worker') {
+      selectRole('worker');
+    } else if (activeUser && activeUser.role === 'business') {
+      selectRole('business');
+    } else {
+      selectRole('customer');
+    }
+  }
 
   renderActiveSession();
   window.addEventListener('hustle:session-change', renderActiveSession);

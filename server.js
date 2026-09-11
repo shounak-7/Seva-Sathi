@@ -6,6 +6,7 @@ const bcrypt = require('bcryptjs');
 const db = require('./services/db');
 const authRoutes = require('./routes/auth');
 const aiRoutes = require('./routes/ai');
+const businessRoutes = require('./routes/business');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -18,15 +19,17 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Serve dynamic config for Google Maps from environment variable (protects API keys from git)
 app.get('/maps-config.js', (req, res) => {
   res.type('application/javascript');
-  res.send(`window.HUSTLE_GOOGLE_MAPS_KEY = '${process.env.GOOGLE_MAPS_KEY || ''}';\n`);
+  res.send(`window.SEVASATHI_GOOGLE_MAPS_KEY = '${process.env.GOOGLE_MAPS_KEY || ''}';\nwindow.HUSTLE_GOOGLE_MAPS_KEY = window.SEVASATHI_GOOGLE_MAPS_KEY;\n`);
 });
 
 // Serve static frontend files directly from current directory
 app.use(express.static(path.join(__dirname)));
+app.use('/business', express.static(path.join(__dirname)));
 
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/business', businessRoutes);
 
 // Seed initial demo accounts if not present
 async function seedInitialUsers() {
@@ -45,7 +48,7 @@ async function seedInitialUsers() {
       const hashedPassword = await bcrypt.hash(adminPassword, salt);
       if (!existingAdmin) {
         await db.createUser({
-          name: 'Hustle Operations Admin',
+          name: 'SevaSathi Operations Admin',
           email: adminEmail,
           phone: '9000000000',
           password: hashedPassword,
@@ -91,7 +94,7 @@ async function seedInitialUsers() {
         role: 'worker',
         approvalStatus: 'approved',
         approvedAt: new Date(),
-        approvedBy: 'Hustle Operations Staff',
+        approvedBy: 'SevaSathi Operations Staff',
         completedJobsCount: 0,
         earningsTotal: 0,
         earningsPending: 0,
@@ -113,6 +116,30 @@ async function seedInitialUsers() {
         earningsPending: 0,
         city: existingWorker.city || 'Bengaluru'
       });
+    }
+
+    // 4. Seed Demo Business
+    const existingBusiness = await db.findUserByEmail('business@hustle.local');
+    if (!existingBusiness) {
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash('password123', salt);
+      await db.createUser({
+        name: 'Grand Heritage Hotel & Resorts',
+        email: 'business@hustle.local',
+        phone: '9876543212',
+        password: hashedPassword,
+        role: 'business',
+        businessName: 'Grand Heritage Hotel & Resorts',
+        businessType: 'Hotel / Hospitality',
+        contactPerson: 'Vikram Malhotra',
+        address: 'Plot 14, Sector V, Salt Lake, Kolkata, West Bengal 700091',
+        city: 'Kolkata',
+        gstin: '19AAACH7409R1ZZ',
+        businessRegNumber: 'CIN-U55101WB2018PTC224810',
+        website: 'https://grandheritage.example.com',
+        lastLogin: new Date()
+      });
+      console.log('[Seed] Demo business seeded: business@hustle.local (password: password123)');
     }
   } catch (err) {
     console.warn('[Seed] Note during seed check:', err.message);
@@ -140,6 +167,19 @@ app.get('/worker-dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, 'worker-dashboard.html'));
 });
 
+// Dedicated Business & Enterprise Portal
+app.get('/business/dashboard', (req, res) => {
+  res.sendFile(path.join(__dirname, 'business-dashboard.html'));
+});
+
+app.get('/business-dashboard', (req, res) => {
+  res.sendFile(path.join(__dirname, 'business-dashboard.html'));
+});
+
+app.get('/business-dashboard.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'business-dashboard.html'));
+});
+
 // Dedicated Operations & Staff Admin Portal
 app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'admin.html'));
@@ -156,13 +196,17 @@ async function startServer() {
 
   app.listen(PORT, () => {
     console.log(`====================================================`);
-    console.log(`🚀 Hustle Backend Server running on http://localhost:${PORT}`);
+    console.log(`🚀 SevaSathi Backend Server running on http://localhost:${PORT}`);
     console.log(`📡 Auth API mounted at http://localhost:${PORT}/api/auth`);
     console.log(`🔑 Google OAuth Client: ${process.env.GOOGLE_CLIENT_ID ? process.env.GOOGLE_CLIENT_ID.slice(0, 25) + '...' : 'Not Configured'}`);
     console.log(`====================================================`);
   });
 }
 
-startServer();
+if (require.main === module) {
+  startServer();
+}
 
 module.exports = app;
+module.exports.startServer = startServer;
+module.exports.seedInitialUsers = seedInitialUsers;

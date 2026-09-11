@@ -3,6 +3,11 @@ const http = require('http');
 
 const PORT = process.env.PORT || 5001;
 
+let inMemoryDispatcher = null;
+try {
+  inMemoryDispatcher = require('./in-memory-runner');
+} catch (e) {}
+
 function request(options, data) {
   return new Promise((resolve, reject) => {
     const req = http.request(options, (res) => {
@@ -18,7 +23,23 @@ function request(options, data) {
       });
     });
 
-    req.on('error', reject);
+    req.on('error', async (err) => {
+      // Fallback to in-memory dispatcher if socket fails (e.g., in sandboxed env)
+      if (inMemoryDispatcher) {
+        try {
+          const res = await inMemoryDispatcher.dispatch({
+            method: options.method || 'GET',
+            url: options.path || '/',
+            headers: options.headers || {},
+            body: data
+          });
+          return resolve(res);
+        } catch (dispatchErr) {
+          return reject(dispatchErr);
+        }
+      }
+      reject(err);
+    });
 
     if (data) {
       req.write(typeof data === 'string' ? data : JSON.stringify(data));

@@ -3,17 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-    <title>Workspace — Hustle</title>
+    <title>Workspace — SevaSathi</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/png" href="favicon.png" />
     <link rel="stylesheet" href="auth.css" />
   </head>
   <body>
     <main class="auth-shell">
       <header class="auth-topbar" style="display:flex; justify-content:space-between; align-items:center;">
-        <a class="brand" href="index.html" aria-label="Hustle home">
-          <span class="brand-mark">h</span>hustle
+        <a class="brand" href="index.html" aria-label="SevaSathi home">
+          <img class="brand-mark" src="logo.png" alt="SevaSathi" /><span><span style="color:#16a34a">Seva</span> <span style="color:var(--ink, #25231f)">Sathi</span></span>
         </a>
         <div style="display:flex; align-items:center; gap:10px;">
           <a class="back-link" href="index.html">← Back to Marketplace</a>
@@ -26,7 +26,7 @@
       <div class="auth-layout">
         <section class="auth-intro">
           <p class="eyebrow" id="workspace-eyebrow">YOUR ACTIVE SESSION</p>
-          <h1 id="welcome-title">Welcome to <em>Hustle.</em></h1>
+          <h1 id="welcome-title">Welcome to <em>SevaSathi.</em></h1>
           <p id="welcome-copy">Your personalized dashboard is ready.</p>
           <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-top:18px;">
             <a class="submit" style="display:inline-block; width:auto; text-decoration:none; margin-top:0;" href="index.html">
@@ -58,11 +58,11 @@
 
       // If arrived via Google OAuth redirect with a token, save full session and redirect
       if (tokenFromUrl) {
-        const name = nameFromUrl ? decodeURIComponent(nameFromUrl) : (HustleSession.getUser()?.name || 'User');
-        const userObj = HustleSession.getUser() || {};
+        const name = nameFromUrl ? decodeURIComponent(nameFromUrl) : (SevaSathiSession.getUser()?.name || 'User');
+        const userObj = SevaSathiSession.getUser() || {};
         userObj.name = name;
         userObj.role = roleFromUrl;
-        HustleSession.setSession(userObj, tokenFromUrl);
+        SevaSathiSession.setSession(userObj, tokenFromUrl);
 
         // Auto-redirect straight to the correct dashboard
         const targetDash = roleFromUrl === 'worker' ? 'worker-dashboard.html' : 'customer-dashboard.html';
@@ -70,11 +70,11 @@
       }
 
       // If user is not logged in at all, redirect to auth signin
-      if (!HustleSession.isLoggedIn() && !tokenFromUrl) {
+      if (!SevaSathiSession.isLoggedIn() && !tokenFromUrl) {
         window.location.href = 'auth.html?mode=signin';
       }
 
-      const u = HustleSession.getUser() || {};
+      const u = SevaSathiSession.getUser() || {};
       const r = u.role || roleFromUrl || 'customer';
       const n = u.name || nameFromUrl || 'Friend';
       const isWorker = r === 'worker';
@@ -90,7 +90,7 @@
       if (eyebrowEl) eyebrowEl.textContent = isWorker ? 'WORKER PARTNER PORTAL · ONLINE' : 'CUSTOMER ACCOUNT · ACTIVE';
       if (pillBadge) {
         pillBadge.textContent = isWorker ? `WORKER PARTNER · ${u.skillCategory || 'PRO'}` : 'VERIFIED CUSTOMER';
-        pillBadge.style.color = isWorker ? '#c65316' : '#a85d1d';
+        pillBadge.style.color = isWorker ? '#15803d' : '#15803d';
       }
 
       const dashboardLink = document.querySelector('.submit');
@@ -114,7 +114,7 @@
             </button>
             <button type="button" onclick="location.href='terms.html'">
               <span>🛡️</span><b>Worker Dignity &amp; Insurance Protection</b>
-              <small>Every gig is backed by Hustle Fair Partner Standards</small>
+              <small>Every gig is backed by SevaSathi Fair Partner Standards</small>
             </button>
           `;
         }
@@ -141,7 +141,7 @@
 
       // Explicit Log Out Handlers
       function handleLogout() {
-        HustleSession.logOut('index.html');
+        SevaSathiSession.logOut('index.html');
       }
 
       document.querySelector('#btn-welcome-logout')?.addEventListener('click', handleLogout);

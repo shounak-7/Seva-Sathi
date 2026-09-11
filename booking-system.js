@@ -1,5 +1,5 @@
 /**
- * Hustle - Service Workers Directory & Appointment Booking System
+ * SevaSathi - Service Workers Directory & Appointment Booking System
  * Handles worker listing per service, direct & open-pool appointment booking,
  * and two-way time & price bargaining between customers and workers.
  */
@@ -18,11 +18,12 @@
     return '/api/auth';
   })();
 
-  // Canonical Service Mapping helper
+  // Canonical Service Mapping helper with English, Hindi, and Bengali titles
   const TITLE_MAP = {
     'deep home cleaning': 'home-cleaning',
     'at-home spa therapy': 'spa-therapy',
     'spa therapy': 'spa-therapy',
+    'tutoring': 'maths-tutoring',
     'maths tutoring': 'maths-tutoring',
     'handyman visits': 'handyman',
     'handyman': 'handyman',
@@ -51,11 +52,118 @@
     'pest control & sanitization': 'pest-control',
     'pest control': 'pest-control',
     'senior care & assistance': 'senior-care',
-    'senior care': 'senior-care'
+    'senior care': 'senior-care',
+
+    // Hindi Aliases
+    'घर की गहरी सफाई': 'home-cleaning',
+    'घर की सफाई': 'home-cleaning',
+    'सफाई': 'home-cleaning',
+    'घर पर स्पा थेरेपी': 'spa-therapy',
+    'स्पा थेरेपी': 'spa-therapy',
+    'स्पा': 'spa-therapy',
+    'गणित ट्यूशन': 'maths-tutoring',
+    'ट्यूशन': 'maths-tutoring',
+    'हैंडीमैन सेवा': 'handyman',
+    'हैंडीमैन': 'handyman',
+    'इलेक्ट्रीशियन सेवा': 'electrician',
+    'इलेक्ट्रीशियन': 'electrician',
+    'बिजली मिस्त्री': 'electrician',
+    'बिजली': 'electrician',
+    'प्लंबिंग समाधान': 'plumbing',
+    'प्लंबिंग': 'plumbing',
+    'प्लंबर': 'plumbing',
+    'नल मरम्मत': 'plumbing',
+    'बढ़ईगीरी और असेंबली': 'carpentry',
+    'बढ़ईगीरी': 'carpentry',
+    'बढ़ई': 'carpentry',
+    'फर्नीचर': 'carpentry',
+    'बेबीसिटिंग': 'babysitting',
+    'शिशु देखभाल': 'babysitting',
+    'पालतू जानवरों की देखभाल': 'pet-care',
+    'पालतू देखभाल': 'pet-care',
+    'घर की व्यवस्था': 'home-organisation',
+    'घर का प्रबंधन': 'home-organisation',
+    'लैपटॉप और वाई-फाई सहायता': 'tech-help',
+    'तकनीकी सहायता': 'tech-help',
+    'लैपटॉप मरम्मत': 'tech-help',
+    'बगीचे की देखभाल': 'garden-care',
+    'बागवानी': 'garden-care',
+    'उपकरण देखभाल और मरम्मत': 'appliances',
+    'उपकरण मरम्मत': 'appliances',
+    'एसी मरम्मत': 'appliances',
+    'पेंटिंग और वॉटरप्रूफिंग': 'painting',
+    'पेंटिंग': 'painting',
+    'पेंटर': 'painting',
+    'रंग रोगन': 'painting',
+    'फिटनेस और योग कोचिंग': 'fitness',
+    'फिटनेस': 'fitness',
+    'योग': 'fitness',
+    'कार डिटेलिंग और इको वॉश': 'auto-care',
+    'कार वॉश': 'auto-care',
+    'कीट नियंत्रण और स्वच्छता': 'pest-control',
+    'कीट नियंत्रण': 'pest-control',
+    'पेस्ट कंट्रोल': 'pest-control',
+    'वरिष्ठ नागरिक देखभाल और सहायता': 'senior-care',
+    'वरिष्ठ देखभाल': 'senior-care',
+
+    // Bengali Aliases
+    'গভীর বাড়ি পরিষ্কার': 'home-cleaning',
+    'বাড়ি ডিপ ক্লিনিং': 'home-cleaning',
+    'ঘর ডিপ ক্লিনিং': 'home-cleaning',
+    'ঘর পরিষ্কার': 'home-cleaning',
+    'ক্লিনিং': 'home-cleaning',
+    'হোম স্পা থেরাপি': 'spa-therapy',
+    'স্পা থেরাপি': 'spa-therapy',
+    'স্পা': 'spa-therapy',
+    'গণিত টিউশন': 'maths-tutoring',
+    'টিউশন ও কোচিং': 'maths-tutoring',
+    'টিউটরিং': 'maths-tutoring',
+    'টিউশন': 'maths-tutoring',
+    'হ্যান্ডিম্যান সার্ভিস': 'handyman',
+    'হ্যান্ডিম্যান': 'handyman',
+    'ইলেকট্রিশিয়ান সার্ভিস': 'electrician',
+    'ইলেকট্রিশিয়ান': 'electrician',
+    'বৈদ্যুতিক মিস্ত্রি': 'electrician',
+    'প্লাম্বিং সমাধান': 'plumbing',
+    'প্লাম্বার সার্ভিস': 'plumbing',
+    'প্লাম্বার': 'plumbing',
+    'ছুতোর ও আসবাবপত্র মেরামত': 'carpentry',
+    'ছুতোর': 'carpentry',
+    'কাঠের কাজ': 'carpentry',
+    'কার্পেন্টার': 'carpentry',
+    'বেবিসিটিং ও শিশু যত্ন': 'babysitting',
+    'বেবিসিটিং': 'babysitting',
+    'শিশু যত্ন': 'babysitting',
+    'পোষা প্রাণীর যত্ন ও হাঁটা': 'pet-care',
+    'পোষা প্রাণীর যত্ন': 'pet-care',
+    'বাড়ি পরিপাটি ও সাজানো': 'home-organisation',
+    'বাড়ি গোছানো': 'home-organisation',
+    'ল্যাপটপ ও ওয়াই-ফাই সহায়তা': 'tech-help',
+    'ল্যাপটপ মেরামত': 'tech-help',
+    'টেক সাপোর্ট': 'tech-help',
+    'বাগান পরিচর্যা': 'garden-care',
+    'বাগান যত্ন': 'garden-care',
+    'যন্ত্রপাতি মেরামত ও যত্ন': 'appliances',
+    'এসি মেরামত': 'appliances',
+    'ফ্রিজ মেরামত': 'appliances',
+    'পেইন্টিং ও ওয়াটারপ্রুফিং': 'painting',
+    'রং মিস্ত্রি': 'painting',
+    'পেইন্টিং': 'painting',
+    'ফিটনেস ও যোগ কোচিং': 'fitness',
+    'ফিটনেস': 'fitness',
+    'যোগব্যায়াম': 'fitness',
+    'গাড়ি ওয়াশ ও ডিটেইলিং': 'auto-care',
+    'কার ওয়াশ': 'auto-care',
+    'পোকামাকড় দমন ও স্যানিটাইজেশন': 'pest-control',
+    'পোকামাকড় দমন': 'pest-control',
+    'পেস্ট কন্ট্রোল': 'pest-control',
+    'প্রবীণ সেবা ও সহায়তা': 'senior-care',
+    'বয়স্কদের সেবা': 'senior-care',
+    'প্রবীণ সেবা': 'senior-care'
   };
 
   // Custom Toast Popup Notification System
-  function showHustleToast(message, type = 'success', duration = 3800) {
+  function showSevaSathiToast(message, type = 'success', duration = 3800) {
     let container = document.getElementById('hustle-toast-container');
     if (!container) {
       container = document.createElement('div');
@@ -68,7 +176,7 @@
     toast.className = `hustle-toast-item ${type}`;
 
     let icon = '✓';
-    let title = 'Hustle Escrow Notification';
+    let title = 'SevaSathi Escrow Notification';
     if (type === 'success') {
       icon = '🛡️';
       title = 'Escrow Deposit & Authorization';
@@ -103,7 +211,7 @@
     closeBtn?.addEventListener('click', dismiss);
     setTimeout(dismiss, duration);
   }
-  window.showHustleToast = showHustleToast;
+  window.showSevaSathiToast = showSevaSathiToast;
 
   function resolveServiceId(card) {
     if (card.dataset.serviceId) return card.dataset.serviceId;
@@ -111,6 +219,24 @@
     for (const key in TITLE_MAP) {
       if (heading.includes(key) || key.includes(heading)) {
         return TITLE_MAP[key];
+      }
+    }
+    // Also check i18n inverted map if heading is translated
+    if (window.SevaSathiI18n && window.SevaSathiI18n.PHRASE_MAP) {
+      for (const lang of ['hi', 'bn']) {
+        const pMap = window.SevaSathiI18n.PHRASE_MAP[lang];
+        if (pMap) {
+          for (const [enKey, transVal] of Object.entries(pMap)) {
+            if (transVal && (transVal.toLowerCase() === heading || heading.includes(transVal.toLowerCase()))) {
+              const enLower = enKey.toLowerCase();
+              for (const key in TITLE_MAP) {
+                if (enLower.includes(key) || key.includes(enLower)) {
+                  return TITLE_MAP[key];
+                }
+              }
+            }
+          }
+        }
       }
     }
     return 'handyman'; // fallback default
@@ -131,8 +257,8 @@
   let pendingServiceTarget = null;
 
   function hasCustomerSpecifiedLocation() {
-    if (window.HustleLocation && typeof window.HustleLocation.hasLocation === 'function') {
-      return window.HustleLocation.hasLocation();
+    if (window.SevaSathiLocation && typeof window.SevaSathiLocation.hasLocation === 'function') {
+      return window.SevaSathiLocation.hasLocation();
     }
     const loc = localStorage.getItem('hustleLocation');
     const city = localStorage.getItem('hustleSelectedCity');
@@ -140,8 +266,8 @@
   }
 
   function promptCustomerLocationRequired(pendingTarget = null) {
-    if (window.HustleLocationGate?.open) {
-      window.HustleLocationGate.open(pendingTarget);
+    if (window.SevaSathiLocationGate?.open) {
+      window.SevaSathiLocationGate.open(pendingTarget);
       return;
     }
     injectModalElements();
@@ -250,8 +376,8 @@
         <div class="hustle-modal" role="dialog" aria-labelledby="payment-modal-title" style="max-width: 490px; background:#ffffff; border:1.5px solid #e7dfd2; border-radius:20px; overflow:hidden;">
           <div class="hustle-modal-header" style="background: #f7f1e8; border-bottom: 1.5px solid #e7dfd2; padding: 18px 24px;">
             <h2 id="payment-modal-title" style="color:#25231f; font-family:'Fraunces', Georgia, serif !important; font-size:1.2rem; font-weight:700; display:flex; align-items:center; gap:10px; margin:0;">
-              <span style="display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px; background:#fff7ed; border:1px solid #fdba74; border-radius:8px; font-size:15px; color:#e56d24;">🛡️</span>
-              <span>Secure Hustle Escrow Checkout</span>
+              <span style="display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px; background:#f0fdf4; border:1px solid #86efac; border-radius:8px; font-size:15px; color:#16a34a;">🛡️</span>
+              <span>Secure SevaSathi Escrow Checkout</span>
             </h2>
             <button type="button" class="hustle-modal-close" id="btn-close-payment-modal" style="color:#706d66; background:#fff; border:1px solid #e7dfd2;" aria-label="Close modal">✕</button>
           </div>
@@ -297,16 +423,16 @@
         const lng = Number(btn.dataset.lng);
         const coords = (lat && lng) ? { lat, lng } : null;
 
-        if (window.HustleLocation?.persistLocation) {
-          window.HustleLocation.persistLocation(city, coords);
+        if (window.SevaSathiLocation?.persistLocation) {
+          window.SevaSathiLocation.persistLocation(city, coords);
         } else {
           localStorage.setItem('hustleLocation', city);
           localStorage.setItem('hustleSelectedCity', city);
           if (coords) localStorage.setItem('hustleLocationCoords', JSON.stringify(coords));
         }
 
-        if (window.HustleLocation?.setLocationLabel) {
-          window.HustleLocation.setLocationLabel(city);
+        if (window.SevaSathiLocation?.setLocationLabel) {
+          window.SevaSathiLocation.setLocationLabel(city);
         }
 
         closeLocationModal();
@@ -357,20 +483,20 @@
             }
           } catch {}
 
-          if (window.HustleLocation?.resolveCityString) {
-            city = window.HustleLocation.resolveCityString(readable);
+          if (window.SevaSathiLocation?.resolveCityString) {
+            city = window.SevaSathiLocation.resolveCityString(readable);
           }
 
-          if (window.HustleLocation?.persistLocation) {
-            window.HustleLocation.persistLocation(readable, point);
+          if (window.SevaSathiLocation?.persistLocation) {
+            window.SevaSathiLocation.persistLocation(readable, point);
           } else {
             localStorage.setItem('hustleLocation', readable);
             localStorage.setItem('hustleSelectedCity', city);
             localStorage.setItem('hustleLocationCoords', JSON.stringify(point));
           }
 
-          if (window.HustleLocation?.setLocationLabel) {
-            window.HustleLocation.setLocationLabel(readable);
+          if (window.SevaSathiLocation?.setLocationLabel) {
+            window.SevaSathiLocation.setLocationLabel(readable);
           }
 
           gpsBtn.disabled = false;
@@ -402,8 +528,8 @@
     // Wire manual search trigger to the header dropdown sheet
     document.getElementById('btn-location-modal-manual')?.addEventListener('click', () => {
       closeLocationModal();
-      if (window.HustleLocation?.openPicker) {
-        window.HustleLocation.openPicker();
+      if (window.SevaSathiLocation?.openPicker) {
+        window.SevaSathiLocation.openPicker();
       }
     });
   }
@@ -487,7 +613,7 @@
       </div>
 
       <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px 14px; margin-bottom:16px; font-size:0.8rem; color:#64748b;">
-        🔒 <strong>Hustle 100% Escrow Guarantee:</strong> Your payment is held safely in escrow. The specialist cannot claim payout until the task is successfully performed and marked completed.
+        🔒 <strong>SevaSathi 100% Escrow Guarantee:</strong> Your payment is held safely in escrow. The specialist cannot claim payout until the task is successfully performed and marked completed.
       </div>
 
       <div id="escrow-pay-status-msg" style="display:none; padding:10px; border-radius:8px; margin-bottom:12px; font-size:0.85rem; text-align:center;"></div>
@@ -522,7 +648,7 @@
       }
 
       try {
-        const token = window.HustleSession ? HustleSession.getToken() : localStorage.getItem('hustleToken');
+        const token = window.SevaSathiSession ? SevaSathiSession.getToken() : localStorage.getItem('hustleToken');
         const res = await fetch(`${API_BASE}/bookings/${bookingId}/pay`, {
           method: 'POST',
           headers: {
@@ -540,10 +666,10 @@
         if (statusMsg) {
           statusMsg.style.background = '#ecfdf5';
           statusMsg.style.color = '#065f46';
-          statusMsg.innerHTML = `<strong>✓ Payment Successful!</strong> ₹${price} deposited to Hustle Secure Escrow.`;
+          statusMsg.innerHTML = `<strong>✓ Payment Successful!</strong> ₹${price} deposited to SevaSathi Secure Escrow.`;
         }
 
-        showHustleToast(`Payment of ₹${price} successfully deposited into Hustle Secure Escrow!`, 'success');
+        showSevaSathiToast(`Payment of ₹${price} successfully deposited into SevaSathi Secure Escrow!`, 'success');
 
         setTimeout(() => {
           closePaymentModal();
@@ -577,8 +703,8 @@
 
     // On generic main dashboard, do not let guests book services - ask to log in as customer
     if (isMainLanding && !isCustomerLoggedIn()) {
-      if (window.showHustleToast) {
-        showHustleToast('Please log in with your customer account to book appointments.', 'info', 3500);
+      if (window.showSevaSathiToast) {
+        showSevaSathiToast('Please log in with your customer account to book appointments.', 'info', 3500);
       }
       setTimeout(() => {
         window.location.href = 'auth.html?role=customer&mode=signin';
@@ -658,21 +784,21 @@
           <h3>${canonicalName}</h3>
           <p>Verified background-checked specialists serving <strong>${targetCity}</strong></p>
         </div>
-        <span class="badge-guarantee">🛡️ Hustle Guarantee</span>
+        <span class="badge-guarantee">🛡️ SevaSathi Guarantee</span>
       </div>
     `;
 
     // Case 1: Out of coverage (outside the 8 cities with no local registered workers)
     if (data.noCoverage) {
       html += `
-        <div style="background:#fffbeb; border:1.5px dashed #f59e0b; border-radius:14px; padding:22px; text-align:center; margin-bottom:16px;">
+        <div style="background:#f0fdf4; border:1.5px dashed #16a34a; border-radius:14px; padding:22px; text-align:center; margin-bottom:16px;">
           <span style="font-size:32px; display:block; margin-bottom:8px;">📍</span>
-          <h4 style="color:#b45309; font-size:1.05rem; margin:0 0 6px 0; font-weight:800;">Sorry! Currently no workers available in ${targetCity}</h4>
-          <p style="color:#78350f; font-size:0.85rem; line-height:1.5; max-width:440px; margin:0 auto 16px auto;">
-            Hustle is actively expanding across India! You can switch to one of our primary hubs (Kolkata, Bengaluru, Chennai, Mumbai, Delhi, Hyderabad, Ahmedabad, Pune) or post your request to our open gig pool below.
+          <h4 style="color:#15803d; font-size:1.05rem; margin:0 0 6px 0; font-weight:800;">Sorry! Currently no workers available in ${targetCity}</h4>
+          <p style="color:#166534; font-size:0.85rem; line-height:1.5; max-width:440px; margin:0 auto 16px auto;">
+            SevaSathi is actively expanding across India! You can switch to one of our primary hubs (Kolkata, Bengaluru, Chennai, Mumbai, Delhi, Hyderabad, Ahmedabad, Pune) or post your request to our open gig pool below.
             When a local pro registers in <strong>${targetCity}</strong>, they will become instantly available!
           </p>
-          <button type="button" class="btn-open-pool-book" id="btn-pool-book" style="background:#d97706;">
+          <button type="button" class="btn-open-pool-book" id="btn-pool-book" style="background:#16a34a;">
             📢 Post Request to Open Gig Pool
           </button>
         </div>
@@ -735,9 +861,9 @@
     } else {
       // No exact specialist registered yet in this city
       html += `
-        <div style="background:#fffbeb; border:1px solid #fef3c7; border-radius:12px; padding:16px; margin-bottom:18px; text-align:center;">
-          <strong style="color:#b45309; display:block; margin-bottom:4px;">No Dedicated ${canonicalName} Specialist in ${targetCity} Right Now</strong>
-          <p style="font-size:0.85rem; color:#78350f; margin:0;">Don’t worry! You can book cross-trained verified pros in ${targetCity} below or post your request to our open gig pool.</p>
+        <div style="background:#f0fdf4; border:1px solid #86efac; border-radius:12px; padding:16px; margin-bottom:18px; text-align:center;">
+          <strong style="color:#15803d; display:block; margin-bottom:4px;">No Dedicated ${canonicalName} Specialist in ${targetCity} Right Now</strong>
+          <p style="font-size:0.85rem; color:#166534; margin:0;">Don’t worry! You can book cross-trained verified pros in ${targetCity} below or post your request to our open gig pool.</p>
         </div>
       `;
     }
@@ -821,6 +947,10 @@
     document.getElementById('btn-pool-book')?.addEventListener('click', () => {
       renderBookingForm(null, serviceId, canonicalName, basePrice);
     });
+
+    if (window.SevaSathiI18n && typeof window.SevaSathiI18n.applyTranslations === 'function') {
+      window.SevaSathiI18n.applyTranslations(modalBody);
+    }
   }
 
   /**
@@ -837,7 +967,7 @@
     const today = new Date().toISOString().split('T')[0];
     const initialPrice = worker?.baseRate || basePrice || 499;
 
-    const user = window.HustleSession ? HustleSession.getUser() : JSON.parse(localStorage.getItem('hustleCurrentUser') || 'null');
+    const user = window.SevaSathiSession ? SevaSathiSession.getUser() : JSON.parse(localStorage.getItem('hustleCurrentUser') || 'null');
     const selectedCity = localStorage.getItem('hustleSelectedCity') || '';
     const defaultAddress = (user?.locality && !user.locality.toLowerCase().includes('bengaluru local')) ? user.locality : '';
 
@@ -846,7 +976,7 @@
 
       <div class="booking-target-banner" style="margin-top:10px;">
         <div class="target-info">
-          <strong>${isDirect ? worker.name : '🌐 Hustle Open Pro Pool'}</strong>
+          <strong>${isDirect ? worker.name : '🌐 SevaSathi Open Pro Pool'}</strong>
           <small>${isDirect ? (worker.skillCategory + ' · ★ ' + (worker.rating || '4.9')) : 'Broadcast to all capable available workers'}</small>
         </div>
         <span style="font-size:0.85rem; font-weight:700; color:#2563eb; background:#eff6ff; padding:4px 10px; border-radius:8px;" id="booking-badge-service-name">
@@ -872,28 +1002,41 @@
               <option value="Pet Care & Dog Walking" ${(serviceName && serviceName.toLowerCase().includes('pet')) ? 'selected' : ''}>Pet Care &amp; Dog Walking</option>
               <option value="Garden & Plant Care" ${(serviceName && serviceName.toLowerCase().includes('garden')) ? 'selected' : ''}>Garden &amp; Plant Care</option>
               <option value="Yoga & Fitness Coaching" ${(serviceName && serviceName.toLowerCase().includes('yoga')) ? 'selected' : ''}>Yoga &amp; Fitness Coaching</option>
+              <option value="Tutoring" ${(serviceName && (serviceName.toLowerCase().includes('tutor') || serviceName.toLowerCase().includes('math'))) ? 'selected' : ''}>Tutoring</option>
               <option value="Car & Two-Wheeler Care" ${(serviceName && serviceName.toLowerCase().includes('car')) ? 'selected' : ''}>Car &amp; Two-Wheeler Care</option>
               <option value="Pest Control & Fumigation" ${(serviceName && serviceName.toLowerCase().includes('pest')) ? 'selected' : ''}>Pest Control &amp; Fumigation</option>
-              <option value="Other" ${(serviceName && !serviceName.includes('Open Pro Pool') && !serviceName.includes('Custom Job Needs') && !['plumb', 'electr', 'clean', 'carpent', 'ac', 'paint', 'tech', 'furniture', 'baby', 'pet', 'garden', 'yoga', 'car', 'pest'].some(k => serviceName.toLowerCase().includes(k))) ? 'selected' : ''}>Other Custom Trade (Specify below)</option>
+              <option value="Other" ${(serviceName && !serviceName.includes('Open Pro Pool') && !serviceName.includes('Custom Job Needs') && !['plumb', 'electr', 'clean', 'carpent', 'ac', 'paint', 'tech', 'furniture', 'baby', 'pet', 'garden', 'yoga', 'tutor', 'math', 'car', 'pest'].some(k => serviceName.toLowerCase().includes(k))) ? 'selected' : ''}>Other Custom Trade (Specify below)</option>
             </select>
-            <input type="text" id="book-custom-service-input" placeholder="Type your demanded service (e.g. AC Repair, Sofa Upholstery, Math Tutor, Balcony Netting)" style="margin-top:8px; width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:0.9rem; display:none;" value="${(serviceName && !serviceName.includes('Open Pro Pool') && !serviceName.includes('Custom Job Needs')) ? serviceName : ''}" />
+            <input type="text" id="book-custom-service-input" placeholder="Type your demanded service (e.g. AC Repair, Sofa Upholstery, Tutor, Balcony Netting)" style="margin-top:8px; width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:0.9rem; display:none;" value="${(serviceName && !serviceName.includes('Open Pro Pool') && !serviceName.includes('Custom Job Needs')) ? serviceName : ''}" />
           </div>
         ` : ''}
 
         <div class="booking-row-2">
           <div class="booking-field-group">
-            <label for="book-date">Preferred Date <span style="color:#e11d48;">*</span></label>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <label for="book-date" style="margin:0;">Preferred Date <span style="color:#e11d48;">*</span></label>
+              <div style="display:flex; gap:4px;">
+                <button type="button" class="btn-quick-date-pill" data-days="0" style="padding:2px 6px; font-size:10.5px; font-weight:700; border-radius:5px; border:1px solid #cbd5e1; background:#f8fafc; cursor:pointer;">Today</button>
+                <button type="button" class="btn-quick-date-pill" data-days="1" style="padding:2px 6px; font-size:10.5px; font-weight:700; border-radius:5px; border:1px solid #86efac; background:#f0fdf4; color:#15803d; cursor:pointer;">Tomorrow</button>
+                <button type="button" class="btn-quick-date-pill" data-days="2" style="padding:2px 6px; font-size:10.5px; font-weight:700; border-radius:5px; border:1px solid #cbd5e1; background:#f8fafc; cursor:pointer;">+2 Days</button>
+              </div>
+            </div>
             <input type="date" id="book-date" min="${today}" value="${today}" required />
           </div>
 
           <div class="booking-field-group">
             <label for="book-time">Preferred Time Slot <span style="color:#e11d48;">*</span></label>
-            <select id="book-time" required>
+            <select id="book-time" required style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:10px; font-weight:600; font-size:0.9rem; color:#0f172a; background:#fff;">
+              <option value="Flexible / Any Time">Flexible / Any Time</option>
+              <option value="06:00 AM – 09:00 AM (Early Morning)">06:00 AM – 09:00 AM (Early Morning)</option>
               <option value="09:00 AM – 12:00 PM (Morning)">09:00 AM – 12:00 PM (Morning)</option>
               <option value="12:00 PM – 03:00 PM (Afternoon)" selected>12:00 PM – 03:00 PM (Afternoon)</option>
               <option value="03:00 PM – 06:00 PM (Late Afternoon)">03:00 PM – 06:00 PM (Late Afternoon)</option>
               <option value="06:00 PM – 09:00 PM (Evening)">06:00 PM – 09:00 PM (Evening)</option>
+              <option value="09:00 PM – 11:00 PM (Night)">09:00 PM – 11:00 PM (Night)</option>
+              <option value="custom">Specific Time / Custom Hour (Specify below)</option>
             </select>
+            <input type="text" id="book-custom-time-input" placeholder="e.g. 10:30 AM, 4:00 PM, Tomorrow 2 PM" style="margin-top:8px; width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:0.9rem; display:none;" />
           </div>
         </div>
 
@@ -921,7 +1064,7 @@
             <span style="position:absolute; left:12px; top:10px; font-weight:700; color:#475569;">₹</span>
             <input type="number" id="book-price" min="1" step="any" value="${initialPrice}" placeholder="Enter any budget in ₹" style="padding-left:28px;" required />
           </div>
-          <div id="ai-price-tip" style="display:none; margin-top:6px; font-size:0.8rem; padding:6px 10px; border-radius:6px; background:#fff7ed; border:1px solid #fed7aa; color:#9a3412;"></div>
+          <div id="ai-price-tip" style="display:none; margin-top:6px; font-size:0.8rem; padding:6px 10px; border-radius:6px; background:#f0fdf4; border:1px solid #86efac; color:#15803d;"></div>
           <div class="budget-bargain-hint">
             💡 <strong>Price &amp; Timing Bargaining:</strong> You propose your initial budget here (enter any amount). The worker can accept directly or respond with an adjusted time or counter-offer for your approval!
           </div>
@@ -936,6 +1079,27 @@
     `;
 
     modalBody.innerHTML = html;
+
+    // Attach quick date pill click handlers
+    modalBody.querySelectorAll('.btn-quick-date-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const days = parseInt(btn.getAttribute('data-days'), 10) || 0;
+        const targetDate = new Date();
+        targetDate.setDate(targetDate.getDate() + days);
+        const dateInput = document.getElementById('book-date');
+        if (dateInput) {
+          dateInput.value = targetDate.toISOString().split('T')[0];
+        }
+        modalBody.querySelectorAll('.btn-quick-date-pill').forEach(b => {
+          b.style.background = '#f8fafc';
+          b.style.borderColor = '#cbd5e1';
+          b.style.color = 'inherit';
+        });
+        btn.style.background = '#f0fdf4';
+        btn.style.borderColor = '#86efac';
+        btn.style.color = '#15803d';
+      });
+    });
 
     document.getElementById('btn-back-to-directory')?.addEventListener('click', () => {
       openServiceWorkersModal(serviceId, serviceName, basePrice);
@@ -958,12 +1122,33 @@
       updateCustomVis();
     }
 
+    const timeSelect = document.getElementById('book-time');
+    const customTimeInput = document.getElementById('book-custom-time-input');
+    if (timeSelect && customTimeInput) {
+      const updateTimeVis = () => {
+        if (timeSelect.value === 'custom') {
+          customTimeInput.style.display = 'block';
+          customTimeInput.required = true;
+          customTimeInput.focus();
+        } else {
+          customTimeInput.style.display = 'none';
+          customTimeInput.required = false;
+        }
+      };
+      timeSelect.addEventListener('change', updateTimeVis);
+      updateTimeVis();
+    }
+
+    if (window.SevaSathiI18n && typeof window.SevaSathiI18n.applyTranslations === 'function') {
+      window.SevaSathiI18n.applyTranslations(document.getElementById('hustle-service-modal-overlay') || modalBody);
+    }
+
     // AI Polish Task Scope
     document.getElementById('btn-ai-polish-notes')?.addEventListener('click', async () => {
       const notesEl = document.getElementById('book-notes');
       const rawNotes = notesEl?.value.trim();
       if (!rawNotes) {
-        showHustleToast('Please write a brief summary of your task first!', 'warning');
+        showSevaSathiToast('Please write a brief summary of your task first!', 'warning');
         notesEl?.focus();
         return;
       }
@@ -988,7 +1173,7 @@
         const data = await res.json();
         if (data && data.enhanced) {
           notesEl.value = data.enhanced;
-          showHustleToast('✨ Job scope polished with AI!', 'success');
+          showSevaSathiToast('✨ Job scope polished with AI!', 'success');
         }
       } catch (err) {
         console.error('AI polish error:', err);
@@ -1042,6 +1227,10 @@
       }
       await submitAppointment(worker, serviceId, effectiveServiceName);
     });
+
+    if (window.SevaSathiI18n && typeof window.SevaSathiI18n.applyTranslations === 'function') {
+      window.SevaSathiI18n.applyTranslations(modalBody);
+    }
   }
 
   /**
@@ -1054,8 +1243,8 @@
     errorEl.style.display = 'none';
 
     // Verify User Session
-    const user = window.HustleSession ? HustleSession.getUser() : JSON.parse(localStorage.getItem('hustleCurrentUser') || 'null');
-    const token = window.HustleSession ? HustleSession.getToken() : localStorage.getItem('hustleToken');
+    const user = window.SevaSathiSession ? SevaSathiSession.getUser() : JSON.parse(localStorage.getItem('hustleCurrentUser') || 'null');
+    const token = window.SevaSathiSession ? SevaSathiSession.getToken() : localStorage.getItem('hustleToken');
 
     if (!user || !token) {
       if (confirm('Please sign in with your customer account to book appointments. Proceed to Sign In?')) {
@@ -1070,11 +1259,21 @@
       return;
     }
 
-    const scheduledDate = document.getElementById('book-date').value;
-    const scheduledTime = document.getElementById('book-time').value;
-    const locality = document.getElementById('book-locality').value.trim();
-    const notes = document.getElementById('book-notes').value.trim();
-    const price = Number(document.getElementById('book-price').value);
+    const scheduledDate = document.getElementById('book-date')?.value;
+    let scheduledTime = document.getElementById('book-time')?.value || '';
+    const customTimeInput = document.getElementById('book-custom-time-input');
+    if (scheduledTime === 'custom') {
+      scheduledTime = customTimeInput ? customTimeInput.value.trim() : '';
+    }
+    const locality = document.getElementById('book-locality')?.value.trim();
+    const notes = document.getElementById('book-notes')?.value.trim();
+    const price = Number(document.getElementById('book-price')?.value);
+
+    if (!scheduledDate || !scheduledTime) {
+      errorEl.textContent = 'Please choose your preferred date and time slot.';
+      errorEl.style.display = 'block';
+      return;
+    }
 
     if (!locality || !notes) {
       errorEl.textContent = 'Please fill in your address and task instructions.';
@@ -1090,8 +1289,20 @@
       let coords = null;
       try { coords = JSON.parse(localStorage.getItem('hustleLocationCoords') || 'null'); } catch {}
 
+      let cleanServiceId = serviceId;
+      if (!cleanServiceId || cleanServiceId === 'custom-pool' || cleanServiceId === 'direct-service') {
+        const lowerName = (serviceName || '').toLowerCase().trim();
+        for (const k in TITLE_MAP) {
+          if (lowerName.includes(k) || k.includes(lowerName)) {
+            cleanServiceId = TITLE_MAP[k];
+            break;
+          }
+        }
+      }
+      if (!cleanServiceId) cleanServiceId = 'handyman';
+
       const payload = {
-        serviceId,
+        serviceId: cleanServiceId,
         serviceName,
         workerId: worker ? (worker._id || worker.id) : null,
         workerName: worker ? (worker.name || worker.fullName || null) : null,
@@ -1140,8 +1351,12 @@
         </div>
       `;
 
+      if (window.SevaSathiI18n && typeof window.SevaSathiI18n.applyTranslations === 'function') {
+        window.SevaSathiI18n.applyTranslations(modalBody);
+      }
+
       if (!worker) {
-        showHustleToast(`Open Pool Request for "${serviceName}" posted! Showing in your Appointments.`, 'success');
+        showSevaSathiToast(`Open Pool Request for "${serviceName}" posted! Showing in your Appointments.`, 'success');
       }
 
       document.getElementById('btn-view-my-bookings')?.addEventListener('click', () => {
@@ -1184,7 +1399,7 @@
     overlay.classList.add('active');
     overlay.setAttribute('aria-hidden', 'false');
 
-    const token = window.HustleSession ? HustleSession.getToken() : localStorage.getItem('hustleToken');
+    const token = window.SevaSathiSession ? SevaSathiSession.getToken() : localStorage.getItem('hustleToken');
     if (!token) {
       modalBody.innerHTML = `
         <div style="text-align:center; padding: 30px;">
@@ -1243,6 +1458,9 @@
           </button>
         </div>
       `;
+      if (window.SevaSathiI18n && typeof window.SevaSathiI18n.applyTranslations === 'function') {
+        window.SevaSathiI18n.applyTranslations(modalBody);
+      }
       return;
     }
 
@@ -1253,7 +1471,7 @@
         const u = JSON.parse(userJson);
         if (u.warningsCount > 0) {
           userWarningBanner = `
-            <div style="background:#fffbeb; border:1.5px solid #fde68a; border-radius:10px; padding:10px 14px; margin-bottom:14px; display:flex; align-items:center; gap:10px; font-size:0.825rem; color:#92400e;">
+            <div style="background:#f0fdf4; border:1.5px solid #86efac; border-radius:10px; padding:10px 14px; margin-bottom:14px; display:flex; align-items:center; gap:10px; font-size:0.825rem; color:#15803d;">
               <span style="font-size:18px;">⚠️</span>
               <div>
                 <strong>Account Policy Notice (${u.warningsCount}/3 Warnings):</strong>
@@ -1296,7 +1514,7 @@
               <h4>${b.serviceName}</h4>
               <p style="font-size:0.825rem; color:#64748b; margin:0;">
                 Worker: <strong>${b.workerName || 'Awaiting Specialist Claim (Open Pool)'}</strong>
-                ${b.assignedWorkerSkill ? `<span style="color:#b45309; font-weight:700; margin-left:6px; background:#fef3c7; border:1px solid #fde68a; padding:2px 7px; border-radius:5px; font-size:0.75rem;">✦ Skill: "${b.assignedWorkerSkill}"</span>` : ''}
+                ${b.assignedWorkerSkill ? `<span style="color:#15803d; font-weight:700; margin-left:6px; background:#dcfce7; border:1px solid #86efac; padding:2px 7px; border-radius:5px; font-size:0.75rem;">✦ Skill: "${b.assignedWorkerSkill}"</span>` : ''}
               </p>
             </div>
             <span class="booking-status-badge ${b.status}">${isPaid && isAccepted ? 'paid & scheduled' : (!b.workerId ? 'open pool' : b.status)}</span>
@@ -1309,6 +1527,25 @@
             <div><span>📍 Area:</span> <strong>${b.locality}</strong></div>
           </div>
 
+          <!-- Confirmed Direct Specialist Contact -->
+          ${(isAccepted || isCompleted) && b.workerPhone ? `
+            <div class="confirmed-worker-contact-card" style="background:#ecfdf5; border:1.5px solid #86efac; border-radius:10px; padding:10px 14px; margin-top:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+              <div>
+                <span style="font-size:0.775rem; color:#15803d; font-weight:800; text-transform:uppercase; display:block;">📞 Specialist Direct Phone:</span>
+                <a href="tel:${b.workerPhone}" style="font-size:1rem; font-weight:800; color:#065f46; text-decoration:none; display:inline-flex; align-items:center; gap:5px;">
+                  <span>${b.workerPhone}</span>
+                </a>
+              </div>
+              <a href="tel:${b.workerPhone}" style="background:#16a34a; color:#ffffff; padding:7px 16px; border-radius:999px; font-weight:700; font-size:0.825rem; text-decoration:none; display:inline-flex; align-items:center; gap:5px; box-shadow:0 2px 6px rgba(22, 163, 74, 0.25);">
+                📞 Call Pro
+              </a>
+            </div>
+          ` : (isPending || isBargaining ? `
+            <div style="font-size:0.775rem; color:#64748b; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:8px; padding:6px 12px; margin-top:8px; display:flex; align-items:center; gap:6px;">
+              <span>🔒</span> Specialist direct phone unlocks once appointment is mutually confirmed.
+            </div>
+          ` : '')}
+
           ${b.notes ? `
             <div style="font-size:0.825rem; color:#475569; background:#f8fafc; padding:8px 12px; border-radius:8px; margin-top:8px;">
               <strong>Note:</strong> ${b.notes}
@@ -1317,16 +1554,16 @@
 
           <!-- Open Pro Pool Request & Matching Specialists Section -->
           ${!b.workerId ? `
-            <div class="open-pool-status-banner" style="background:#fffdfa; border:1.5px solid #fed7aa; border-radius:12px; padding:12px 16px; margin-top:10px;">
+            <div class="open-pool-status-banner" style="background:#f0fdf4; border:1.5px solid #86efac; border-radius:12px; padding:12px 16px; margin-top:10px;">
               <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                <span style="font-size:0.875rem; font-weight:700; color:#c2410c; display:inline-flex; align-items:center; gap:6px;">
+                <span style="font-size:0.875rem; font-weight:700; color:#15803d; display:inline-flex; align-items:center; gap:6px;">
                   <span>🌐</span> Open Pro Pool Request: <strong>${b.serviceName}</strong>
                 </span>
-                <span style="font-size:0.75rem; background:#ffedd5; color:#9a3412; font-weight:800; padding:3px 10px; border-radius:999px; border:1px solid #fdba74;">
+                <span style="font-size:0.75rem; background:#dcfce7; color:#15803d; font-weight:800; padding:3px 10px; border-radius:999px; border:1px solid #86efac;">
                   Broadcasting in ${b.city}
                 </span>
               </div>
-              <p style="font-size:0.825rem; color:#78350f; margin:6px 0 0 0; line-height:1.45;">
+              <p style="font-size:0.825rem; color:#166534; margin:6px 0 0 0; line-height:1.45;">
                 This request is broadcast to all capable specialists in <strong>${b.city || 'your area'}</strong>. When specialists with matching skills appear below, you can request them directly!
               </p>
             </div>
@@ -1398,13 +1635,13 @@
                   </div>
                   <input type="hidden" id="star-val-${bId}" value="5" />
                   <textarea id="review-words-${bId}" rows="2" placeholder="Share a few words about your experience (optional, e.g. Polite, fast, clean work)..." style="width:100%; border:1px solid #cbd5e1; border-radius:8px; padding:8px 12px; font-size:0.85rem; box-sizing:border-box; font-family:inherit; margin-bottom:10px;"></textarea>
-                  <button type="button" class="btn-submit-review" data-action="submit-review" data-booking-id="${bId}" style="background:#e56d24; color:#fff; border:none; padding:9px 20px; border-radius:999px; font-weight:700; font-size:0.875rem; cursor:pointer; box-shadow:0 3px 10px rgba(229,109,36,0.25);">
+                  <button type="button" class="btn-submit-review" data-action="submit-review" data-booking-id="${bId}" style="background:#16a34a; color:#fff; border:none; padding:9px 20px; border-radius:999px; font-weight:700; font-size:0.875rem; cursor:pointer; box-shadow:0 3px 10px rgba(229,109,36,0.25);">
                     Submit Rating &amp; Review
                   </button>
                 </div>
               ` : `
                 <div style="background:#ffffff; border:1px solid #cbd5e1; border-radius:10px; padding:12px 14px; margin-top:8px;">
-                  <div style="display:flex; align-items:center; gap:8px; color:#d97706; font-size:1.05rem; font-weight:700;">
+                  <div style="display:flex; align-items:center; gap:8px; color:#16a34a; font-size:1.05rem; font-weight:700;">
                     <span>${'★'.repeat(b.rating)}${'☆'.repeat(5 - b.rating)}</span>
                     <span style="font-size:0.825rem; color:#475569;">(${b.rating}.0 / 5.0 Rating Registered)</span>
                   </div>
@@ -1415,7 +1652,7 @@
               <!-- Complaint & Dispute Section -->
               <div class="booking-dispute-section" style="margin-top:14px; border-top:1px dashed #bbf7d0; padding-top:12px;">
                 ${bTicket ? `
-                  <div class="ticket-status-card" style="background:#ffffff; border:1.5px solid ${bTicket.status === 'resolved' ? '#86efac' : (bTicket.status === 'dismissed' ? '#cbd5e1' : '#fcd34d')}; border-radius:10px; padding:12px 14px;">
+                  <div class="ticket-status-card" style="background:#ffffff; border:1.5px solid ${bTicket.status === 'resolved' ? '#86efac' : (bTicket.status === 'dismissed' ? '#cbd5e1' : '#86efac')}; border-radius:10px; padding:12px 14px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
                       <span style="font-weight:700; font-size:0.875rem; color:#0f172a; display:flex; align-items:center; gap:6px;">
                         <span>🎫</span> Support Ticket #${escapeHtml(bTicket.ticketId)}
@@ -1434,11 +1671,11 @@
                       <div class="admin-settlement-callout">
                         <div class="callout-header">
                           <span>🛡️</span>
-                          <strong>Hustle Operations Settlement Decision</strong>
+                          <strong>SevaSathi Operations Settlement Decision</strong>
                           <span class="settle-action-badge">${escapeHtml(bTicket.resolutionAction || 'Resolved')}</span>
                         </div>
-                        <div style="font-size:0.825rem; line-height:1.4; color:#15803d;">${escapeHtml(bTicket.adminNotes || 'Dispute reviewed and resolved according to Hustle platform standards.')}</div>
-                        <small style="display:block; margin-top:6px; color:#166534; font-size:0.75rem;">Settled by ${escapeHtml(bTicket.settledBy || 'Hustle Operations Staff')}</small>
+                        <div style="font-size:0.825rem; line-height:1.4; color:#15803d;">${escapeHtml(bTicket.adminNotes || 'Dispute reviewed and resolved according to SevaSathi platform standards.')}</div>
+                        <small style="display:block; margin-top:6px; color:#166534; font-size:0.75rem;">Settled by ${escapeHtml(bTicket.settledBy || 'SevaSathi Operations Staff')}</small>
                       </div>
                     ` : ''}
                   </div>
@@ -1449,11 +1686,11 @@
                       <span>⚠️</span> Report an Issue / Raise Dispute
                     </button>
                   </div>
-                  <div class="customer-dispute-drawer" id="dispute-drawer-${bId}" style="display:none; background:#ffffff; border:1.5px solid #fdba74; border-radius:10px; padding:14px; margin-top:10px;">
-                    <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px; color:#9a3412; font-weight:700; font-size:0.875rem;">
+                  <div class="customer-dispute-drawer" id="dispute-drawer-${bId}" style="display:none; background:#ffffff; border:1.5px solid #86efac; border-radius:10px; padding:14px; margin-top:10px;">
+                    <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px; color:#15803d; font-weight:700; font-size:0.875rem;">
                       <span>🛡️</span> File Official Dispute Ticket to Admin
                     </div>
-                    <p style="font-size:0.78rem; color:#78350f; margin:0 0 10px 0; line-height:1.4;">
+                    <p style="font-size:0.78rem; color:#166534; margin:0 0 10px 0; line-height:1.4;">
                       Our Operations Admin will review task records, communications, and escrow holding to settle the dispute.
                     </p>
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:8px;">
@@ -1554,12 +1791,42 @@
             </div>
           ` : ''}
 
-          <!-- Option to cancel appointment for customers -->
-          ${canCancel ? `
-            <div style="display:flex; justify-content:flex-end; margin-top:10px;">
+          <!-- Option to adjust price/terms or cancel appointment for customers -->
+          <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px; flex-wrap:wrap;">
+            ${(!isPaid && (isPending || !b.workerId || isBargaining)) ? `
+              <button type="button" class="btn-adjust-terms" data-action="toggle-adjust-terms" data-booking-id="${bId}" style="background:#f8fafc; border:1.5px solid #cbd5e1; color:#0f172a; padding:6px 14px; border-radius:6px; font-size:0.8rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
+                ✏️ Adjust Price / Terms
+              </button>
+            ` : ''}
+            ${canCancel ? `
               <button type="button" class="btn-cancel-appointment" data-action="cancel-appointment" data-booking-id="${bId}">
                 ✕ Cancel Appointment
               </button>
+            ` : ''}
+          </div>
+
+          ${(!isPaid && (isPending || !b.workerId || isBargaining)) ? `
+            <div class="inline-adjust-terms-drawer" id="adjust-terms-drawer-${bId}" style="display:none; flex-direction:column; gap:8px; background:#f8fafc; border:1.5px solid #cbd5e1; border-radius:10px; padding:12px; margin-top:10px;">
+              <div style="font-weight:700; font-size:0.825rem; color:#0f172a;">✏️ Update Your Price &amp; Schedule</div>
+              <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px;">
+                <div>
+                  <label style="font-size:0.75rem; color:#64748b; display:block; margin-bottom:2px;">Target Budget (₹)</label>
+                  <input type="number" id="adjust-price-${bId}" min="1" step="any" placeholder="Price (₹)" value="${b.price}" style="width:100%; box-sizing:border-box; padding:6px 8px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.825rem;" />
+                </div>
+                <div>
+                  <label style="font-size:0.75rem; color:#64748b; display:block; margin-bottom:2px;">Scheduled Date</label>
+                  <input type="date" id="adjust-date-${bId}" value="${b.scheduledDate || ''}" style="width:100%; box-sizing:border-box; padding:6px 8px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.825rem;" />
+                </div>
+                <div>
+                  <label style="font-size:0.75rem; color:#64748b; display:block; margin-bottom:2px;">Time Slot</label>
+                  <input type="text" id="adjust-time-${bId}" placeholder="e.g. 10 AM or Evening" value="${b.scheduledTime || ''}" style="width:100%; box-sizing:border-box; padding:6px 8px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.825rem;" />
+                </div>
+              </div>
+              <textarea id="adjust-note-${bId}" rows="2" placeholder="Optional notes for the specialist/pool..." style="width:100%; box-sizing:border-box; padding:6px 8px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.825rem; font-family:inherit;"></textarea>
+              <div style="display:flex; justify-content:flex-end; gap:8px;">
+                <button type="button" class="btn-decline-offer" onclick="document.getElementById('adjust-terms-drawer-${bId}').style.display='none'">Cancel</button>
+                <button type="button" class="btn-save-adjust-terms" data-action="save-adjust-terms" data-booking-id="${bId}" style="background:#16a34a; color:#fff; border:none; padding:6px 16px; border-radius:6px; font-size:0.8rem; font-weight:700; cursor:pointer;">Save Changes</button>
+              </div>
             </div>
           ` : ''}
 
@@ -1584,6 +1851,10 @@
 
     html += `</div>`;
     modalBody.innerHTML = html;
+
+    if (window.SevaSathiI18n && typeof window.SevaSathiI18n.applyTranslations === 'function') {
+      window.SevaSathiI18n.applyTranslations(modalBody);
+    }
 
     // Attach counter action handlers
     modalBody.querySelectorAll('[data-action="accept-counter"]').forEach(btn => {
@@ -1621,6 +1892,24 @@
       });
     });
 
+    modalBody.querySelectorAll('[data-action="toggle-adjust-terms"]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const drawer = document.getElementById(`adjust-terms-drawer-${btn.dataset.bookingId}`);
+        if (drawer) drawer.style.display = drawer.style.display === 'none' ? 'flex' : 'none';
+      });
+    });
+
+    modalBody.querySelectorAll('[data-action="save-adjust-terms"]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const bId = btn.dataset.bookingId;
+        const proposedPrice = document.getElementById(`adjust-price-${bId}`)?.value;
+        const proposedDate = document.getElementById(`adjust-date-${bId}`)?.value;
+        const proposedTime = document.getElementById(`adjust-time-${bId}`)?.value;
+        const note = document.getElementById(`adjust-note-${bId}`)?.value;
+        handleCustomerResponse(bId, 'update-price', { proposedPrice, proposedDate, proposedTime, note });
+      });
+    });
+
     // Wire escrow pay buttons
     modalBody.querySelectorAll('[data-action="open-pay-modal"]').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -1644,7 +1933,7 @@
           stars.forEach(s => {
             const sVal = parseInt(s.dataset.val, 10);
             if (sVal <= val) {
-              s.style.color = '#f59e0b';
+              s.style.color = '#16a34a';
               s.textContent = '★';
             } else {
               s.style.color = '#cbd5e1';
@@ -1700,7 +1989,7 @@
       if (!container) return;
 
       try {
-        const token = window.HustleSession ? HustleSession.getToken() : localStorage.getItem('hustleToken');
+        const token = window.SevaSathiSession ? SevaSathiSession.getToken() : localStorage.getItem('hustleToken');
         const res = await fetch(`${API_BASE}/bookings/${bId}/matching-workers`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -1740,10 +2029,10 @@
                         <!-- Prominently display the skill which the worker wrote he has -->
                         <div style="margin:3px 0 4px 0;">
                           ${w.isOtherAiMatched ? `
-                            <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:6px; padding:3px 8px; font-size:0.775rem; color:#92400e; display:inline-flex; align-items:center; gap:5px; flex-wrap:wrap;">
+                            <div style="background:#f0fdf4; border:1px solid #86efac; border-radius:6px; padding:3px 8px; font-size:0.775rem; color:#15803d; display:inline-flex; align-items:center; gap:5px; flex-wrap:wrap;">
                               <span style="font-weight:800;">✦ Worker's Registered Skill:</span>
-                              <strong style="color:#b45309;">"${w.workerWrittenSkill || w.specificSkill}"</strong>
-                              <span style="background:#fef3c7; color:#78350f; font-size:0.7rem; font-weight:700; padding:1px 5px; border-radius:4px;">AI Matched</span>
+                              <strong style="color:#15803d;">"${w.workerWrittenSkill || w.specificSkill}"</strong>
+                              <span style="background:#dcfce7; color:#166534; font-size:0.7rem; font-weight:700; padding:1px 5px; border-radius:4px;">AI Matched</span>
                             </div>
                           ` : `
                             <span style="font-size:0.8rem; color:#2563eb; font-weight:700; background:#eff6ff; padding:2px 8px; border-radius:6px;">${w.skillCategory}</span>
@@ -1786,16 +2075,16 @@
                 });
                 const assignData = await assignRes.json();
                 if (assignData.success) {
-                  showHustleToast(`Specialist ${wName} requested! They will be notified to accept your appointment.`, 'success');
+                  showSevaSathiToast(`Specialist ${wName} requested! They will be notified to accept your appointment.`, 'success');
                   openCustomerBookingsModal();
                 } else {
-                  showHustleToast(assignData.message || 'Could not assign specialist.', 'error');
+                  showSevaSathiToast(assignData.message || 'Could not assign specialist.', 'error');
                   btn.disabled = false;
                   btn.innerHTML = '<span>Request Specialist</span> ➔';
                 }
               } catch (err) {
                 console.error('Assign specialist error:', err);
-                showHustleToast('Failed to assign specialist.', 'error');
+                showSevaSathiToast('Failed to assign specialist.', 'error');
                 btn.disabled = false;
                 btn.innerHTML = '<span>Request Specialist</span> ➔';
               }
@@ -1809,10 +2098,14 @@
         `;
       }
     });
+
+    if (window.SevaSathiI18n && typeof window.SevaSathiI18n.applyTranslations === 'function') {
+      window.SevaSathiI18n.applyTranslations(modalBody);
+    }
   }
 
   async function handleCustomerReview(bookingId, rating, reviewText, submitBtn = null) {
-    const token = window.HustleSession ? HustleSession.getToken() : localStorage.getItem('hustleToken');
+    const token = window.SevaSathiSession ? SevaSathiSession.getToken() : localStorage.getItem('hustleToken');
     if (!token) return;
 
     const originalText = submitBtn ? submitBtn.textContent : '';
@@ -1836,26 +2129,26 @@
         throw new Error(data.message || 'Failed to submit review.');
       }
 
-      showHustleToast(data.message || 'Thank you! Your rating and feedback have been saved.', 'success');
+      showSevaSathiToast(data.message || 'Thank you! Your rating and feedback have been saved.', 'success');
       openCustomerBookingsModal(); // reload
     } catch (err) {
       if (submitBtn) {
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;
       }
-      showHustleToast(`Error submitting review: ${err.message}`, 'error');
+      showSevaSathiToast(`Error submitting review: ${err.message}`, 'error');
     }
   }
 
   async function handleCustomerDispute(bookingId, category, description, desiredResolution, btn = null) {
     if (!description || !description.trim()) {
-      showHustleToast('Please provide a detailed explanation of the issue.', 'error');
+      showSevaSathiToast('Please provide a detailed explanation of the issue.', 'error');
       return;
     }
 
-    const token = window.HustleSession ? HustleSession.getToken() : localStorage.getItem('hustleToken');
+    const token = window.SevaSathiSession ? SevaSathiSession.getToken() : localStorage.getItem('hustleToken');
     if (!token) {
-      showHustleToast('Session expired. Please sign in again.', 'error');
+      showSevaSathiToast('Session expired. Please sign in again.', 'error');
       return;
     }
 
@@ -1885,7 +2178,7 @@
         throw new Error(data.message || 'Failed to file dispute ticket.');
       }
 
-      showHustleToast(`🎫 ${data.message || 'Dispute ticket registered successfully!'}`, 'success');
+      showSevaSathiToast(`🎫 ${data.message || 'Dispute ticket registered successfully!'}`, 'success');
       setTimeout(() => {
         openCustomerBookingsModal();
       }, 400);
@@ -1894,12 +2187,12 @@
         btn.disabled = false;
         btn.textContent = originalText;
       }
-      showHustleToast(err.message || 'Could not submit dispute.', 'error');
+      showSevaSathiToast(err.message || 'Could not submit dispute.', 'error');
     }
   }
 
   async function handleCustomerResponse(bookingId, action, extra = {}) {
-    const token = window.HustleSession ? HustleSession.getToken() : localStorage.getItem('hustleToken');
+    const token = window.SevaSathiSession ? SevaSathiSession.getToken() : localStorage.getItem('hustleToken');
     if (!token) return;
 
     try {
@@ -1917,11 +2210,11 @@
         throw new Error(data.message || 'Action failed');
       }
 
-      showHustleToast(data.message || 'Response recorded!', 'info');
+      showSevaSathiToast(data.message || 'Response recorded!', 'info');
       await refreshBookingsBadge();
       openCustomerBookingsModal(); // reload
     } catch (err) {
-      showHustleToast(`Failed to submit response: ${err.message}`, 'error');
+      showSevaSathiToast(`Failed to submit response: ${err.message}`, 'error');
     }
   }
 
@@ -1929,7 +2222,7 @@
    * Check for accepted jobs and active bargaining count to display red notification badge
    */
   async function refreshBookingsBadge() {
-    const token = window.HustleSession ? HustleSession.getToken() : localStorage.getItem('hustleToken');
+    const token = window.SevaSathiSession ? SevaSathiSession.getToken() : localStorage.getItem('hustleToken');
     const badge = document.getElementById('my-bookings-badge');
     const bookingsBtn = document.getElementById('nav-my-bookings-btn');
     if (!token || !badge) return;
@@ -1970,7 +2263,7 @@
           badge.style.display = 'inline-flex';
           badge.style.alignItems = 'center';
           badge.style.justifyContent = 'center';
-          badge.style.background = '#ea580c';
+          badge.style.background = '#16a34a';
           badge.style.color = '#ffffff';
           badge.style.boxShadow = 'none';
           badge.style.animation = 'none';
@@ -1993,8 +2286,8 @@
   }
 
   function isCustomerLoggedIn() {
-    const user = window.HustleSession ? HustleSession.getUser() : JSON.parse(localStorage.getItem('hustleCurrentUser') || 'null');
-    const token = window.HustleSession ? HustleSession.getToken() : localStorage.getItem('hustleToken');
+    const user = window.SevaSathiSession ? SevaSathiSession.getUser() : JSON.parse(localStorage.getItem('hustleCurrentUser') || 'null');
+    const token = window.SevaSathiSession ? SevaSathiSession.getToken() : localStorage.getItem('hustleToken');
     return Boolean(user && token && (!user.role || user.role === 'customer'));
   }
 
@@ -2064,7 +2357,7 @@
     const searchInput = document.querySelector('#search');
     if (searchInput) {
       const enforceLoc = (e) => {
-        const user = window.HustleSession ? HustleSession.getUser() : JSON.parse(localStorage.getItem('hustleCurrentUser') || 'null');
+        const user = window.SevaSathiSession ? SevaSathiSession.getUser() : JSON.parse(localStorage.getItem('hustleCurrentUser') || 'null');
         const isGuestLanding = window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || window.location.pathname === '';
         if (user && !isGuestLanding && !hasCustomerSpecifiedLocation()) {
           if (e) {
@@ -2084,7 +2377,7 @@
     const findServiceBtn = document.querySelector('#find-service');
     if (findServiceBtn) {
       findServiceBtn.addEventListener('click', (e) => {
-        const user = window.HustleSession ? HustleSession.getUser() : JSON.parse(localStorage.getItem('hustleCurrentUser') || 'null');
+        const user = window.SevaSathiSession ? SevaSathiSession.getUser() : JSON.parse(localStorage.getItem('hustleCurrentUser') || 'null');
         const isGuestLanding = window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || window.location.pathname === '';
         if (user && !isGuestLanding && !hasCustomerSpecifiedLocation()) {
           e.preventDefault();
@@ -2143,7 +2436,7 @@
       try {
         const draft = JSON.parse(pendingPoolDraft);
         sessionStorage.removeItem('hustlePendingCustomPool');
-        const user = window.HustleSession ? HustleSession.getUser() : JSON.parse(localStorage.getItem('hustleCurrentUser') || 'null');
+        const user = window.SevaSathiSession ? SevaSathiSession.getUser() : JSON.parse(localStorage.getItem('hustleCurrentUser') || 'null');
         if (user && user.role === 'customer') {
           setTimeout(() => {
             openCustomJobModal(draft.presetBudget || 499, draft.initialNotes || '', draft.initialCategory || null);
@@ -2165,7 +2458,7 @@
    * Ensure custom job needs banner option is rendered after cards
    */
   function ensureCustomJobEntryOption() {
-    const user = window.HustleSession ? HustleSession.getUser() : JSON.parse(localStorage.getItem('hustleCurrentUser') || 'null');
+    const user = window.SevaSathiSession ? SevaSathiSession.getUser() : JSON.parse(localStorage.getItem('hustleCurrentUser') || 'null');
     const isCustomer = user && user.role === 'customer';
     const isCustomerPage = window.location.pathname.includes('customer-dashboard.html');
 
@@ -2198,7 +2491,7 @@
             </p>
           </div>
           <div class="custom-job-actions">
-            <a href="#request" class="button button-orange btn-custom-pool-link" id="btn-services-custom-job">
+            <a href="#request" class="button button-green btn-custom-pool-link" id="btn-services-custom-job">
               <span>Enter Custom Job Needs</span>
               <b class="arrow-icon">→</b>
             </a>
@@ -2207,6 +2500,9 @@
       </div>
     `;
     anchor.insertAdjacentHTML('afterend', html);
+    if (window.SevaSathiI18n && typeof window.SevaSathiI18n.applyTranslations === 'function') {
+      window.SevaSathiI18n.applyTranslations(document.getElementById('custom-job-entry-wrap') || anchor);
+    }
 
     const btn = document.getElementById('btn-services-custom-job');
     btn?.addEventListener('click', (e) => {
@@ -2219,15 +2515,15 @@
   /**
    * Open the Open Pro Pool Custom Job Needs Form Modal
    */
-  function openCustomJobModal(presetBudget = 499, initialNotes = '', initialCategory = null) {
+  function openCustomJobModal(presetBudget = 499, initialNotes = '', initialCategory = null, initialTime = null) {
     if (typeof window.dismissAllAiSearchSuggestions === 'function') window.dismissAllAiSearchSuggestions();
     document.querySelectorAll('.hustle-ai-suggestions-dropdown').forEach(d => { d.style.display = 'none'; d.innerHTML = ''; });
     injectModalElements();
 
-    const user = window.HustleSession ? HustleSession.getUser() : JSON.parse(localStorage.getItem('hustleCurrentUser') || 'null');
+    const user = window.SevaSathiSession ? SevaSathiSession.getUser() : JSON.parse(localStorage.getItem('hustleCurrentUser') || 'null');
     if (!user || user.role !== 'customer') {
       try {
-        sessionStorage.setItem('hustlePendingCustomPool', JSON.stringify({ presetBudget, initialNotes, initialCategory }));
+        sessionStorage.setItem('hustlePendingCustomPool', JSON.stringify({ presetBudget, initialNotes, initialCategory, initialTime }));
       } catch {}
       window.location.href = 'auth.html?role=customer&mode=signin';
       return;
@@ -2240,7 +2536,7 @@
       document.body.style.overflow = 'hidden';
       renderBookingForm(null, 'custom-pool', 'Open Pro Pool Request', presetBudget);
 
-      // Pre-fill initial notes and category if provided (e.g. from AI diagnosis)
+      // Pre-fill initial notes, category, and preferred time if provided (e.g. from AI diagnosis)
       setTimeout(() => {
         if (initialNotes) {
           const notesEl = document.getElementById('book-notes');
@@ -2267,6 +2563,27 @@
             }
           }
         }
+        if (initialTime) {
+          const timeSelect = document.getElementById('book-time');
+          const customTimeInput = document.getElementById('book-custom-time-input');
+          if (timeSelect) {
+            let matchedTime = false;
+            for (let opt of timeSelect.options) {
+              if (opt.value.toLowerCase().includes(initialTime.toLowerCase()) || initialTime.toLowerCase().includes(opt.value.toLowerCase())) {
+                timeSelect.value = opt.value;
+                matchedTime = true;
+                break;
+              }
+            }
+            if (!matchedTime && customTimeInput) {
+              timeSelect.value = 'custom';
+              timeSelect.dispatchEvent(new Event('change'));
+              customTimeInput.value = initialTime;
+            } else {
+              timeSelect.dispatchEvent(new Event('change'));
+            }
+          }
+        }
       }, 50);
     }
   }
@@ -2289,7 +2606,8 @@
         openCustomJobModal(
           diagnosis.estimatedPriceRange?.suggested || 499,
           diagnosis.suggestedNotes || rawQuery,
-          diagnosis.match18?.suggestedPoolSkill || diagnosis.specificSkill || diagnosis.category || rawQuery
+          diagnosis.match18?.suggestedPoolSkill || diagnosis.specificSkill || diagnosis.category || rawQuery,
+          diagnosis.scheduledTime || diagnosis.preferredTime || null
         );
       }
       return;
@@ -2328,7 +2646,7 @@
         <div>
           <span style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; color:#827a70; font-weight:700;">Closest Available Service</span>
           <h3 class="ai-card-title">${matchService.name}</h3>
-          <span style="font-size:0.8rem; color:#c2410c; font-weight:700;">Category: ${matchService.category}</span>
+          <span style="font-size:0.8rem; color:#15803d; font-weight:700;">Category: ${matchService.category}</span>
         </div>
         <span class="ai-urgency-badge ${urgencyClass}">● ${diagnosis.urgency || 'Standard'}</span>
       </div>
@@ -2358,10 +2676,10 @@
       ` : ''}
 
       ${isGuest ? `
-        <div class="ai-guest-auth-prompt" style="background:#fff7ed; border:1.5px solid #fdba74; border-radius:12px; padding:14px 16px; margin-top:14px; text-align:center;">
-          <strong style="color:#9a3412; font-size:0.95rem; display:block; margin-bottom:4px;">🔒 Customer Login Required</strong>
-          <span style="color:#7c2d12; font-size:0.85rem; display:block; margin-bottom:12px;">Please sign in with your customer account to view verified specialists and book <strong>${matchService.name}</strong>.</span>
-          <button type="button" class="btn-ai-confirm" id="btn-ai-login-customer" style="background:#ea580c; color:#ffffff; width:100%; justify-content:center; box-shadow:0 4px 14px rgba(234,88,12,0.3);">
+        <div class="ai-guest-auth-prompt" style="background:#f0fdf4; border:1.5px solid #bbf7d0; border-radius:12px; padding:14px 16px; margin-top:14px; text-align:center;">
+          <strong style="color:#166534; font-size:0.95rem; display:block; margin-bottom:4px;">🔒 Customer Login Required</strong>
+          <span style="color:#15803d; font-size:0.85rem; display:block; margin-bottom:12px;">Please sign in with your customer account to view verified specialists and book <strong>${matchService.name}</strong>.</span>
+          <button type="button" class="btn-ai-confirm" id="btn-ai-login-customer" style="background:#16a34a; color:#ffffff; width:100%; justify-content:center; box-shadow:0 4px 14px rgba(22,163,74,0.3);">
             <span>🔑 Log In as Customer to Book ${matchService.name} ➔</span>
           </button>
         </div>
@@ -2467,7 +2785,7 @@
    * If no worker is available for that service, keep that area completely blank.
    */
   async function updateServiceCardsPricing(cityOverride = null) {
-    const user = window.HustleSession ? HustleSession.getUser() : JSON.parse(localStorage.getItem('hustleCurrentUser') || 'null');
+    const user = window.SevaSathiSession ? SevaSathiSession.getUser() : JSON.parse(localStorage.getItem('hustleCurrentUser') || 'null');
     const isCustomer = user && user.role === 'customer';
     const isCustomerPage = window.location.pathname.includes('customer-dashboard.html');
 
@@ -2524,8 +2842,43 @@
     init();
   }
 
+  function openBookingModal(worker, serviceId, serviceName, basePrice = 499, prefillDate = null, prefillTime = null) {
+    injectModalElements();
+    const overlay = document.getElementById('hustle-service-modal-overlay');
+    if (overlay) {
+      overlay.classList.add('active');
+      overlay.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    }
+    renderBookingForm(worker, serviceId, serviceName, basePrice);
+    if (prefillDate) {
+      const dateInput = document.getElementById('book-date');
+      if (dateInput) dateInput.value = prefillDate;
+    }
+    if (prefillTime) {
+      const timeSelect = document.getElementById('book-time');
+      const customTimeInput = document.getElementById('book-custom-time-input');
+      if (timeSelect) {
+        let matched = false;
+        for (let opt of timeSelect.options) {
+          if (opt.value && (opt.value.toLowerCase().includes(prefillTime.toLowerCase()) || prefillTime.toLowerCase().includes(opt.value.toLowerCase()))) {
+            timeSelect.value = opt.value;
+            matched = true;
+            break;
+          }
+        }
+        if (!matched && customTimeInput) {
+          timeSelect.value = 'custom';
+          customTimeInput.style.display = 'block';
+          customTimeInput.value = prefillTime;
+        }
+      }
+    }
+  }
+
   // Export to global scope
-  window.HustleBooking = {
+  window.SevaSathiBooking = {
+    openBookingModal,
     openServiceWorkersModal,
     openCustomerBookingsModal,
     openCustomJobModal,
@@ -2538,7 +2891,7 @@
     promptCustomerLocationRequired,
     hasCustomerSpecifiedLocation,
     updateServiceCardsPricing,
-    showHustleToast
+    showSevaSathiToast
   };
 
 })();

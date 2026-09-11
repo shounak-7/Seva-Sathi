@@ -3,11 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Terms & Conditions & How Hustle Works — Hustle</title>
+    <title>Terms & Conditions & How SevaSathi Works — SevaSathi</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/png" href="favicon.png" />
     <link rel="stylesheet" href="auth.css" />
+    <link rel="stylesheet" href="i18n.css" />
     <style>
       .terms-shell {
         max-width: 1190px;
@@ -38,8 +39,8 @@
         cursor: pointer;
       }
       .back-button:hover {
-        border-color: var(--orange);
-        color: var(--orange);
+        border-color: var(--green);
+        color: var(--green);
         transform: translateX(-2px);
       }
       .terms-layout {
@@ -61,7 +62,7 @@
       }
       .terms-sidebar h1 em {
         font-style: italic;
-        color: var(--orange);
+        color: var(--green);
       }
       .terms-sidebar p {
         color: var(--muted);
@@ -88,8 +89,8 @@
         width: 32px;
         height: 32px;
         border-radius: 8px;
-        background: #fdf1e4;
-        color: var(--orange);
+        background: #f0fdf4;
+        color: var(--green);
         display: grid;
         place-items: center;
         font-weight: bold;
@@ -109,7 +110,7 @@
       }
       .action-box {
         background: var(--cream);
-        border: 1px solid #ebdccb;
+        border: 1px solid #bbf7d0;
         border-radius: 16px;
         padding: 22px;
         margin-top: 20px;
@@ -159,8 +160,8 @@
         transition: 0.2s ease;
       }
       .btn-back-alt:hover {
-        border-color: var(--orange);
-        color: var(--orange);
+        border-color: var(--green);
+        color: var(--green);
       }
       .terms-content {
         background: #fff;
@@ -200,7 +201,7 @@
       }
       .offer-box {
         background: var(--cream);
-        border: 1px solid #ebdccb;
+        border: 1px solid #bbf7d0;
         border-radius: 12px;
         padding: 16px;
       }
@@ -213,7 +214,7 @@
         color: var(--ink);
       }
       .offer-box h3 span {
-        color: var(--orange);
+        color: var(--green);
       }
       .offer-box p {
         font-size: 12px;
@@ -232,7 +233,7 @@
         gap: 16px;
         align-items: start;
         background: #fffdf9;
-        border: 1px solid #eee4d5;
+        border: 1px solid #bbf7d0;
         border-radius: 12px;
         padding: 16px;
       }
@@ -240,8 +241,8 @@
         width: 44px;
         height: 44px;
         border-radius: 10px;
-        background: #fae4cf;
-        color: var(--orange);
+        background: #dcfce7;
+        color: var(--green);
         font-family: Fraunces, serif;
         font-weight: bold;
         font-size: 19px;
@@ -275,7 +276,7 @@
         line-height: 1.55;
       }
       .terms-list li b {
-        color: var(--orange);
+        color: var(--green);
         font-size: 14px;
       }
       .bottom-action-banner {
@@ -311,12 +312,14 @@
   <body>
     <div class="terms-shell">
       <header class="terms-topbar">
-        <a class="brand" href="index.html" aria-label="Hustle home">
-          <span class="brand-mark">h</span>hustle
+        <a class="brand" href="index.html" aria-label="SevaSathi home">
+          <img class="brand-mark" src="logo.png" alt="SevaSathi" /><span><span style="color:#16a34a">Seva</span> <span style="color:var(--ink, #25231f)">Sathi</span></span>
         </a>
-        <button type="button" class="back-button" onclick="navigateBack()" aria-label="Go back">
-          ← Back
-        </button>
+        <div class="terms-topbar-actions" style="display:flex;align-items:center;gap:12px">
+          <button type="button" class="back-button" onclick="navigateBack()" aria-label="Go back">
+            ← Back
+          </button>
+        </div>
       </header>
 
       <div class="terms-layout">
@@ -325,7 +328,7 @@
           <span class="step-label">PLATFORM TRANSPARENCY</span>
           <h1>How it works & <em>Terms of Trust.</em></h1>
           <p>
-            Hustle is founded on the simple premise that quality everyday help should be straightforward, respectful, and reliable for both customers and independent gig workers.
+            SevaSathi is founded on the simple premise that quality everyday help should be straightforward, respectful, and reliable for both customers and independent gig workers.
           </p>
 
           <div class="terms-highlights">
@@ -354,7 +357,7 @@
 
           <div class="action-box">
             <p>
-              By utilizing the Hustle platform as a customer or gig professional, you confirm alignment with our community standards and service terms.
+              By utilizing the SevaSathi platform as a customer or gig professional, you confirm alignment with our community standards and service terms.
             </p>
             <div class="action-buttons">
               <button type="button" class="btn-ok" onclick="navigateBack()" id="btn-ok">
@@ -372,7 +375,7 @@
             <span class="step-label">SECTION 01</span>
             <h2>What We Offer</h2>
             <p>
-              Hustle provides an on-demand, local marketplace designed to connect households and businesses with experienced, independent specialists across essential lifestyle services:
+              SevaSathi provides an on-demand, local marketplace designed to connect households and businesses with experienced, independent specialists across essential lifestyle services:
             </p>
 
             <div class="offer-grid">
@@ -457,11 +460,11 @@
             <ul class="terms-list">
               <li>
                 <b>✓</b>
-                <span><strong>Identity Verification:</strong> Every gig worker on Hustle undergoes identity verification and credential reviews prior to taking active bookings.</span>
+                <span><strong>Identity Verification:</strong> Every gig worker on SevaSathi undergoes identity verification and credential reviews prior to taking active bookings.</span>
               </li>
               <li>
                 <b>✓</b>
-                <span><strong>Pricing Integrity:</strong> Quoted prices on Hustle include standard labor costs. Any supplementary materials or unexpected scope changes must be mutually approved before execution.</span>
+                <span><strong>Pricing Integrity:</strong> Quoted prices on SevaSathi include standard labor costs. Any supplementary materials or unexpected scope changes must be mutually approved before execution.</span>
               </li>
               <li>
                 <b>✓</b>
@@ -473,7 +476,7 @@
               </li>
               <li>
                 <b>✓</b>
-                <span><strong>Hustle Trust Guarantee:</strong> If a job does not meet quality standards, Hustle support facilitates prompt re-work or dispute resolution with customer support available 7 days a week.</span>
+                <span><strong>SevaSathi Trust Guarantee:</strong> If a job does not meet quality standards, SevaSathi support facilitates prompt re-work or dispute resolution with customer support available 7 days a week.</span>
               </li>
             </ul>
           </section>
@@ -483,7 +486,7 @@
             <span class="step-label">SECTION 04</span>
             <h2>Privacy & Escrow Safeguards</h2>
             <p>
-              Your contact details and exact address are shared only with the assigned professional once a gig is confirmed. Hustle never sells personal information to third-party data brokers.
+              Your contact details and exact address are shared only with the assigned professional once a gig is confirmed. SevaSathi never sells personal information to third-party data brokers.
             </p>
           </section>
 
@@ -500,6 +503,8 @@
       </div>
     </div>
 
+    <script src="session.js"></script>
+    <script src="i18n.js"></script>
     <script>
       function navigateBack() {
         if (document.referrer && document.referrer.includes(window.location.host)) {

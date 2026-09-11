@@ -5,6 +5,9 @@ const User = require('../models/User');
 const Otp = require('../models/Otp');
 const Booking = require('../models/Booking');
 const Ticket = require('../models/Ticket');
+const BusinessRequirement = require('../models/BusinessRequirement');
+const Contract = require('../models/Contract');
+const Invoice = require('../models/Invoice');
 
 let isMongoReady = false;
 
@@ -21,7 +24,10 @@ function initLocalStore() {
       users: [],
       otps: [],
       bookings: [],
-      tickets: []
+      tickets: [],
+      businessRequirements: [],
+      contracts: [],
+      invoices: []
     };
     fs.writeFileSync(DB_FILE, JSON.stringify(initialData, null, 2), 'utf8');
   }
@@ -34,10 +40,13 @@ function readLocalStore() {
     const parsed = JSON.parse(raw);
     parsed.bookings = parsed.bookings || [];
     parsed.tickets = parsed.tickets || [];
+    parsed.businessRequirements = parsed.businessRequirements || [];
+    parsed.contracts = parsed.contracts || [];
+    parsed.invoices = parsed.invoices || [];
     return parsed;
   } catch (err) {
     console.error('Error reading local db.json, resetting:', err.message);
-    return { users: [], otps: [], bookings: [], tickets: [] };
+    return { users: [], otps: [], bookings: [], tickets: [], businessRequirements: [], contracts: [], invoices: [] };
   }
 }
 
@@ -67,7 +76,7 @@ async function syncLocalDataToMongo() {
           if (!exists) {
             try {
               await User.create({
-                name: u.name || 'Hustle User',
+                name: u.name || 'SevaSathi User',
                 email: cleanEmail,
                 phone: u.phone || '9876543210',
                 password: u.password || '$2a$10$f/FqnEnHfTj.OgKfSGCr6O4lDkaBe.6KJZWlJH4nZLm5Y5MvZxqpu',
@@ -131,6 +140,8 @@ async function syncLocalDataToMongo() {
                 customerEmail: b.customerEmail || '',
                 workerId: b.workerId ? String(b.workerId) : null,
                 workerName: b.workerName || 'Open Pool (Any Pro)',
+                workerPhone: b.workerPhone || '',
+                customerLocation: b.customerLocation || b.locality || 'Local Area',
                 locality: b.locality || 'Local Area',
                 city: b.city || 'Bengaluru',
                 declinedWorkerIds: Array.isArray(b.declinedWorkerIds) ? b.declinedWorkerIds : [],
@@ -474,28 +485,151 @@ async function findUsersByRole(role) {
 }
 
 /**
- * Service Catalog to Skill Keywords Mapping
+ * Strict Canonical Service Domains for precise worker matching & allocation.
+ * Guarantees zero category leakage across unrelated gig trades.
  */
-const SERVICE_SKILL_MAP = {
-  'home-cleaning': ['home-cleaning', 'home care', 'cleaning', 'deep clean', 'housekeeping'],
-  'spa-therapy': ['spa-therapy', 'spa', 'massage', 'wellness', 'beauty', 'therapist'],
-  'maths-tutoring': ['maths-tutoring', 'maths', 'tutoring', 'academic', 'teacher', 'science tutor', 'tutor'],
-  'handyman': ['handyman', 'home repair', 'general repair', 'repairs', 'maintenance'],
-  'electrician': ['electrician', 'electrical', 'wiring', 'mcb', 'inverter'],
-  'plumbing': ['plumbing', 'plumber', 'pipe', 'leak', 'fittings'],
-  'carpentry': ['carpentry', 'carpenter', 'wood', 'furniture', 'assembly'],
-  'babysitting': ['babysitting', 'childcare', 'nanny', 'kids'],
-  'pet-care': ['pet-care', 'pet sitting', 'dog walking', 'dog', 'pet'],
-  'home-organisation': ['home-organisation', 'organising', 'organizer', 'declutter'],
-  'tech-help': ['tech-help', 'tech support', 'laptop', 'wifi', 'computer', 'network'],
-  'garden-care': ['garden-care', 'garden', 'gardener', 'plant', 'lawn'],
-  'appliances': ['appliances', 'appliance care', 'ac repair', 'refrigerator', 'washing machine', 'appliance'],
-  'painting': ['painting', 'painter', 'waterproofing', 'wall paint'],
-  'fitness': ['fitness', 'yoga', 'trainer', 'gym', 'workout', 'coaching'],
-  'auto-care': ['auto-care', 'car detailing', 'car wash', 'auto', 'vehicle'],
-  'pest-control': ['pest-control', 'pest', 'sanitization', 'disinfection', 'termites'],
-  'senior-care': ['senior-care', 'elder care', 'senior', 'companion', 'elderly', 'assistance']
+const CANONICAL_SERVICE_DOMAINS = {
+  'electrician': {
+    ids: ['electrician', 'electrical', 'electrician & wiring repairs', 'electrician visits', 'electrical & wiring', 'electricity', 'wiring', 'mcb', 'ইলেকট্রিশিয়ান', 'ইলেকট্রিশিয়ান', 'ইলেকট্রিক', 'ইলেকট্রিক্যাল', 'কারেন্ট', 'ইলেকট্রিক মিস্ত্রি', 'ইলেকট্রিশিয়ান সার্ভিস', 'इलेक्ट्रीशियन', 'बिजली', 'इलेक्ट्रिकल', 'बिजली मिस्त्री'],
+    categories: ['Electrician & Wiring Repairs', 'Electrician', 'Electrical & Wiring'],
+    keywords: ['electrician', 'electrical', 'wiring', 'mcb', 'switch', 'socket', 'plug', 'fuse', 'inverter', 'spark', 'short circuit', 'tripping', 'breaker', 'fan', 'light', 'wire', 'voltage', 'কারেন্ট', 'ফ্যান', 'আলো', 'সুইচ', 'তার', 'শর্ট সার্কিট', 'বিদ্যুৎ', 'মিটার', 'ইনভার্টার', 'बिजली', 'पंखा', 'तार', 'स्विच', 'शॉर्ट सर्किट', 'करंट', 'सॉकेट', 'फ्यूज'],
+    negativeCategories: ['Plumbing & Drainage Fixing', 'Deep Home & Kitchen Cleaning', 'Custom Carpentry & Woodwork', 'AC, Fridge & Appliance Repair', 'Spa, Massage & Grooming', 'Furniture Assembly & Handyman', 'Tutoring', 'Yoga & Fitness Coaching', 'Laptop & Wi-Fi Tech Support', 'Wall Painting & Waterproofing', 'Car & Two-Wheeler Care', 'Pest Control & Fumigation', 'Wardrobe & Home Organisation', 'Babysitting & Childcare', 'Pet Care & Dog Walking', 'Garden & Plant Care', 'Senior Care & Assistance']
+  },
+  'plumbing': {
+    ids: ['plumbing', 'plumber', 'plumbing & drainage fixing', 'plumbing solutions', 'pipe', 'leak', 'drainage', 'tap', 'toilet', 'প্লাম্বার', 'প্লাম্বিং', 'প্লাম্বিং সার্ভিস', 'নল মিস্ত্রি', 'কলের মিস্ত্রি', 'জল পাইপ', 'प्लम्बर', 'प्लंबिंग', 'प्लंबर', 'नलसाज', 'नल मिस्त्री'],
+    categories: ['Plumbing & Drainage Fixing', 'Plumbing', 'Plumbing & Repairs'],
+    keywords: ['plumbing', 'plumber', 'pipe', 'leak', 'drain', 'drainage', 'clog', 'faucet', 'tap', 'sink', 'toilet', 'flush', 'water tank', 'sewage', 'valve', 'geyser pipe', 'basin', 'water motor', 'কল', 'জল', 'পাইপ', 'নল', 'ট্যাপ', 'বেসিন', 'ড্রেন', 'নর্দমা', 'ফ্লাশ', 'পানির ট্যাঙ্ক', 'नल', 'पानी', 'पाइप', 'सीपेज', 'टोंटी', 'नाली', 'सिंक', 'टॉयलेट'],
+    negativeCategories: ['Electrician & Wiring Repairs', 'Deep Home & Kitchen Cleaning', 'Custom Carpentry & Woodwork', 'AC, Fridge & Appliance Repair', 'Spa, Massage & Grooming', 'Furniture Assembly & Handyman', 'Tutoring', 'Yoga & Fitness Coaching', 'Laptop & Wi-Fi Tech Support', 'Wall Painting & Waterproofing', 'Car & Two-Wheeler Care', 'Pest Control & Fumigation', 'Wardrobe & Home Organisation', 'Babysitting & Childcare', 'Pet Care & Dog Walking', 'Garden & Plant Care', 'Senior Care & Assistance']
+  },
+  'home-cleaning': {
+    ids: ['home-cleaning', 'deep-home-cleaning', 'deep-cleaning', 'cleaning', 'deep home & kitchen cleaning', 'deep home cleaning', 'deep cleaning & sanitization', 'housekeeping', 'maid', 'ক্লিনিং', 'ঘর পরিষ্কার', 'ডিপ ক্লিনিং', 'সফাই', 'सफाई', 'क्लीनिंग', 'घर की सफाई', 'डीप क्लीनिंग'],
+    categories: ['Deep Home & Kitchen Cleaning', 'Deep Home Cleaning', 'Deep Cleaning & Sanitization', 'Home Cleaning'],
+    keywords: ['clean', 'cleaning', 'deep clean', 'kitchen clean', 'bathroom clean', 'sanitiz', 'mop', 'housekeep', 'maid', 'dusting', 'scrub', 'floor wash', 'disinfection', 'পরিষ্কার', 'ঘর পরিষ্কার', 'ঝাড়ু', 'মোছা', 'বাথরুম পরিষ্কার', 'রান্নাঘর পরিষ্কার', 'জীবাণুমুক্তকরণ', 'सफाई', 'झाड़ू', 'पोछा', 'घर की सफाई', 'बाथरूम सफाई', 'किचन सफाई'],
+    negativeCategories: ['Electrician & Wiring Repairs', 'Plumbing & Drainage Fixing', 'Custom Carpentry & Woodwork', 'AC, Fridge & Appliance Repair', 'Spa, Massage & Grooming', 'Furniture Assembly & Handyman', 'Tutoring', 'Yoga & Fitness Coaching', 'Laptop & Wi-Fi Tech Support', 'Wall Painting & Waterproofing', 'Car & Two-Wheeler Care', 'Pest Control & Fumigation', 'Wardrobe & Home Organisation', 'Babysitting & Childcare', 'Pet Care & Dog Walking', 'Garden & Plant Care', 'Senior Care & Assistance']
+  },
+  'appliances': {
+    ids: ['appliances', 'appliance', 'appliance-repair', 'ac', 'ac-repair', 'fridge', 'refrigerator', 'washing machine', 'microwave', 'ac, fridge & appliance repair', 'appliance care & repair', 'এসি মেরামত', 'ফ্রিজ মেরামত', 'অ্যাপ্লায়েন্স', 'এসি সার্ভিস', 'एसी रिपेयर', 'फ्रिज रिपेयर', 'वाशिंग मशीन', 'उपकरण मरम्मत'],
+    categories: ['AC, Fridge & Appliance Repair', 'Appliance Care & Repair', 'Appliance Repair'],
+    keywords: ['ac', 'air conditioner', 'split ac', 'window ac', 'cooling', 'fridge', 'refrigerator', 'freeze', 'freezer', 'washing machine', 'microwave', 'oven', 'ro purifier', 'compressor', 'chimney', 'appliance', 'gas top-up', 'gas check', 'ac filter', 'এসি', 'ফ্রিজ', 'ঠান্ডা হচ্ছে না', 'ওয়াশিং মেশিন', 'মাইক্রোওয়েভ', 'গ্যাস লিক', 'एसी', 'फ्रिज', 'कूलिंग', 'वाशिंग मशीन', 'माइक्रोवेव', 'गैस रिफिल', 'कंप्रेसर'],
+    negativeCategories: ['Electrician & Wiring Repairs', 'Plumbing & Drainage Fixing', 'Deep Home & Kitchen Cleaning', 'Custom Carpentry & Woodwork', 'Spa, Massage & Grooming', 'Furniture Assembly & Handyman', 'Tutoring', 'Yoga & Fitness Coaching', 'Laptop & Wi-Fi Tech Support', 'Wall Painting & Waterproofing', 'Car & Two-Wheeler Care', 'Pest Control & Fumigation', 'Wardrobe & Home Organisation', 'Babysitting & Childcare', 'Pet Care & Dog Walking', 'Garden & Plant Care', 'Senior Care & Assistance']
+  },
+  'carpentry': {
+    ids: ['carpentry', 'carpenter', 'custom carpentry & woodwork', 'carpentry & assembly', 'carpentry & woodwork', 'wood', 'woodwork', 'furniture', 'ছুতোর', 'কাঠের কাজ', 'কার্পেন্টার', 'দরজার লক', 'बढ़ई', 'कारपेंटर', 'लकड़ी काम'],
+    categories: ['Custom Carpentry & Woodwork', 'Carpentry & Assembly', 'Carpentry & Woodwork', 'Carpentry'],
+    keywords: ['carpentry', 'carpenter', 'wood', 'woodwork', 'furniture', 'door lock', 'hinge', 'wardrobe', 'bed repair', 'cabinet', 'drawer', 'sofa repair', 'wooden', 'latch', 'sliding door', 'ছুতোর', 'কাঠ', 'দরজা', 'লক', 'তালা', 'কব্জা', 'আলমারি', 'আসবাবপত্র', 'খাট', 'ড্রয়ার', 'लकड़ी', 'बढ़ई', 'दरवाजा', 'ताला', 'कब्जा', 'फर्नीचर', 'अलमारी', 'सोफा'],
+    negativeCategories: ['Electrician & Wiring Repairs', 'Plumbing & Drainage Fixing', 'Deep Home & Kitchen Cleaning', 'AC, Fridge & Appliance Repair', 'Spa, Massage & Grooming', 'Furniture Assembly & Handyman', 'Tutoring', 'Yoga & Fitness Coaching', 'Laptop & Wi-Fi Tech Support', 'Wall Painting & Waterproofing', 'Car & Two-Wheeler Care', 'Pest Control & Fumigation', 'Wardrobe & Home Organisation', 'Babysitting & Childcare', 'Pet Care & Dog Walking', 'Garden & Plant Care', 'Senior Care & Assistance']
+  },
+  'handyman': {
+    ids: ['handyman', 'furniture assembly & handyman', 'handyman visits', 'drill', 'drilling', 'assembly', 'হ্যান্ডিম্যান', 'ড্রিল', 'ছবি টাঙানো', 'हैंडीमैन', 'ड्रिलिंग', 'असेंबली'],
+    categories: ['Furniture Assembly & Handyman', 'Handyman Visits', 'Handyman'],
+    keywords: ['handyman', 'furniture assembly', 'drill', 'drilling', 'curtain rod', 'mirror hanging', 'frame hanging', 'shelf fitting', 'wall mounting', 'small fixes', 'assembly', 'ikea assembly', 'towel rod', 'ড্রিল', 'ছবি টাঙানো', 'পর্দার রড', 'আইনা', 'শেলফ ফিটিং', 'ड्रिलिंग', 'पर्दा रॉड', 'आईना टांगना', 'शेल्फ फिटिंग'],
+    negativeCategories: ['Electrician & Wiring Repairs', 'Plumbing & Drainage Fixing', 'Deep Home & Kitchen Cleaning', 'AC, Fridge & Appliance Repair', 'Spa, Massage & Grooming', 'Tutoring', 'Yoga & Fitness Coaching', 'Laptop & Wi-Fi Tech Support', 'Wall Painting & Waterproofing', 'Car & Two-Wheeler Care', 'Pest Control & Fumigation', 'Wardrobe & Home Organisation', 'Babysitting & Childcare', 'Pet Care & Dog Walking', 'Garden & Plant Care', 'Senior Care & Assistance']
+  },
+  'tutoring': {
+    ids: ['tutoring', 'maths-tutoring', 'math-tutoring', 'math', 'maths', 'science', 'tutors & skill coaches', 'tutor', 'শিক্ষক', 'টিউশন', 'টুইশন', 'গণিত শিক্ষক', 'ट्यूशन', 'शिक्षक', 'मैथ्स ट्यूटर'],
+    categories: ['Tutoring', 'Tutors & Skill Coaches', 'Academic Tutoring'],
+    keywords: ['tutor', 'tutoring', 'math', 'maths', 'teacher', 'teach', 'algebra', 'geometry', 'calculus', 'physics', 'science', 'chemistry', 'exam prep', 'tuition', 'coaching', 'homework', 'academic', 'টিউশন', 'পড়াশোনা', 'অংক', 'বিজ্ঞান', 'শিক্ষক', 'গৃহশিক্ষক', 'টুইশন', 'ट्यूशन', 'पढ़ाई', 'गणित', 'विज्ञान', 'फिजिक्स', 'केमिस्ट्री', 'होमवर्क'],
+    negativeCategories: ['Electrician & Wiring Repairs', 'Plumbing & Drainage Fixing', 'Deep Home & Kitchen Cleaning', 'Custom Carpentry & Woodwork', 'AC, Fridge & Appliance Repair', 'Spa, Massage & Grooming', 'Furniture Assembly & Handyman', 'Yoga & Fitness Coaching', 'Laptop & Wi-Fi Tech Support', 'Wall Painting & Waterproofing', 'Car & Two-Wheeler Care', 'Pest Control & Fumigation', 'Wardrobe & Home Organisation', 'Babysitting & Childcare', 'Pet Care & Dog Walking', 'Garden & Plant Care', 'Senior Care & Assistance']
+  },
+  'spa-therapy': {
+    ids: ['spa-therapy', 'spa', 'massage', 'spa, massage & grooming', 'at-home spa therapy', 'salon & beauty at home', 'salon', 'beauty', 'স্পা', 'ম্যাসাজ', 'সেলুন', 'বিউটি পার্লার', 'स्पा', 'मसाज', 'सैलून', 'ब्यूटी'],
+    categories: ['Spa, Massage & Grooming', 'At-Home Spa Therapy', 'Salon & Beauty at Home', 'Wellness & Spa'],
+    keywords: ['spa', 'massage', 'therapy', 'facial', 'pedicure', 'manicure', 'waxing', 'salon', 'beauty', 'haircut', 'skin care', 'wellness', 'head massage', 'body massage', 'স্পা', 'ম্যাসাজ', 'ফেসিয়াল', 'চুল কাটা', 'রূপচর্চা', 'ওয়াক্সিং', 'स्पा', 'मालिश', 'मसाज', 'फेशियल', 'बाल काटना', 'मेनिक्योर', 'पेडिक्योर'],
+    negativeCategories: ['Electrician & Wiring Repairs', 'Plumbing & Drainage Fixing', 'Deep Home & Kitchen Cleaning', 'Custom Carpentry & Woodwork', 'AC, Fridge & Appliance Repair', 'Furniture Assembly & Handyman', 'Tutoring', 'Yoga & Fitness Coaching', 'Laptop & Wi-Fi Tech Support', 'Wall Painting & Waterproofing', 'Car & Two-Wheeler Care', 'Pest Control & Fumigation', 'Wardrobe & Home Organisation', 'Babysitting & Childcare', 'Pet Care & Dog Walking', 'Garden & Plant Care', 'Senior Care & Assistance']
+  },
+  'tech-help': {
+    ids: ['tech-help', 'laptop', 'wifi', 'computer', 'laptop & wi-fi tech support', 'laptop & wi-fi help', 'router', 'network', 'ল্যাপটপ', 'কম্পিউটার', 'ওয়াইফাই', 'টেক সাপোর্ট', 'लैपटॉप', 'कंप्यूटर', 'वाईफाई', 'टेक सपोर्ट'],
+    categories: ['Laptop & Wi-Fi Tech Support', 'Laptop & Wi-Fi Help', 'Tech Help & IT Support'],
+    keywords: ['laptop', 'computer', 'pc', 'mac', 'wifi', 'wi-fi', 'router', 'internet', 'windows', 'printer', 'software', 'network setup', 'format pc', 'antivirus', 'lan', 'ল্যাপটপ', 'কম্পিউটার', 'ইন্টারনেট', 'রাউটার', 'প্রিন্টার', 'সফটওয়্যার', 'लैपटॉप', 'कंप्यूटर', 'इंटरनेट', 'राउटर', 'प्रिंटर', 'सॉफ्टवेयर'],
+    negativeCategories: ['Electrician & Wiring Repairs', 'Plumbing & Drainage Fixing', 'Deep Home & Kitchen Cleaning', 'Custom Carpentry & Woodwork', 'AC, Fridge & Appliance Repair', 'Spa, Massage & Grooming', 'Furniture Assembly & Handyman', 'Tutoring', 'Yoga & Fitness Coaching', 'Wall Painting & Waterproofing', 'Car & Two-Wheeler Care', 'Pest Control & Fumigation', 'Wardrobe & Home Organisation', 'Babysitting & Childcare', 'Pet Care & Dog Walking', 'Garden & Plant Care', 'Senior Care & Assistance']
+  },
+  'painting': {
+    ids: ['painting', 'painter', 'wall painting & waterproofing', 'painting & waterproofing', 'wall paint', 'waterproofing', 'রং মিস্ত্রি', 'পেইন্টিং', 'রঙ', 'দেওয়াল রং', 'पेंटर', 'पुताई', 'पेंटिंग', 'वाटरप्रूफिंग'],
+    categories: ['Wall Painting & Waterproofing', 'Painting & Waterproofing', 'Wall Painting'],
+    keywords: ['paint', 'painter', 'painting', 'wall paint', 'waterproof', 'waterproofing', 'damp', 'seepage', 'primer', 'whitewash', 'distemper', 'texture', 'ceiling paint', 'putty', 'দেওয়াল রং', 'রং মিস্ত্রি', 'পেইন্ট', 'ড্যাম্প', 'জল চুইয়ে পড়া', 'পুটিং', 'চুনের কাজ', 'पुताई', 'दीवार पेंट', 'पेंटर', 'सीलन', 'डैम्प', 'प्राइमर', 'पुट्टी'],
+    negativeCategories: ['Electrician & Wiring Repairs', 'Plumbing & Drainage Fixing', 'Deep Home & Kitchen Cleaning', 'Custom Carpentry & Woodwork', 'AC, Fridge & Appliance Repair', 'Spa, Massage & Grooming', 'Furniture Assembly & Handyman', 'Tutoring', 'Yoga & Fitness Coaching', 'Laptop & Wi-Fi Tech Support', 'Car & Two-Wheeler Care', 'Pest Control & Fumigation', 'Wardrobe & Home Organisation', 'Babysitting & Childcare', 'Pet Care & Dog Walking', 'Garden & Plant Care', 'Senior Care & Assistance']
+  },
+  'fitness': {
+    ids: ['fitness', 'yoga', 'gym', 'yoga & fitness coaching', 'fitness & yoga coaching', 'workout', 'trainer', 'যোগাসন', 'ফিটনেস', 'জিম ট্রেনার', 'योगा', 'फिटनेस', 'जिम ट्रेनर', 'कसरत'],
+    categories: ['Yoga & Fitness Coaching', 'Fitness & Yoga Coaching', 'Personal Fitness Training'],
+    keywords: ['fitness', 'gym', 'workout', 'train', 'trainer', 'coach', 'yoga', 'weight loss', 'pilates', 'aerobics', 'exercise', 'personal training', 'posture', 'যোগব্যায়াম', 'ব্যায়াম', 'ফিটনেস ট্রেনার', 'ওজন কমানো', 'యోगा', 'योगासन', 'कसरत', 'जिम', 'ट्रेनर', 'वजन घटाना'],
+    negativeCategories: ['Electrician & Wiring Repairs', 'Plumbing & Drainage Fixing', 'Deep Home & Kitchen Cleaning', 'Custom Carpentry & Woodwork', 'AC, Fridge & Appliance Repair', 'Spa, Massage & Grooming', 'Furniture Assembly & Handyman', 'Tutoring', 'Laptop & Wi-Fi Tech Support', 'Wall Painting & Waterproofing', 'Car & Two-Wheeler Care', 'Pest Control & Fumigation', 'Wardrobe & Home Organisation', 'Babysitting & Childcare', 'Pet Care & Dog Walking', 'Garden & Plant Care', 'Senior Care & Assistance']
+  },
+  'auto-care': {
+    ids: ['auto-care', 'car', 'vehicle', 'car & two-wheeler care', 'car detailing & eco wash', 'car wash', 'bike wash', 'গাড়ি ধোয়া', 'গাড়ি পরিষ্কার', 'বাইক ওয়াশ', 'कार वॉश', 'गाड़ी सफाई', 'बाइक वॉश'],
+    categories: ['Car & Two-Wheeler Care', 'Car Detailing & Eco Wash', 'Auto Care'],
+    keywords: ['car', 'vehicle', 'car wash', 'auto', 'detailing', 'polish', 'car interior', 'car clean', 'bike wash', 'foam wash', 'waterless wash', 'dashboard polish', 'গাড়ি পরিষ্কার', 'বাইক ওয়াশ', 'ফোম ওয়াশ', 'গাড়ির পালিশ', 'गाड़ी धुलाई', 'कार पॉलिश', 'फोम वॉश', 'बाइक सर्विस'],
+    negativeCategories: ['Electrician & Wiring Repairs', 'Plumbing & Drainage Fixing', 'Deep Home & Kitchen Cleaning', 'Custom Carpentry & Woodwork', 'AC, Fridge & Appliance Repair', 'Spa, Massage & Grooming', 'Furniture Assembly & Handyman', 'Tutoring', 'Yoga & Fitness Coaching', 'Laptop & Wi-Fi Tech Support', 'Wall Painting & Waterproofing', 'Pest Control & Fumigation', 'Wardrobe & Home Organisation', 'Babysitting & Childcare', 'Pet Care & Dog Walking', 'Garden & Plant Care', 'Senior Care & Assistance']
+  },
+  'pest-control': {
+    ids: ['pest-control', 'pest', 'pest control & fumigation', 'pest control & sanitization', 'termites', 'cockroach', 'পোকামাকড়', 'কীটপতঙ্গ', 'কীটনাশক', 'উইপোকা দমন', 'कीड़े मकोड़े', 'पेस्ट कंट्रोल', 'दीमक'],
+    categories: ['Pest Control & Fumigation', 'Pest Control & Sanitization', 'Pest Control'],
+    keywords: ['pest', 'termite', 'termites', 'cockroach', 'cockroaches', 'bedbug', 'bedbugs', 'mosquito', 'rodent', 'rat', 'ant', 'fumigation', 'disinfection', 'pest control', 'উইপোকা', 'তেলাপোকা', 'ছারপোকা', 'মশা', 'ইঁদুর', 'কীটনাশক', 'পোকামাকড় দমন', 'दीमक', 'कॉकरोच', 'खटमल', 'मच्छर', 'चूहा', 'कीटनाशक', 'पेस्ट कंट्रोल'],
+    negativeCategories: ['Electrician & Wiring Repairs', 'Plumbing & Drainage Fixing', 'Deep Home & Kitchen Cleaning', 'Custom Carpentry & Woodwork', 'AC, Fridge & Appliance Repair', 'Spa, Massage & Grooming', 'Furniture Assembly & Handyman', 'Tutoring', 'Yoga & Fitness Coaching', 'Laptop & Wi-Fi Tech Support', 'Wall Painting & Waterproofing', 'Car & Two-Wheeler Care', 'Wardrobe & Home Organisation', 'Babysitting & Childcare', 'Pet Care & Dog Walking', 'Garden & Plant Care', 'Senior Care & Assistance']
+  },
+  'home-organisation': {
+    ids: ['home-organisation', 'home-organization', 'wardrobe & home organisation', 'home organisation', 'declutter', 'wardrobe', 'আলমারি গোছানো', 'ঘর সাজানো', 'ঘর পরিপাটি', 'घर की व्यवस्था', 'अलमारी सजावट', 'डिक्लटर'],
+    categories: ['Wardrobe & Home Organisation', 'Home Organisation', 'Home Decluttering'],
+    keywords: ['organise', 'organize', 'organisation', 'organization', 'declutter', 'decluttering', 'wardrobe', 'closet', 'pantry', 'tidying', 'neat', 'storage arrangement', 'গোছানো', 'আলমারি সাজানো', 'ঘর পরিপাটি', 'আলমারি', 'अलमारी सजावट', 'सामान व्यवस्थित', 'घर की सफाई व्यवस्था'],
+    negativeCategories: ['Electrician & Wiring Repairs', 'Plumbing & Drainage Fixing', 'Deep Home & Kitchen Cleaning', 'Custom Carpentry & Woodwork', 'AC, Fridge & Appliance Repair', 'Spa, Massage & Grooming', 'Furniture Assembly & Handyman', 'Tutoring', 'Yoga & Fitness Coaching', 'Laptop & Wi-Fi Tech Support', 'Wall Painting & Waterproofing', 'Car & Two-Wheeler Care', 'Pest Control & Fumigation', 'Babysitting & Childcare', 'Pet Care & Dog Walking', 'Garden & Plant Care', 'Senior Care & Assistance']
+  },
+  'babysitting': {
+    ids: ['babysitting', 'childcare', 'babysitting & childcare', 'nanny', 'baby', 'child', 'আয়া', 'বাচ্চা দেখাশোনা', 'শিশু সেবা', 'नैनी', 'बेबीसिटिंग', 'बच्चा देखभाल'],
+    categories: ['Babysitting & Childcare', 'Babysitting', 'Childcare'],
+    keywords: ['baby', 'babysit', 'babysitting', 'babysitter', 'child', 'children', 'kid', 'kids', 'nanny', 'childcare', 'daycare', 'toddler', 'infant', 'বাচ্চা', 'শিশু', 'আয়া', 'ছোট বাচ্চা', 'শিশুর যত্ন', 'বাচ্চা সামলানো', 'बच्चा', 'शिशु', 'आया', 'बच्चों की देखभाल', 'बेबीसिटर', 'नैनी'],
+    negativeCategories: ['Electrician & Wiring Repairs', 'Plumbing & Drainage Fixing', 'Deep Home & Kitchen Cleaning', 'Custom Carpentry & Woodwork', 'AC, Fridge & Appliance Repair', 'Spa, Massage & Grooming', 'Furniture Assembly & Handyman', 'Tutoring', 'Yoga & Fitness Coaching', 'Laptop & Wi-Fi Tech Support', 'Wall Painting & Waterproofing', 'Car & Two-Wheeler Care', 'Pest Control & Fumigation', 'Wardrobe & Home Organisation', 'Pet Care & Dog Walking', 'Garden & Plant Care', 'Senior Care & Assistance']
+  },
+  'pet-care': {
+    ids: ['pet-care', 'pet', 'dog', 'pet care & dog walking', 'pet sitting & walks', 'dog walking', 'cat', 'কুকুর হাঁটা', 'পোষ্য যত্ন', 'কুকুর ঘোরানো', 'कुत्ता घुमाना', 'पेट केयर', 'पालतू देखभाल'],
+    categories: ['Pet Care & Dog Walking', 'Pet Sitting & Walks', 'Pet Care'],
+    keywords: ['pet', 'pets', 'dog', 'dogs', 'cat', 'cats', 'puppy', 'walk', 'dog walking', 'pet sitting', 'kitten', 'feed pet', 'dog bath', 'কুকুর', 'বিড়াল', 'পোষ্য', 'কুকুর ঘোরানো', 'কুকুর স্নান', 'পোশ্য সেবা', 'कुत्ता', 'बिल्ली', 'पालतू जानवर', 'डॉग वॉकर', 'पेट सिटिंग', 'कुत्ते को नहलाना'],
+    negativeCategories: ['Electrician & Wiring Repairs', 'Plumbing & Drainage Fixing', 'Deep Home & Kitchen Cleaning', 'Custom Carpentry & Woodwork', 'AC, Fridge & Appliance Repair', 'Spa, Massage & Grooming', 'Furniture Assembly & Handyman', 'Tutoring', 'Yoga & Fitness Coaching', 'Laptop & Wi-Fi Tech Support', 'Wall Painting & Waterproofing', 'Car & Two-Wheeler Care', 'Pest Control & Fumigation', 'Wardrobe & Home Organisation', 'Babysitting & Childcare', 'Garden & Plant Care', 'Senior Care & Assistance']
+  },
+  'garden-care': {
+    ids: ['garden-care', 'garden', 'garden & plant care', 'garden care', 'gardener', 'plant', 'lawn', 'মালী', 'বাগান পরিচর্যা', 'বাগান কাজ', 'গাছের যত্ন', 'माली', 'गार्डनिंग', 'बगीचा', 'पौधों की देखभाल'],
+    categories: ['Garden & Plant Care', 'Garden Care', 'Gardening'],
+    keywords: ['garden', 'gardening', 'lawn', 'plant', 'plants', 'grass', 'mow', 'pruning', 'hedge', 'soil', 'pots', 'repotting', 'weeding', 'balcony garden', 'gardener', 'বাগান', 'গাছপালা', 'টব', 'মালী', 'ঘাস কাটা', 'গাছ ছাঁটাই', 'মাটি তৈরি', 'बगीचा', 'पौधे', 'माली', 'गमला', 'घास काटना', 'कटाई'],
+    negativeCategories: ['Electrician & Wiring Repairs', 'Plumbing & Drainage Fixing', 'Deep Home & Kitchen Cleaning', 'Custom Carpentry & Woodwork', 'AC, Fridge & Appliance Repair', 'Spa, Massage & Grooming', 'Furniture Assembly & Handyman', 'Tutoring', 'Yoga & Fitness Coaching', 'Laptop & Wi-Fi Tech Support', 'Wall Painting & Waterproofing', 'Car & Two-Wheeler Care', 'Pest Control & Fumigation', 'Wardrobe & Home Organisation', 'Babysitting & Childcare', 'Pet Care & Dog Walking', 'Senior Care & Assistance']
+  },
+  'senior-care': {
+    ids: ['senior-care', 'senior', 'elder', 'senior care & assistance', 'elderly', 'companion', 'বয়স্ক সেবা', 'বৃদ্ধ যত্ন', 'দাদুর যত্ন', 'বুजुर्ग देखभाल', 'सीनियर केयर', 'बुजुर्ग साथी'],
+    categories: ['Senior Care & Assistance', 'Senior Care', 'Senior Care & Companionship'],
+    keywords: ['senior', 'seniors', 'elder', 'elders', 'elderly', 'grandparent', 'old age', 'companion', 'companionship', 'medication', 'errands', 'mobility support', 'caregiver', 'বয়স্ক', 'দাদু', 'দিদিমা', 'বৃদ্ধ', 'ঔষধ দেওয়া', 'সঙ্গী', 'বয়স্কদের সেবা', 'বুजुर्ग', 'दादा', 'दादी', 'दवा देना', 'देखभाल', 'बुजुर्गों का सहारा'],
+    negativeCategories: ['Electrician & Wiring Repairs', 'Plumbing & Drainage Fixing', 'Deep Home & Kitchen Cleaning', 'Custom Carpentry & Woodwork', 'AC, Fridge & Appliance Repair', 'Spa, Massage & Grooming', 'Furniture Assembly & Handyman', 'Tutoring', 'Yoga & Fitness Coaching', 'Laptop & Wi-Fi Tech Support', 'Wall Painting & Waterproofing', 'Car & Two-Wheeler Care', 'Pest Control & Fumigation', 'Wardrobe & Home Organisation', 'Babysitting & Childcare', 'Pet Care & Dog Walking', 'Garden & Plant Care']
+  }
 };
+
+const SERVICE_SKILL_MAP = Object.keys(CANONICAL_SERVICE_DOMAINS).reduce((acc, key) => {
+  acc[key] = CANONICAL_SERVICE_DOMAINS[key].keywords;
+  for (const id of CANONICAL_SERVICE_DOMAINS[key].ids) {
+    acc[id] = CANONICAL_SERVICE_DOMAINS[key].keywords;
+  }
+  return acc;
+}, {});
+
+/**
+ * Resolve canonical service domain configuration from any service ID, name, or keyword
+ */
+function getCanonicalDomain(serviceId) {
+  if (!serviceId) return null;
+  const s = String(serviceId).toLowerCase().trim();
+  const clean = s.replace(/[-_]/g, ' ').trim();
+
+  // Direct domain key match
+  if (CANONICAL_SERVICE_DOMAINS[s]) return CANONICAL_SERVICE_DOMAINS[s];
+  if (CANONICAL_SERVICE_DOMAINS[clean]) return CANONICAL_SERVICE_DOMAINS[clean];
+
+  for (const [key, domain] of Object.entries(CANONICAL_SERVICE_DOMAINS)) {
+    if (key === s || key === clean) return domain;
+    if (domain.ids && domain.ids.some(id => id.toLowerCase() === s || id.toLowerCase() === clean || s.includes(id.toLowerCase()) || clean.includes(id.toLowerCase()))) {
+      return domain;
+    }
+    if (domain.categories && domain.categories.some(cat => cat.toLowerCase() === s || cat.toLowerCase() === clean || s.includes(cat.toLowerCase()) || clean.includes(cat.toLowerCase()))) {
+      return domain;
+    }
+  }
+  return null;
+}
 
 /**
  * The 8 Primary Canonical Cities with geographic coordinates and aliases
@@ -505,49 +639,49 @@ const CANONICAL_CITIES = {
     name: 'Kolkata',
     lat: 22.5726,
     lng: 88.3639,
-    aliases: ['kolkata', 'calcutta', 'howrah', 'salt lake', 'new town', 'ballygunge', 'gariahath', 'jadavpur', 'dum dum', 'behala', 'tollygunge', 'alipore', 'park street', 'rajarhat']
+    aliases: ['kolkata', 'calcutta', 'howrah', 'salt lake', 'new town', 'ballygunge', 'gariahath', 'jadavpur', 'dum dum', 'behala', 'tollygunge', 'alipore', 'park street', 'rajarhat', 'কলকাতা', 'কলিকাতা', 'হাওড়া', 'সল্টলেক', 'নিউ টাউন', 'বেহালা', 'দমদম', 'যাদবপুর', 'গারিয়াহাট', 'টালিগঞ্জ', 'আলিপুর', 'পার্ক স্ট্রিট', 'রাজারহাট', 'कोलकाता', 'कलकत्ता', 'हावड़ा', 'साल्ट लेक', 'न्यू टाउन', 'बेहाला', 'दमदम', 'जादवपुर', 'टॉलीगंज']
   },
   'bengaluru': {
     name: 'Bengaluru',
     lat: 12.9716,
     lng: 77.5946,
-    aliases: ['bengaluru', 'bangalore', 'whitefield', 'indiranagar', 'koramangala', 'hsr', 'bellandur', 'jayanagar', 'jp nagar', 'electronic city', 'btm', 'marathahalli', 'malleshwaram']
+    aliases: ['bengaluru', 'bangalore', 'whitefield', 'indiranagar', 'koramangala', 'hsr', 'bellandur', 'jayanagar', 'jp nagar', 'electronic city', 'btm', 'marathahalli', 'malleshwaram', 'বেঙ্গালুরু', 'ব্যাঙ্গালোর', 'হোয়াইটফিল্ড', 'ইন্দিরানগর', 'কোরামঙ্গলা', 'বিল্লান্দুর', 'জয়নগর', 'ইলেকট্রনিক সিটি', 'बेंगलुरु', 'बैंगलोर', 'व्हाइटफील्ड', 'इंदिरानगर', 'कोरमंगला', 'जयनगर', 'इलेक्ट्रॉनिक सिटी']
   },
   'chennai': {
     name: 'Chennai',
     lat: 13.0827,
     lng: 80.2707,
-    aliases: ['chennai', 'madras', 'adyar', 't nagar', 'anna nagar', 'velachery', 'mylapore', 'omr', 'nungambakkam', 'besant nagar', 'guindy', 'kilpauk', 'alwarpet']
+    aliases: ['chennai', 'madras', 'adyar', 't nagar', 'anna nagar', 'velachery', 'mylapore', 'omr', 'nungambakkam', 'besant nagar', 'guindy', 'kilpauk', 'alwarpet', 'চেন্নাই', 'মাদ্রাজ', 'আদিয়ার', 'আন্না নগর', 'चेन्नई', 'मद्रास', 'अड्यार', 'अन्ना नगर']
   },
   'mumbai': {
     name: 'Mumbai',
     lat: 19.0760,
     lng: 72.8777,
-    aliases: ['mumbai', 'bombay', 'thane', 'navi mumbai', 'bandra', 'andheri', 'juhu', 'worli', 'dadar', 'borivali', 'powai', 'kandivali', 'vashi', 'lower parel', 'khar']
+    aliases: ['mumbai', 'bombay', 'thane', 'navi mumbai', 'bandra', 'andheri', 'juhu', 'worli', 'dadar', 'borivali', 'powai', 'kandivali', 'vashi', 'lower parel', 'khar', 'মুম্বাই', 'বোম্বাই', 'থানে', 'নবী মুম্বাই', 'বান্দ্রা', 'আন্ধেরি', 'জুহু', 'ওরলি', 'দাদর', 'বরিবলি', 'পওয়াই', 'मुंबई', 'बॉम्बे', 'ठाणे', 'नवी मुंबई', 'बांद्रा', 'अंधेरी', 'जुहू', 'वरली', 'दादर', 'बोरीवली', 'पवई']
   },
   'delhi': {
     name: 'Delhi',
     lat: 28.7041,
     lng: 77.1025,
-    aliases: ['delhi', 'new delhi', 'noida', 'gurugram', 'gurgaon', 'ghaziabad', 'faridabad', 'rohini', 'lajpat nagar', 'dwarka', 'south ex', 'hauz khas', 'saket', 'pitampura', 'mayur vihar']
+    aliases: ['delhi', 'new delhi', 'noida', 'gurugram', 'gurgaon', 'ghaziabad', 'faridabad', 'rohini', 'lajpat nagar', 'dwarka', 'south ex', 'hauz khas', 'saket', 'pitampura', 'mayur vihar', 'দিল্লি', 'নতুন দিল্লি', 'নয়ডা', 'গুরগাঁও', 'গুরুগ্রাম', 'গাজিয়াবাদ', 'ফরিদাবাদ', 'রোহিণী', 'দ্বারকা', 'সাউথ এক্স', 'সাখ্যাত', 'दिल्ली', 'नई दिल्ली', 'नोएडा', 'गुरुग्राम', 'गुडगांव', 'गाजियाबाद', 'फरीदाबाद', 'रोहिणी', 'द्वारका', 'साकेत']
   },
   'hyderabad': {
     name: 'Hyderabad',
     lat: 17.3850,
     lng: 78.4867,
-    aliases: ['hyderabad', 'secunderabad', 'cyberabad', 'gachibowli', 'madhapur', 'hitec city', 'kondapur', 'banjara hills', 'jubilee hills', 'kukatpally', 'begumpet', 'miyapur']
+    aliases: ['hyderabad', 'secunderabad', 'cyberabad', 'gachibowli', 'madhapur', 'hitec city', 'kondapur', 'banjara hills', 'jubilee hills', 'kukatpally', 'begumpet', 'miyapur', 'হায়দ্রাবাদ', 'সেকেন্দ্রাবাদ', 'সাইবারাবাদ', 'গাচিবোলি', 'মাধাপুর', 'হাইটেক সিটি', 'বানজারা হিলস', 'हैदराबाद', 'सिकंदराबाद', 'साइबराबाद', 'गाचीबोवली', 'माधापुर', 'हाईटेक सिटी', 'बंजारा हिल्स']
   },
   'ahmedabad': {
     name: 'Ahmedabad',
     lat: 23.0225,
     lng: 72.5714,
-    aliases: ['ahmedabad', 'ahmadabad', 'gandhinagar', 'satellite', 'bodakdev', 'vastrapur', 'prahlad nagar', 'maninagar', 'sg highway', 'bopal', 'navrangpura', 'paldi']
+    aliases: ['ahmedabad', 'ahmadabad', 'gandhinagar', 'satellite', 'bodakdev', 'vastrapur', 'prahlad nagar', 'maninagar', 'sg highway', 'bopal', 'navrangpura', 'paldi', 'আমেদাবাদ', 'আহমেদাবাদ', 'গান্ধীনগর', 'স্যাটেলাইট', 'বোড়াকদেব', 'ভস্ত্রাপুর', 'अहमदाबाद', 'गांधीनगर', 'सैटेलाइट', 'बोडकदेव', 'वस्त्रापुर', 'प्रहलाद नगर']
   },
   'pune': {
     name: 'Pune',
     lat: 18.5204,
     lng: 73.8567,
-    aliases: ['pune', 'poona', 'pcmc', 'pimpri', 'chinchwad', 'hinjewadi', 'hinjawadi', 'kothrud', 'viman nagar', 'baner', 'aundh', 'wakad', 'koregaon park', 'hadapsar', 'magarpatta']
+    aliases: ['pune', 'poona', 'pcmc', 'pimpri', 'chinchwad', 'hinjewadi', 'hinjawadi', 'kothrud', 'viman nagar', 'baner', 'aundh', 'wakad', 'koregaon park', 'hadapsar', 'magarpatta', 'পুনে', 'পুণে', 'পিম্পরি', 'চিঞ্চওয়াড়', 'হিঞ্জেওয়াড়ি', 'কোথরূড', 'বিমান নগর', 'বানের', 'पुणे', 'पूना', 'पिंपरी', 'चिंचवड़', 'हिंजवड़ी', 'कोथरुड', 'विमान नगर', 'बानेर', 'वाकड़']
   }
 };
 
@@ -591,628 +725,29 @@ function resolveCityFromLocation(query, coords = null) {
   // 2. Query text match
   if (query && typeof query === 'string') {
     const q = query.toLowerCase().trim();
-    for (const key in CANONICAL_CITIES) {
-      const cityObj = CANONICAL_CITIES[key];
-      if (cityObj.aliases.some(a => q.includes(a))) {
-        return { city: cityObj.name, canonicalCity: cityObj.name, isSupported: true, distanceKm: 0 };
+    if (q && q !== 'choose location') {
+      for (const key in CANONICAL_CITIES) {
+        const cityObj = CANONICAL_CITIES[key];
+        if (cityObj.aliases.some(a => q.includes(a))) {
+          return { city: cityObj.name, canonicalCity: cityObj.name, isSupported: true, distanceKm: 0 };
+        }
       }
-    }
-    // Custom user typed city outside the 8
-    const cleaned = query.split(',')[0].trim();
-    if (cleaned && cleaned.toLowerCase() !== 'choose location') {
-      return { city: cleaned, canonicalCity: cleaned, isSupported: false, distanceKm: null };
+      // Custom user typed city outside the 8
+      const cleaned = query.split(',')[0].trim();
+      if (cleaned && cleaned.toLowerCase() !== 'choose location') {
+        return { city: cleaned, canonicalCity: cleaned, isSupported: false, distanceKm: null };
+      }
     }
   }
 
-  return { city: 'Bengaluru', canonicalCity: 'Bengaluru', isSupported: true, distanceKm: 0 };
+  return { city: null, canonicalCity: null, isSupported: false, distanceKm: null };
 }
 
 /**
  * Pre-assigned verified specialists for demonstration across the 8 primary cities.
  * Distinct local names, ratings, local areas, and rates.
  */
-const PRE_ASSIGNED_WORKERS = [
-  // --- KOLKATA ---
-  {
-    id: 'pro_ccu_elec_1',
-    name: 'Subhashis Banerjee',
-    city: 'Kolkata',
-    locality: 'Salt Lake & New Town',
-    skillCategory: 'Electrician & Wiring Repairs',
-    specificSkill: 'MCB switches, inverter cabling & 3-phase wiring',
-    experience: '7 years',
-    baseRate: 349,
-    rating: 4.95,
-    completedJobs: 138,
-    bio: 'Government-certified wireman with 7 years serving Salt Lake and Rajarhat households.'
-  },
-  {
-    id: 'pro_ccu_clean_1',
-    name: 'Priya Sen',
-    city: 'Kolkata',
-    locality: 'Park Street & Ballygunge',
-    skillCategory: 'Deep Home & Kitchen Cleaning',
-    specificSkill: 'Degreasing kitchens & deep sanitization',
-    experience: '5 years',
-    baseRate: 699,
-    rating: 4.92,
-    completedJobs: 215,
-    bio: 'Eco-friendly deep cleaning specialist with industrial steaming equipment.'
-  },
-  {
-    id: 'pro_ccu_plumb_1',
-    name: 'Anirban Das',
-    city: 'Kolkata',
-    locality: 'Gariahat & Jadavpur',
-    skillCategory: 'Plumbing & Drainage Fixing',
-    specificSkill: 'Concealed pipe leakages & bathroom fittings',
-    experience: '9 years',
-    baseRate: 349,
-    rating: 4.88,
-    completedJobs: 142,
-    bio: 'Senior plumber known for quick 30-min arrival in South Kolkata.'
-  },
-  {
-    id: 'pro_ccu_appliance_1',
-    name: 'Debojyoti Ghosh',
-    city: 'Kolkata',
-    locality: 'Howrah & Behala',
-    skillCategory: 'AC, Fridge & Appliance Repair',
-    specificSkill: 'Split AC jet cleaning & inverter compressor fixes',
-    experience: '8 years',
-    baseRate: 449,
-    rating: 4.90,
-    completedJobs: 174,
-    bio: 'Former authorized Daikin/LG service technician with genuine OEM spare parts.'
-  },
-  {
-    id: 'pro_ccu_tutor_1',
-    name: 'Sharmistha Mukherjee',
-    city: 'Kolkata',
-    locality: 'South City & Tollygunge',
-    skillCategory: 'Maths & Science Tutoring',
-    specificSkill: 'ICSE & CBSE Class 8–12 Board preparation',
-    experience: '6 years',
-    baseRate: 1299,
-    rating: 5.0,
-    completedJobs: 86,
-    bio: 'M.Sc. Mathematics with verified 100% first-division student track record.'
-  },
-  {
-    id: 'pro_ccu_carp_1',
-    name: 'Ratan Mondal',
-    city: 'Kolkata',
-    locality: 'Dum Dum & Lake Town',
-    skillCategory: 'Custom Carpentry & Woodwork',
-    specificSkill: 'Modular wardrobe installation & teak wood restoration',
-    experience: '11 years',
-    baseRate: 499,
-    rating: 4.89,
-    completedJobs: 160,
-    bio: 'Master craftsman specializing in modern minimalist plywood and laminate designs.'
-  },
-  {
-    id: 'pro_ccu_spa_1',
-    name: 'Tanusree Roy',
-    city: 'Kolkata',
-    locality: 'Alipore & Hastings',
-    skillCategory: 'Spa, Massage & Grooming',
-    specificSkill: 'Aromatherapy & Swedish relaxation therapy',
-    experience: '6 years',
-    baseRate: 1199,
-    rating: 4.97,
-    completedJobs: 145,
-    bio: 'Certified wellness aesthetician bringing hygienic, salon-grade treatments home.'
-  },
-  {
-    id: 'pro_ccu_tech_1',
-    name: 'Biswajit Paul',
-    city: 'Kolkata',
-    locality: 'Sector V & New Town',
-    skillCategory: 'Laptop & Wi-Fi Tech Support',
-    specificSkill: 'Mac/Windows SSD upgrades, mesh Wi-Fi & data recovery',
-    experience: '5 years',
-    baseRate: 399,
-    rating: 4.93,
-    completedJobs: 128,
-    bio: 'Hardware diagnostician solving complex networking and thermal throttling issues.'
-  },
-
-  // --- BENGALURU ---
-  {
-    id: 'pro_blr_elec_1',
-    name: 'Ramesh Kumar',
-    city: 'Bengaluru',
-    locality: 'Indiranagar & Koramangala',
-    skillCategory: 'Electrician & Wiring Repairs',
-    specificSkill: 'Home wiring, inverter setup & MCB installation',
-    experience: '7 years',
-    baseRate: 299,
-    rating: 4.94,
-    completedJobs: 182,
-    bio: 'Top-rated Indiranagar electrical contractor with 24/7 emergency response.'
-  },
-  {
-    id: 'pro_blr_handy_1',
-    name: 'Manjunath Gowda',
-    city: 'Bengaluru',
-    locality: 'HSR Layout & Bellandur',
-    skillCategory: 'Furniture Assembly & Handyman',
-    specificSkill: 'IKEA furniture assembly, TV wall mounts & curtain rods',
-    experience: '5 years',
-    baseRate: 349,
-    rating: 4.91,
-    completedJobs: 210,
-    bio: 'Laser-level precision mounting and flat-pack assembly pro.'
-  },
-  {
-    id: 'pro_blr_clean_1',
-    name: 'Kavitha Reddy',
-    city: 'Bengaluru',
-    locality: 'Whitefield & Marathahalli',
-    skillCategory: 'Deep Home & Kitchen Cleaning',
-    specificSkill: 'Full villa deep scrubbing & bathroom descaling',
-    experience: '6 years',
-    baseRate: 699,
-    rating: 4.88,
-    completedJobs: 195,
-    bio: 'Specialist in apartment move-in cleanings and herbal sanitization.'
-  },
-  {
-    id: 'pro_blr_plumb_1',
-    name: 'Suresh Babu',
-    city: 'Bengaluru',
-    locality: 'Jayanagar & JP Nagar',
-    skillCategory: 'Plumbing & Drainage Fixing',
-    specificSkill: 'Geyser connections, RO water purifier fitting & sewer snaking',
-    experience: '8 years',
-    baseRate: 349,
-    rating: 4.92,
-    completedJobs: 165,
-    bio: 'Reliable South Bengaluru plumber with heavy-duty diagnostic snake cameras.'
-  },
-  {
-    id: 'pro_blr_fit_1',
-    name: 'Deepa Hegde',
-    city: 'Bengaluru',
-    locality: 'Malleshwaram & Sadashivanagar',
-    skillCategory: 'Yoga & Fitness Coaching',
-    specificSkill: 'Hatha yoga, posture alignment & core strength',
-    experience: '5 years',
-    baseRate: 799,
-    rating: 5.0,
-    completedJobs: 92,
-    bio: 'Ayush-certified yoga instructor focusing on chronic back pain and flexibility.'
-  },
-  {
-    id: 'pro_blr_tech_1',
-    name: 'Karthik V',
-    city: 'Bengaluru',
-    locality: 'Electronic City & BTM Layout',
-    skillCategory: 'Laptop & Wi-Fi Tech Support',
-    specificSkill: 'Dual-band Wi-Fi routing, OS reinstalls & custom desktop builds',
-    experience: '4 years',
-    baseRate: 399,
-    rating: 4.96,
-    completedJobs: 154,
-    bio: 'Tech enthusiast providing doorstep IT troubleshooting for work-from-home setups.'
-  },
-
-  // --- MUMBAI ---
-  {
-    id: 'pro_bom_elec_1',
-    name: 'Sachin Sawant',
-    city: 'Mumbai',
-    locality: 'Dadar & Worli',
-    skillCategory: 'Electrician & Wiring Repairs',
-    specificSkill: 'Marine-grade wiring, meter boxes & switchboards',
-    experience: '8 years',
-    baseRate: 349,
-    rating: 4.93,
-    completedJobs: 172,
-    bio: 'Specialist in high-rise coastal electrical protection and surge suppressors.'
-  },
-  {
-    id: 'pro_bom_appliance_1',
-    name: 'Farhan Ansari',
-    city: 'Mumbai',
-    locality: 'Bandra & Khar',
-    skillCategory: 'AC, Fridge & Appliance Repair',
-    specificSkill: 'Inverter PCB repair, gas charging & commercial chillers',
-    experience: '9 years',
-    baseRate: 499,
-    rating: 4.95,
-    completedJobs: 230,
-    bio: 'Quick 20-minute Bandra response for AC cooling drop and gas leakages.'
-  },
-  {
-    id: 'pro_bom_clean_1',
-    name: 'Sneha Patil',
-    city: 'Mumbai',
-    locality: 'Andheri West & Juhu',
-    skillCategory: 'Deep Home & Kitchen Cleaning',
-    specificSkill: 'Sea-breeze damp cleaning & modular kitchen restoration',
-    experience: '6 years',
-    baseRate: 749,
-    rating: 4.87,
-    completedJobs: 185,
-    bio: 'Professional cleaning crew with eco-certified disinfectants and HEPA vacuums.'
-  },
-  {
-    id: 'pro_bom_plumb_1',
-    name: 'Rajesh Sharma',
-    city: 'Mumbai',
-    locality: 'Borivali & Kandivali',
-    skillCategory: 'Plumbing & Drainage Fixing',
-    specificSkill: 'High-pressure booster pumps & drain unclogging',
-    experience: '7 years',
-    baseRate: 399,
-    rating: 4.90,
-    completedJobs: 140,
-    bio: 'Equipped with electric rotary drain machines for instant high-rise unclogging.'
-  },
-  {
-    id: 'pro_bom_spa_1',
-    name: 'Rohini Deshmukh',
-    city: 'Mumbai',
-    locality: 'Powai & Vikhroli',
-    skillCategory: 'Spa, Massage & Grooming',
-    specificSkill: 'Deep tissue therapy & Ayurvedic herbal treatments',
-    experience: '6 years',
-    baseRate: 1299,
-    rating: 5.0,
-    completedJobs: 130,
-    bio: 'Trained therapist bringing 5-star spa quality and disposable hygiene kits.'
-  },
-  {
-    id: 'pro_bom_auto_1',
-    name: 'Amit Kadam',
-    city: 'Mumbai',
-    locality: 'Thane & Mulund',
-    skillCategory: 'Car & Two-Wheeler Care',
-    specificSkill: 'Doorstep waterless detailing & interior steam disinfection',
-    experience: '5 years',
-    baseRate: 499,
-    rating: 4.91,
-    completedJobs: 110,
-    bio: 'Mobile detailing van with pressurized steam and ceramic coating touchups.'
-  },
-
-  // --- DELHI ---
-  {
-    id: 'pro_del_handy_1',
-    name: 'Harpreet Singh',
-    city: 'Delhi',
-    locality: 'Lajpat Nagar & South Extension',
-    skillCategory: 'Furniture Assembly & Handyman',
-    specificSkill: 'Heavy furniture assembly, door locks & drywall fixing',
-    experience: '8 years',
-    baseRate: 399,
-    rating: 4.94,
-    completedJobs: 190,
-    bio: 'Friendly South Delhi handyman equipped with all heavy-duty Bosch power tools.'
-  },
-  {
-    id: 'pro_del_elec_1',
-    name: 'Virender Kumar',
-    city: 'Delhi',
-    locality: 'Rohini & Pitampura',
-    skillCategory: 'Electrician & Wiring Repairs',
-    specificSkill: 'Phase shifting, heavy geyser wiring & LED panel installation',
-    experience: '7 years',
-    baseRate: 299,
-    rating: 4.88,
-    completedJobs: 165,
-    bio: 'Fast North Delhi electrician solving tripping MCBs and voltage fluctuations.'
-  },
-  {
-    id: 'pro_del_clean_1',
-    name: 'Sunita Verma',
-    city: 'Delhi',
-    locality: 'Dwarka & Janakpuri',
-    skillCategory: 'Deep Home & Kitchen Cleaning',
-    specificSkill: 'Festive deep cleaning, chimney & bathroom scrub',
-    experience: '6 years',
-    baseRate: 699,
-    rating: 4.91,
-    completedJobs: 180,
-    bio: 'Thorough West Delhi home care with 100% satisfaction guarantee.'
-  },
-  {
-    id: 'pro_del_appliance_1',
-    name: 'Mohd. Tariq',
-    city: 'Delhi',
-    locality: 'Mayur Vihar & Noida',
-    skillCategory: 'AC, Fridge & Appliance Repair',
-    specificSkill: 'Inverter AC repair, gas charging & double-door fridge repair',
-    experience: '10 years',
-    baseRate: 449,
-    rating: 4.95,
-    completedJobs: 215,
-    bio: 'Master HVAC pro with 10 years experience across East Delhi & NCR.'
-  },
-  {
-    id: 'pro_del_tutor_1',
-    name: 'Dr. Nidhi Bansal',
-    city: 'Delhi',
-    locality: 'Hauz Khas & Vasant Kunj',
-    skillCategory: 'Maths & Science Tutoring',
-    specificSkill: 'CBSE Class 9–12 Physics & Advanced Calculus',
-    experience: '6 years',
-    baseRate: 1499,
-    rating: 5.0,
-    completedJobs: 104,
-    bio: 'PhD scholar offering conceptual STEM clarity and personalized worksheets.'
-  },
-  {
-    id: 'pro_del_paint_1',
-    name: 'Jagdish Chander',
-    city: 'Delhi',
-    locality: 'Connaught Place & Karol Bagh',
-    skillCategory: 'Wall Painting & Waterproofing',
-    specificSkill: 'Asian Paints Royal luxury finish & terrace damp sealing',
-    experience: '12 years',
-    baseRate: 999,
-    rating: 4.92,
-    completedJobs: 135,
-    bio: 'Precision spray painter with dust-free sanding machines.'
-  },
-
-  // --- CHENNAI ---
-  {
-    id: 'pro_maa_elec_1',
-    name: 'Murugan Natarajan',
-    city: 'Chennai',
-    locality: 'T. Nagar & Mylapore',
-    skillCategory: 'Electrician & Wiring Repairs',
-    specificSkill: 'Inverter battery setup & 3-phase wiring',
-    experience: '9 years',
-    baseRate: 299,
-    rating: 4.95,
-    completedJobs: 188,
-    bio: 'Licensed electrician with 9 years of trusted service in Central Chennai.'
-  },
-  {
-    id: 'pro_maa_org_1',
-    name: 'S. Meenakshi',
-    city: 'Chennai',
-    locality: 'Adyar & Besant Nagar',
-    skillCategory: 'Wardrobe & Home Organisation',
-    specificSkill: 'Minimalist kitchen layout & closet compartmentalization',
-    experience: '5 years',
-    baseRate: 699,
-    rating: 4.93,
-    completedJobs: 152,
-    bio: 'Transforming chaotic wardrobes and kitchen pantries into serene order.'
-  },
-  {
-    id: 'pro_maa_plumb_1',
-    name: 'K. Saravanan',
-    city: 'Chennai',
-    locality: 'Anna Nagar & Kilpauk',
-    skillCategory: 'Plumbing & Drainage Fixing',
-    specificSkill: 'Overhead sump tank automation & PVC pipeline fittings',
-    experience: '7 years',
-    baseRate: 349,
-    rating: 4.89,
-    completedJobs: 145,
-    bio: 'Specialist in sensor float valves, water motor repairs, and tap fittings.'
-  },
-  {
-    id: 'pro_maa_appliance_1',
-    name: 'R. Balaji',
-    city: 'Chennai',
-    locality: 'Velachery & OMR',
-    skillCategory: 'AC, Fridge & Appliance Repair',
-    specificSkill: 'High-humidity anti-rust AC coating & front-load washer fixes',
-    experience: '8 years',
-    baseRate: 399,
-    rating: 4.94,
-    completedJobs: 198,
-    bio: 'Anti-corrosion specialist tackling coastal coil leaks and sensor boards.'
-  },
-  {
-    id: 'pro_maa_tutor_1',
-    name: 'Revathi Sundaram',
-    city: 'Chennai',
-    locality: 'Nungambakkam',
-    skillCategory: 'Maths & Science Tutoring',
-    specificSkill: 'CBSE & Samacheer Kalvi Maths for Class 8–12',
-    experience: '6 years',
-    baseRate: 1399,
-    rating: 5.0,
-    completedJobs: 82,
-    bio: 'Patient mentor making advanced trigonometry and algebra intuitive.'
-  },
-
-  // --- HYDERABAD ---
-  {
-    id: 'pro_hyd_elec_1',
-    name: 'Venkat Rao',
-    city: 'Hyderabad',
-    locality: 'Gachibowli & Madhapur',
-    skillCategory: 'Electrician & Wiring Repairs',
-    specificSkill: 'Smart home automation, UPS inverter installation',
-    experience: '7 years',
-    baseRate: 299,
-    rating: 4.93,
-    completedJobs: 168,
-    bio: 'Trusted Hitec City technician for high-rise apartments and villa communities.'
-  },
-  {
-    id: 'pro_hyd_plumb_1',
-    name: 'Syed Khaleel',
-    city: 'Hyderabad',
-    locality: 'Banjara Hills & Jubilee Hills',
-    skillCategory: 'Plumbing & Drainage Fixing',
-    specificSkill: 'Concealed shower valves, pressure pumps & CP fittings',
-    experience: '8 years',
-    baseRate: 349,
-    rating: 4.94,
-    completedJobs: 180,
-    bio: 'Luxury bathroom fittings and zero-breakage leak detection pro.'
-  },
-  {
-    id: 'pro_hyd_clean_1',
-    name: 'Fatima Begum',
-    city: 'Hyderabad',
-    locality: 'Kondapur & Hitec City',
-    skillCategory: 'Deep Home & Kitchen Cleaning',
-    specificSkill: 'Floor buffing, tile grouting cleaning & deep dusting',
-    experience: '5 years',
-    baseRate: 699,
-    rating: 4.88,
-    completedJobs: 156,
-    bio: 'Professional team specializing in tech corridor gated communities.'
-  },
-  {
-    id: 'pro_hyd_appliance_1',
-    name: 'Srinivasulu Reddy',
-    city: 'Hyderabad',
-    locality: 'Kukatpally & Miyapur',
-    skillCategory: 'AC, Fridge & Appliance Repair',
-    specificSkill: 'Split AC indoor/outdoor jet wash & inverter fridge repair',
-    experience: '7 years',
-    baseRate: 449,
-    rating: 4.92,
-    completedJobs: 190,
-    bio: 'Certified technician with genuine copper piping and 90-day warranty.'
-  },
-  {
-    id: 'pro_hyd_tech_1',
-    name: 'Prashanth Kumar',
-    city: 'Hyderabad',
-    locality: 'Secunderabad & Begumpet',
-    skillCategory: 'Laptop & Wi-Fi Tech Support',
-    specificSkill: 'Gaming PC builds, thermal repasting & router bridging',
-    experience: '5 years',
-    baseRate: 399,
-    rating: 5.0,
-    completedJobs: 122,
-    bio: 'Fast doorstep turnaround for all hardware and software diagnostics.'
-  },
-
-  // --- AHMEDABAD ---
-  {
-    id: 'pro_amd_elec_1',
-    name: 'Bhavesh Patel',
-    city: 'Ahmedabad',
-    locality: 'Navrangpura & Satellite',
-    skillCategory: 'Electrician & Wiring Repairs',
-    specificSkill: 'Single & three-phase wiring, LED fixtures & inverter maintenance',
-    experience: '7 years',
-    baseRate: 299,
-    rating: 4.92,
-    completedJobs: 150,
-    bio: 'Punctual Navrangpura electrician with over 150 verified West Ahmedabad visits.'
-  },
-  {
-    id: 'pro_amd_plumb_1',
-    name: 'Jignesh Shah',
-    city: 'Ahmedabad',
-    locality: 'Bodakdev & Thaltej',
-    skillCategory: 'Plumbing & Drainage Fixing',
-    specificSkill: 'Tap leak repair, pipeline replacement & water tank cleaning',
-    experience: '6 years',
-    baseRate: 349,
-    rating: 4.88,
-    completedJobs: 135,
-    bio: 'Equipped with pressure jetters for spotless underground drainage lines.'
-  },
-  {
-    id: 'pro_amd_clean_1',
-    name: 'Hina Prajapati',
-    city: 'Ahmedabad',
-    locality: 'Vastrapur & Prahlad Nagar',
-    skillCategory: 'Deep Home & Kitchen Cleaning',
-    specificSkill: 'Kitchen oil stain removal & window glass sparkle cleaning',
-    experience: '5 years',
-    baseRate: 649,
-    rating: 4.93,
-    completedJobs: 168,
-    bio: 'Detailed cleaning with hospital-grade sanitizers and non-toxic formulas.'
-  },
-  {
-    id: 'pro_amd_appliance_1',
-    name: 'Chirag Dave',
-    city: 'Ahmedabad',
-    locality: 'Maninagar & Paldi',
-    skillCategory: 'AC, Fridge & Appliance Repair',
-    specificSkill: 'AC summer gas top-up & washing machine drum repair',
-    experience: '8 years',
-    baseRate: 399,
-    rating: 4.94,
-    completedJobs: 182,
-    bio: 'Prompt Maninagar appliance doctor offering same-day visit guarantees.'
-  },
-
-  // --- PUNE ---
-  {
-    id: 'pro_pnq_elec_1',
-    name: 'Dnyaneshwar More',
-    city: 'Pune',
-    locality: 'Kothrud & Karve Nagar',
-    skillCategory: 'Electrician & Wiring Repairs',
-    specificSkill: 'Society wiring, inverter installations & earthing tests',
-    experience: '8 years',
-    baseRate: 299,
-    rating: 4.95,
-    completedJobs: 178,
-    bio: 'Senior wireman with licensed government certification serving Kothrud.'
-  },
-  {
-    id: 'pro_pnq_plumb_1',
-    name: 'Nilesh Gokhale',
-    city: 'Pune',
-    locality: 'Viman Nagar & Kalyani Nagar',
-    skillCategory: 'Plumbing & Drainage Fixing',
-    specificSkill: 'Solar water heater plumbing & Jaguar tap repairs',
-    experience: '7 years',
-    baseRate: 349,
-    rating: 4.91,
-    completedJobs: 160,
-    bio: 'East Pune plumbing specialist for solar lines, geysers, and flush tanks.'
-  },
-  {
-    id: 'pro_pnq_clean_1',
-    name: 'Vandana Kadam',
-    city: 'Pune',
-    locality: 'Baner & Aundh',
-    skillCategory: 'Deep Home & Kitchen Cleaning',
-    specificSkill: 'Balcony pressure wash & kitchen grease removal',
-    experience: '6 years',
-    baseRate: 699,
-    rating: 4.89,
-    completedJobs: 185,
-    bio: 'Thorough Baner home cleaning service trusted by working professionals.'
-  },
-  {
-    id: 'pro_pnq_handy_1',
-    name: 'Rahul Shinde',
-    city: 'Pune',
-    locality: 'Wakad & Hinjawadi',
-    skillCategory: 'Furniture Assembly & Handyman',
-    specificSkill: 'Workstation setup, bookshelf assembly & curtain rods',
-    experience: '5 years',
-    baseRate: 449,
-    rating: 4.93,
-    completedJobs: 130,
-    bio: 'Hinjawadi IT corridor favorite for rapid apartment setups and fixtures.'
-  },
-  {
-    id: 'pro_pnq_spa_1',
-    name: 'Swati Joshi',
-    city: 'Pune',
-    locality: 'Koregaon Park & Kalyani Nagar',
-    skillCategory: 'Spa, Massage & Grooming',
-    specificSkill: 'Therapeutic head massage, pedicures & skin facials',
-    experience: '5 years',
-    baseRate: 1199,
-    rating: 5.0,
-    completedJobs: 115,
-    bio: 'Premium aesthetician bringing sterile, sealed salon kits right to your door.'
-  }
-];
+const PRE_ASSIGNED_WORKERS = require('./preassigned-workers');
 
 /**
  * Find approved workers matching a service and specific city / location.
@@ -1220,12 +755,29 @@ const PRE_ASSIGNED_WORKERS = [
  */
 async function findWorkersByService(serviceId, cityQuery = null, coords = null) {
   const sId = (serviceId || '').toLowerCase().trim();
-  const keywords = SERVICE_SKILL_MAP[sId] || [sId];
+  const cleanId = sId.replace(/[-_]/g, ' ').trim();
+  const domain = getCanonicalDomain(sId || cleanId);
+  const keywords = domain ? domain.keywords : (SERVICE_SKILL_MAP[sId] || (cleanId ? [sId, cleanId] : [sId]));
+  const negativeCategories = domain ? (domain.negativeCategories || []).map(c => c.toLowerCase().trim()) : [];
+  const domainCategories = domain ? (domain.categories || []).map(c => c.toLowerCase().trim()) : [];
 
   // 1. Resolve canonical city and distance
   const locationResolution = resolveCityFromLocation(cityQuery, coords);
   const targetCity = locationResolution.city;
   const isSupportedCity = locationResolution.isSupported;
+
+  if (!targetCity) {
+    return {
+      serviceId: sId,
+      city: null,
+      exactMatch: false,
+      noCoverage: true,
+      needsLocation: true,
+      message: 'Location required to search nearby specialists.',
+      workers: [],
+      similar: []
+    };
+  }
 
   // 2. Fetch all database workers
   const allDbWorkers = await findUsersByRole('worker');
@@ -1262,7 +814,7 @@ async function findWorkersByService(serviceId, cityQuery = null, coords = null) 
       exactMatch: false,
       noCoverage: true,
       distanceKm: locationResolution.distanceKm,
-      message: `Sorry! Currently no workers available in ${targetCity}. We are rapidly expanding across India! You can post a custom service request to the open gig pool, or if a local pro registers in ${targetCity}, they will become instantly available.`,
+      message: `Currently no workers registered in ${targetCity}. You can post a custom service request to the open gig pool!`,
       workers: [],
       similar: []
     };
@@ -1270,9 +822,40 @@ async function findWorkersByService(serviceId, cityQuery = null, coords = null) 
 
   // 3. Find exact matching workers for this service in this city
   const exactMatches = combinedCityWorkers.filter(w => {
-    const cat = (w.skillCategory || '').toLowerCase();
-    const spec = (w.specificSkill || '').toLowerCase();
-    return keywords.some(k => cat.includes(k) || spec.includes(k) || sId.includes(cat));
+    const cat = (w.skillCategory || '').toLowerCase().trim();
+    const spec = (w.specificSkill || '').toLowerCase().trim();
+    const primary = (w.primarySkill || '').toLowerCase().trim();
+
+    // If worker's skillCategory belongs to an explicitly negative category for this domain, reject!
+    if (cat && negativeCategories.some(neg => cat === neg || cat.includes(neg) || neg.includes(cat))) {
+      return false;
+    }
+
+    // Direct match with domain categories
+    if (cat && domainCategories.some(dc => cat === dc || cat.includes(dc) || dc.includes(cat))) {
+      return true;
+    }
+
+    // Keyword match in skills or category
+    const hasKeywordMatch = keywords.some(k => {
+      const kw = (k || '').toLowerCase().trim();
+      if (!kw || kw.length < 3) return false;
+      return cat.includes(kw) || spec.includes(kw) || primary.includes(kw);
+    });
+
+    if (hasKeywordMatch) return true;
+
+    return (cleanId.length >= 4 && (cat.includes(cleanId) || spec.includes(cleanId) || primary.includes(cleanId)));
+  });
+
+  // Rank workers: highest rating first, then most completed jobs
+  exactMatches.sort((a, b) => {
+    const rA = Number(a.rating) || 4.5;
+    const rB = Number(b.rating) || 4.5;
+    if (rB !== rA) return rB - rA;
+    const jA = Number(a.completedJobs || a.completedJobsCount) || 0;
+    const jB = Number(b.completedJobs || b.completedJobsCount) || 0;
+    return jB - jA;
   });
 
   if (exactMatches.length > 0) {
@@ -1287,15 +870,13 @@ async function findWorkersByService(serviceId, cityQuery = null, coords = null) 
   }
 
   // 4. Similar / cross-trained workers in this city
-  const similarMatches = combinedCityWorkers.filter(w => !exactMatches.some(e => e.id === w.id)).slice(0, 4);
-
   return {
     serviceId: sId,
     city: targetCity,
     exactMatch: false,
     noCoverage: false,
     workers: [],
-    similar: similarMatches
+    similar: []
   };
 }
 
@@ -1406,19 +987,21 @@ function skillsApproxMatch(workerSkill, demandedGig) {
   // 1. Direct equality or substring containment
   if (w === d || w.includes(d) || d.includes(w)) return true;
 
-  // 2. Tokenize and remove stop words
+  // 2. Tokenize with Unicode letter/number support and remove stop words
   const stopWords = new Set([
     'and', '&', 'or', 'the', 'a', 'an', 'for', 'in', 'at', 'to', 'of', 'with',
     'service', 'services', 'pro', 'pros', 'help', 'specialist', 'expert',
     'care', 'work', 'works', 'need', 'needs', 'repair', 'repairs', 'fixing',
-    'custom', 'pool', 'request', 'other', 'specialized', 'trade', 'visits'
+    'custom', 'pool', 'request', 'other', 'specialized', 'trade', 'visits',
+    'এবং', 'বা', 'জন্য', 'কাজ', 'সার্ভিস', 'মিস্ত্রি', 'সেবা', 'দরকার', 'প্রয়োজন',
+    'और', 'या', 'के', 'लिए', 'काम', 'सेवा', 'मिस्त्री', 'चाहिए', 'जरूरत'
   ]);
 
   const tokenize = (str) => {
     return str
-      .replace(/[^a-z0-9]/g, ' ')
+      .replace(/[^\p{L}\p{N}]/gu, ' ')
       .split(/\s+/)
-      .filter(token => token.length >= 3 && !stopWords.has(token));
+      .filter(token => token.length >= 2 && !stopWords.has(token));
   };
 
   const wTokens = tokenize(w);
@@ -1435,25 +1018,26 @@ function skillsApproxMatch(workerSkill, demandedGig) {
     }
   }
 
-  // 3. Trade domain keywords mapping
+  // 3. Trade domain keywords mapping across English, Bengali and Hindi
   const tradeGroups = [
-    ['plumb', 'pipe', 'leak', 'drain', 'faucet', 'tap', 'sink', 'toilet', 'flush'],
-    ['electr', 'wir', 'switch', 'light', 'circuit', 'fuse', 'socket', 'fan', 'bulb', 'meter'],
-    ['clean', 'maid', 'sweep', 'mop', 'housekeep', 'sanitiz', 'disinfect', 'scrub', 'deep clean'],
-    ['carpent', 'wood', 'furnitur', 'door', 'table', 'chair', 'cabinet', 'shelf', 'assembl'],
-    ['paint', 'color', 'whitewash', 'wall', 'coat', 'waterproof', 'roller', 'brush'],
-    ['ac', 'aircon', 'fridg', 'refrigerat', 'applianc', 'washing', 'oven', 'microwave'],
-    ['pest', 'termite', 'cockroach', 'fumigat', 'bug', 'insect', 'rodent', 'rat'],
-    ['child', 'baby', 'babysit', 'nanny', 'infant', 'toddler'],
-    ['pet', 'dog', 'cat', 'puppy', 'walk', 'groom'],
-    ['tutor', 'teach', 'math', 'scienc', 'physic', 'chemistr', 'english', 'lesson', 'class'],
-    ['tech', 'laptop', 'comput', 'wifi', 'wi-fi', 'network', 'pc', 'mac'],
-    ['garden', 'plant', 'lawn', 'grass', 'prun', 'tree', 'landscap'],
-    ['yoga', 'fit', 'gym', 'workout', 'train', 'coach'],
-    ['car', 'auto', 'bike', 'motorcycl', 'vehicl', 'wash', 'detail'],
-    ['senior', 'elder', 'companion', 'assist'],
-    ['spa', 'massag', 'salon', 'facial', 'haircut'],
-    ['organis', 'organiz', 'wardrob', 'closet', 'declutter']
+    ['plumb', 'pipe', 'leak', 'drain', 'faucet', 'tap', 'sink', 'toilet', 'flush', 'কল', 'জল', 'পাইপ', 'নল', 'প্লাম্বার', 'প্লাম্বিং', 'नल', 'पानी', 'पाइप', 'प्लम्बर', 'प्लंबिंग'],
+    ['electr', 'wir', 'switch', 'light', 'circuit', 'fuse', 'socket', 'fan', 'bulb', 'meter', 'ইলেকট্রিক', 'কারেন্ট', 'ফ্যান', 'আলো', 'সুইচ', 'তার', 'বিদ্যুৎ', 'ইলেকট্রিশিয়ান', 'बिजली', 'पंखा', 'तार', 'स्विच', 'इलेक्ट्रीशियन'],
+    ['clean', 'maid', 'sweep', 'mop', 'housekeep', 'sanitiz', 'disinfect', 'scrub', 'deep clean', 'পরিষ্কার', 'ঝাড়ু', 'মোছা', 'সফাই', 'ঘর পরিষ্কার', 'सफाई', 'झाड़ू', 'पोछा', 'घर की सफाई'],
+    ['carpent', 'wood', 'furnitur', 'door', 'table', 'chair', 'cabinet', 'shelf', 'assembl', 'ছুতোর', 'কাঠ', 'দরজা', 'লক', 'তালা', 'আলমারি', 'আসবাবপত্র', 'কাঠমিস্ত্রি', 'लकड़ी', 'बढ़ई', 'दरवाजा', 'ताला', 'फर्नीचर'],
+    ['paint', 'color', 'whitewash', 'wall', 'coat', 'waterproof', 'roller', 'brush', 'রং', 'পেইন্ট', 'দেওয়াল', 'ড্যাম্প', 'রংমিস্ত্রি', 'रंग', 'पेंट', 'दीवार', 'पुताई', 'पेंटर'],
+    ['ac', 'aircon', 'fridg', 'refrigerat', 'applianc', 'washing', 'oven', 'microwave', 'এসি', 'ফ্রিজ', 'ওয়াশিং মেশিন', 'অ্যাপ্লায়েন্স', 'एसी', 'फ्रिज', 'कूलर', 'वाशिंग मशीन', 'उपकरण'],
+    ['pest', 'termite', 'cockroach', 'fumigat', 'bug', 'insect', 'rodent', 'rat', 'পোকামাকড়', 'উইপোকা', 'তেলাপোকা', 'কীটনাশক', 'ছারপোকা', 'दीमक', 'कॉकरोच', 'कीटनाशक', 'पेस्ट कंट्रोल'],
+    ['child', 'baby', 'babysit', 'nanny', 'infant', 'toddler', 'বাচ্চা', 'শিশু', 'আয়া', 'শিশুর যত্ন', 'बच्चा', 'शिशु', 'आया', 'दाई', 'बेबीसिटिंग'],
+    ['pet', 'dog', 'cat', 'puppy', 'walk', 'groom', 'কুকুর', 'বিড়াল', 'পোষ্য', 'কুকুর ঘোরানো', 'कुत्ता', 'बिल्ली', 'पालतू', 'डॉग वॉकर'],
+    ['tutor', 'teach', 'math', 'scienc', 'physic', 'chemistr', 'english', 'lesson', 'class', 'শিক্ষক', 'টিউশন', 'টুইশন', 'পড়াশোনা', 'অঙ্ক', 'টিউটর', 'ट्यूशन', 'शिक्षक', 'पढ़ाई', 'गणित'],
+    ['tech', 'laptop', 'comput', 'wifi', 'wi-fi', 'network', 'pc', 'mac', 'ল্যাপটপ', 'কম্পিউটার', 'ইন্টারনেট', 'রাউটার', 'ওয়াইফাই', 'लैपटॉप', 'कंप्यूटर', 'वाईफाई', 'इंटरनेट'],
+    ['garden', 'plant', 'lawn', 'grass', 'prun', 'tree', 'landscap', 'বাগান', 'গাছপালা', 'টব', 'মালী', 'बगीचा', 'पौधे', 'माली', 'गमला'],
+    ['yoga', 'fit', 'gym', 'workout', 'train', 'coach', 'ব্যায়াম', 'যোগব্যায়াম', 'ফিটনেস', 'योगा', 'कसरत', 'जिम', 'फिटनेस'],
+    ['car', 'auto', 'bike', 'motorcycl', 'vehicl', 'wash', 'detail', 'গাড়ি', 'গাড়ির ওয়াশ', 'বাইক', 'গাছ ধোয়া', 'गाड़ी', 'कार वॉश', 'बाइक'],
+    ['senior', 'elder', 'companion', 'assist', 'বয়স্ক', 'বৃদ্ধ', 'বুজুর্গ', 'দাদু', 'দিদিমা', 'বুजुर्ग', 'वृद्ध', 'दादा', 'दादी'],
+    ['spa', 'massag', 'salon', 'facial', 'haircut', 'স্পা', 'ম্যাসাজ', 'সেলুন', 'ফেসিয়াল', 'রূপচর্চা', 'स्पा', 'मसाज', 'सैलून', 'মালিশ'],
+    ['organis', 'organiz', 'wardrob', 'closet', 'declutter', 'গোছানো', 'আলমারি', 'ঘর সাজানো', 'अलमारी', 'सजावट', 'व्यवस्था'],
+    ['handyman', 'drill', 'assembl', 'mount', 'hang', 'curtain rod', 'tv mount', 'shelf', 'হ্যান্ডিম্যান', 'ড্রিল', 'ছবি টাঙানো', 'ড্রিলিং', 'हैंडीमैन', 'ड्रिल', 'ड्रिलिंग', 'फिटिंग']
   ];
 
   for (const group of tradeGroups) {
@@ -1473,7 +1057,8 @@ async function findBookingsByWorker(workerId, workerSkill = '', workerCity = '',
   const wCity = (workerCity || '').toLowerCase().trim();
   const wName = (workerName || '').toLowerCase().trim();
   const combinedSkill = [workerSkill, workerSpecificSkill].filter(Boolean).join(' ').trim();
-  const canonicalWorkerCity = wCity ? resolveCityFromLocation(wCity).canonicalCity.toLowerCase() : '';
+  const resolvedWorkerCity = wCity ? resolveCityFromLocation(wCity) : null;
+  const canonicalWorkerCity = (resolvedWorkerCity && resolvedWorkerCity.canonicalCity) ? resolvedWorkerCity.canonicalCity.toLowerCase() : '';
 
   if (isMongoReady) {
     try {
@@ -1494,7 +1079,8 @@ async function findBookingsByWorker(workerId, workerSkill = '', workerCity = '',
             return false;
           }
           if (canonicalWorkerCity && b.city) {
-            const canonicalBookingCity = resolveCityFromLocation(b.city).canonicalCity.toLowerCase();
+            const resolvedBookingCity = resolveCityFromLocation(b.city);
+            const canonicalBookingCity = (resolvedBookingCity && resolvedBookingCity.canonicalCity) ? resolvedBookingCity.canonicalCity.toLowerCase() : '';
             if (canonicalWorkerCity !== canonicalBookingCity) return false;
           }
           if (combinedSkill) {
@@ -1521,7 +1107,8 @@ async function findBookingsByWorker(workerId, workerSkill = '', workerCity = '',
         return false;
       }
       if (canonicalWorkerCity && b.city) {
-        const canonicalBookingCity = resolveCityFromLocation(b.city).canonicalCity.toLowerCase();
+        const resolvedBookingCity = resolveCityFromLocation(b.city);
+        const canonicalBookingCity = (resolvedBookingCity && resolvedBookingCity.canonicalCity) ? resolvedBookingCity.canonicalCity.toLowerCase() : '';
         if (canonicalWorkerCity !== canonicalBookingCity) return false;
       }
       // Filter open pool bookings so worker only sees gigs where their skill approx matches!
@@ -1534,7 +1121,8 @@ async function findBookingsByWorker(workerId, workerSkill = '', workerCity = '',
     // 3. Demo bookings in same city
     if (b.workerId && String(b.workerId).startsWith('pro_')) {
       if (canonicalWorkerCity && b.city) {
-        const canonicalBookingCity = resolveCityFromLocation(b.city).canonicalCity.toLowerCase();
+        const resolvedBookingCity = resolveCityFromLocation(b.city);
+        const canonicalBookingCity = (resolvedBookingCity && resolvedBookingCity.canonicalCity) ? resolvedBookingCity.canonicalCity.toLowerCase() : '';
         if (canonicalWorkerCity !== canonicalBookingCity) return false;
       }
       return true;
@@ -1566,6 +1154,15 @@ async function addBookingNegotiation(bookingId, negotiationEntry) {
   }
   if (negotiationEntry.proposedDate) {
     updates.scheduledDate = negotiationEntry.proposedDate;
+  }
+  if (negotiationEntry.workerPhone) {
+    updates.workerPhone = negotiationEntry.workerPhone;
+  }
+  if (negotiationEntry.workerId) {
+    updates.workerId = negotiationEntry.workerId;
+  }
+  if (negotiationEntry.workerName) {
+    updates.workerName = negotiationEntry.workerName;
   }
 
   return await updateBooking(bookingId, updates);
@@ -1798,8 +1395,6 @@ async function findTicketsByBooking(bookingId) {
 }
 
 /**
- * Find tickets by user ID (either as complainant or against)
-/**
  * Find tickets involving a specific user
  * NOTE: If includeUnsettledAgainst is false (default for normal users),
  * tickets where this user is the accused party remain hidden until the admin
@@ -1856,7 +1451,7 @@ async function issueUserWarning(userId, warningData = {}) {
     ticketId: warningData.ticketId || '',
     bookingId: warningData.bookingId || '',
     reason: warningData.reason || 'Official warning issued for platform dispute resolution.',
-    issuedBy: warningData.issuedBy || 'Hustle Operations Admin',
+    issuedBy: warningData.issuedBy || 'SevaSathi Operations Admin',
     issuedAt: new Date().toISOString()
   };
   warningsList.push(newWarning);
@@ -1902,9 +1497,323 @@ async function getAllTickets() {
   return [...store.tickets].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 }
 
+// ==========================================
+// BUSINESS WORKFORCE & REQUISITIONS METHODS
+// ==========================================
+
+async function createBusinessRequirement(data) {
+  const reqObj = {
+    ...data,
+    requirementId: data.requirementId || `REQ-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
+    status: data.status || 'open',
+    allocatedWorkers: data.allocatedWorkers || [],
+    contractId: data.contractId || null,
+    createdAt: data.createdAt || new Date(),
+    updatedAt: new Date()
+  };
+
+  if (isMongoReady) {
+    try {
+      const created = await BusinessRequirement.create(reqObj);
+      return created.toObject ? created.toObject() : created;
+    } catch (err) {
+      console.warn('Mongo createBusinessRequirement error, fallback:', err.message);
+    }
+  }
+
+  const store = readLocalStore();
+  store.businessRequirements = store.businessRequirements || [];
+  reqObj._id = 'req_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+  reqObj.id = reqObj._id;
+  store.businessRequirements.push(reqObj);
+  writeLocalStore(store);
+  return reqObj;
+}
+
+async function findBusinessRequirementById(id) {
+  if (isMongoReady) {
+    try {
+      const found = await BusinessRequirement.findOne({
+        $or: [{ requirementId: id }, { _id: mongoose.isValidObjectId(id) ? id : null }]
+      });
+      if (found) return found.toObject ? found.toObject() : found;
+    } catch (err) {
+      console.warn('Mongo findBusinessRequirementById error:', err.message);
+    }
+  }
+
+  const store = readLocalStore();
+  store.businessRequirements = store.businessRequirements || [];
+  return store.businessRequirements.find(r => r.requirementId === id || String(r._id) === String(id) || String(r.id) === String(id)) || null;
+}
+
+async function findBusinessRequirementsByBusiness(businessId) {
+  if (isMongoReady) {
+    try {
+      return await BusinessRequirement.find({ businessId: String(businessId) }).sort({ createdAt: -1 });
+    } catch (err) {
+      console.warn('Mongo findBusinessRequirementsByBusiness error:', err.message);
+    }
+  }
+
+  const store = readLocalStore();
+  store.businessRequirements = store.businessRequirements || [];
+  return store.businessRequirements
+    .filter(r => String(r.businessId) === String(businessId))
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+}
+
+async function findAllBusinessRequirements() {
+  if (isMongoReady) {
+    try {
+      return await BusinessRequirement.find().sort({ createdAt: -1 });
+    } catch (err) {
+      console.warn('Mongo findAllBusinessRequirements error:', err.message);
+    }
+  }
+
+  const store = readLocalStore();
+  store.businessRequirements = store.businessRequirements || [];
+  return [...store.businessRequirements].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+}
+
+async function updateBusinessRequirement(id, updateData) {
+  if (isMongoReady) {
+    try {
+      const updated = await BusinessRequirement.findOneAndUpdate(
+        { $or: [{ requirementId: id }, { _id: mongoose.isValidObjectId(id) ? id : null }] },
+        { ...updateData, updatedAt: new Date() },
+        { new: true }
+      );
+      if (updated) return updated.toObject ? updated.toObject() : updated;
+    } catch (err) {
+      console.warn('Mongo updateBusinessRequirement error:', err.message);
+    }
+  }
+
+  const store = readLocalStore();
+  store.businessRequirements = store.businessRequirements || [];
+  const idx = store.businessRequirements.findIndex(r => r.requirementId === id || String(r._id) === String(id) || String(r.id) === String(id));
+  if (idx !== -1) {
+    store.businessRequirements[idx] = { ...store.businessRequirements[idx], ...updateData, updatedAt: new Date() };
+    writeLocalStore(store);
+    return store.businessRequirements[idx];
+  }
+  return null;
+}
+
+// ==========================================
+// CONTRACTS METHODS
+// ==========================================
+
+async function createContract(data) {
+  const cntObj = {
+    ...data,
+    contractId: data.contractId || `CNT-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
+    status: data.status || 'active',
+    assignedWorkers: data.assignedWorkers || [],
+    createdAt: data.createdAt || new Date(),
+    updatedAt: new Date()
+  };
+
+  if (isMongoReady) {
+    try {
+      const created = await Contract.create(cntObj);
+      return created.toObject ? created.toObject() : created;
+    } catch (err) {
+      console.warn('Mongo createContract error:', err.message);
+    }
+  }
+
+  const store = readLocalStore();
+  store.contracts = store.contracts || [];
+  cntObj._id = 'cnt_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+  cntObj.id = cntObj._id;
+  store.contracts.push(cntObj);
+  writeLocalStore(store);
+  return cntObj;
+}
+
+async function findContractById(id) {
+  if (isMongoReady) {
+    try {
+      const found = await Contract.findOne({
+        $or: [{ contractId: id }, { _id: mongoose.isValidObjectId(id) ? id : null }]
+      });
+      if (found) return found.toObject ? found.toObject() : found;
+    } catch (err) {
+      console.warn('Mongo findContractById error:', err.message);
+    }
+  }
+
+  const store = readLocalStore();
+  store.contracts = store.contracts || [];
+  return store.contracts.find(c => c.contractId === id || String(c._id) === String(id) || String(c.id) === String(id)) || null;
+}
+
+async function findContractsByBusiness(businessId) {
+  if (isMongoReady) {
+    try {
+      return await Contract.find({ businessId: String(businessId) }).sort({ createdAt: -1 });
+    } catch (err) {
+      console.warn('Mongo findContractsByBusiness error:', err.message);
+    }
+  }
+
+  const store = readLocalStore();
+  store.contracts = store.contracts || [];
+  return store.contracts
+    .filter(c => String(c.businessId) === String(businessId))
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+}
+
+async function findAllContracts() {
+  if (isMongoReady) {
+    try {
+      return await Contract.find().sort({ createdAt: -1 });
+    } catch (err) {
+      console.warn('Mongo findAllContracts error:', err.message);
+    }
+  }
+
+  const store = readLocalStore();
+  store.contracts = store.contracts || [];
+  return [...store.contracts].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+}
+
+async function updateContract(id, updateData) {
+  if (isMongoReady) {
+    try {
+      const updated = await Contract.findOneAndUpdate(
+        { $or: [{ contractId: id }, { _id: mongoose.isValidObjectId(id) ? id : null }] },
+        { ...updateData, updatedAt: new Date() },
+        { new: true }
+      );
+      if (updated) return updated.toObject ? updated.toObject() : updated;
+    } catch (err) {
+      console.warn('Mongo updateContract error:', err.message);
+    }
+  }
+
+  const store = readLocalStore();
+  store.contracts = store.contracts || [];
+  const idx = store.contracts.findIndex(c => c.contractId === id || String(c._id) === String(id) || String(c.id) === String(id));
+  if (idx !== -1) {
+    store.contracts[idx] = { ...store.contracts[idx], ...updateData, updatedAt: new Date() };
+    writeLocalStore(store);
+    return store.contracts[idx];
+  }
+  return null;
+}
+
+// ==========================================
+// INVOICES METHODS
+// ==========================================
+
+async function createInvoice(data) {
+  const invObj = {
+    ...data,
+    invoiceId: data.invoiceId || `INV-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
+    status: data.status || 'pending',
+    createdAt: data.createdAt || new Date(),
+    updatedAt: new Date()
+  };
+
+  if (isMongoReady) {
+    try {
+      const created = await Invoice.create(invObj);
+      return created.toObject ? created.toObject() : created;
+    } catch (err) {
+      console.warn('Mongo createInvoice error:', err.message);
+    }
+  }
+
+  const store = readLocalStore();
+  store.invoices = store.invoices || [];
+  invObj._id = 'inv_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+  invObj.id = invObj._id;
+  store.invoices.push(invObj);
+  writeLocalStore(store);
+  return invObj;
+}
+
+async function findInvoiceById(id) {
+  if (isMongoReady) {
+    try {
+      const found = await Invoice.findOne({
+        $or: [{ invoiceId: id }, { _id: mongoose.isValidObjectId(id) ? id : null }]
+      });
+      if (found) return found.toObject ? found.toObject() : found;
+    } catch (err) {
+      console.warn('Mongo findInvoiceById error:', err.message);
+    }
+  }
+
+  const store = readLocalStore();
+  store.invoices = store.invoices || [];
+  return store.invoices.find(i => i.invoiceId === id || String(i._id) === String(id) || String(i.id) === String(id)) || null;
+}
+
+async function findInvoicesByBusiness(businessId) {
+  if (isMongoReady) {
+    try {
+      return await Invoice.find({ businessId: String(businessId) }).sort({ createdAt: -1 });
+    } catch (err) {
+      console.warn('Mongo findInvoicesByBusiness error:', err.message);
+    }
+  }
+
+  const store = readLocalStore();
+  store.invoices = store.invoices || [];
+  return store.invoices
+    .filter(i => String(i.businessId) === String(businessId))
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+}
+
+async function findAllInvoices() {
+  if (isMongoReady) {
+    try {
+      return await Invoice.find().sort({ createdAt: -1 });
+    } catch (err) {
+      console.warn('Mongo findAllInvoices error:', err.message);
+    }
+  }
+
+  const store = readLocalStore();
+  store.invoices = store.invoices || [];
+  return [...store.invoices].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+}
+
+async function updateInvoice(id, updateData) {
+  if (isMongoReady) {
+    try {
+      const updated = await Invoice.findOneAndUpdate(
+        { $or: [{ invoiceId: id }, { _id: mongoose.isValidObjectId(id) ? id : null }] },
+        { ...updateData, updatedAt: new Date() },
+        { new: true }
+      );
+      if (updated) return updated.toObject ? updated.toObject() : updated;
+    } catch (err) {
+      console.warn('Mongo updateInvoice error:', err.message);
+    }
+  }
+
+  const store = readLocalStore();
+  store.invoices = store.invoices || [];
+  const idx = store.invoices.findIndex(i => i.invoiceId === id || String(i._id) === String(id) || String(i.id) === String(id));
+  if (idx !== -1) {
+    store.invoices[idx] = { ...store.invoices[idx], ...updateData, updatedAt: new Date() };
+    writeLocalStore(store);
+    return store.invoices[idx];
+  }
+  return null;
+}
+
 module.exports = {
   connectDB,
   isMongoConnected: () => isMongoReady,
+  CANONICAL_SERVICE_DOMAINS,
+  getCanonicalDomain,
   SERVICE_SKILL_MAP,
   findUserByEmail,
   findUserByPhone,
@@ -1936,5 +1845,21 @@ module.exports = {
   findTicketsByBooking,
   findTicketsByUser,
   issueUserWarning,
-  getAllTickets
+  getAllTickets,
+  // Business, Contracts & Invoices
+  createBusinessRequirement,
+  findBusinessRequirementById,
+  findBusinessRequirementsByBusiness,
+  findAllBusinessRequirements,
+  updateBusinessRequirement,
+  createContract,
+  findContractById,
+  findContractsByBusiness,
+  findAllContracts,
+  updateContract,
+  createInvoice,
+  findInvoiceById,
+  findInvoicesByBusiness,
+  findAllInvoices,
+  updateInvoice
 };
