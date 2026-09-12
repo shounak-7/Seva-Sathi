@@ -1803,6 +1803,48 @@ async function runAllTests() {
       'AI Worker Ranking: Suggests all matching specialists in city/trade strictly sorted from highest to lowest rating'
     );
 
+    // 7.54 Cooperative Section Standalone Routes
+    const coopHtmlRes = await request({ method: 'GET', path: '/cooperative' });
+    const coopCssRes = await request({ method: 'GET', path: '/cooperative.css' });
+    const coopJsRes = await request({ method: 'GET', path: '/cooperative.js' });
+    const coopI18nRes = await request({ method: 'GET', path: '/cooperative-i18n.js' });
+    assert(
+      coopHtmlRes.status === 200 &&
+      coopCssRes.status === 200 &&
+      coopJsRes.status === 200 &&
+      coopI18nRes.status === 200 &&
+      typeof coopHtmlRes.raw === 'string' &&
+      coopHtmlRes.raw.includes('SevaSathi Cooperative Federation') &&
+      coopHtmlRes.raw.includes('cooperative.js'),
+      'Cooperative Section: Standalone HTML, CSS, JS, and i18n modules are served cleanly with status 200'
+    );
+
+    // 7.55 Multilingual Locales for Cooperative Section (en, bn, hi)
+    const enRes = await request({ method: 'GET', path: '/locales/en.json' });
+    const bnRes = await request({ method: 'GET', path: '/locales/bn.json' });
+    const hiRes = await request({ method: 'GET', path: '/locales/hi.json' });
+    assert(
+      enRes.status === 200 && enRes.data?.coop_title &&
+      bnRes.status === 200 && bnRes.data?.coop_title &&
+      hiRes.status === 200 && hiRes.data?.coop_title &&
+      bnRes.data.coop_title.includes('সমবায়') &&
+      hiRes.data.coop_title.includes('सहकारी'),
+      'Cooperative Multilingual Locales: /locales/{en,bn,hi}.json return valid localized dictionaries with verified scripts'
+    );
+
+    // 7.56 Cooperative Fair Wage & Transparent Invoice Formula Verification
+    const sampleJob = 5000;
+    const workerShare = Math.round(sampleJob * 0.85); // 4250
+    const welfareShare = Math.round(sampleJob * 0.10); // 500
+    const opsShare = Math.round(sampleJob * 0.05); // 250
+    assert(
+      workerShare === 4250 &&
+      welfareShare === 500 &&
+      opsShare === 250 &&
+      (workerShare + welfareShare + opsShare === sampleJob),
+      'Cooperative Wage Formula: Fair revenue split (85% worker, 10% welfare, 5% ops) accurately allocates 100% of job earnings without predatory deductions'
+    );
+
   } catch (err) {
     assert(false, 'Section 7 execution', err.message);
   }

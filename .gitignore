@@ -21,3 +21,4 @@ scratch/
 # Coverage and test artifacts
 coverage/
 .system_generated/
+.chrome-temp/

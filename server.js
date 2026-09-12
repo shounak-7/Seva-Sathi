@@ -189,6 +189,23 @@ app.get('/admin.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'admin.html'));
 });
 
+// Dedicated Cooperative Federation Section
+app.get('/cooperative', (req, res) => {
+  res.sendFile(path.join(__dirname, 'cooperative-section.html'));
+});
+
+app.get('/cooperative-section', (req, res) => {
+  res.sendFile(path.join(__dirname, 'cooperative-section.html'));
+});
+
+app.get('/cooperative-section.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'cooperative-section.html'));
+});
+
+app.get('/cooperative.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'cooperative-section.html'));
+});
+
 // Start server
 async function startServer() {
   await db.connectDB();

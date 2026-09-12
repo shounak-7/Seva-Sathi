@@ -30,6 +30,35 @@
         --green-border: #a7f3d0;
       }
 
+      .community-mic-btn:hover {
+        background: #e2e8f0 !important;
+        border-color: #94a3b8 !important;
+        transform: translateY(-1px);
+      }
+
+      .community-mic-btn.listening {
+        background: #fee2e2 !important;
+        border-color: #ef4444 !important;
+        color: #b91c1c !important;
+        animation: commMicPulse 1.5s infinite;
+        box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2);
+      }
+
+      .community-mic-btn.listening .comm-mic-icon {
+        animation: commMicBounce 0.8s infinite alternate ease-in-out;
+      }
+
+      @keyframes commMicPulse {
+        0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.45); }
+        70% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+      }
+
+      @keyframes commMicBounce {
+        0% { transform: scale(1); }
+        100% { transform: scale(1.25); }
+      }
+
       body.worker-hub-body {
         background-color: var(--paper);
         color: var(--ink);
@@ -1044,6 +1073,7 @@
             <small id="topbar-trade" style="font-size:11.5px; color:var(--muted); font-weight:500;">Trade Specialist</small>
           </div>
         </div>
+        <div id="lang-selector-mount" class="lang-mount-container" style="display:inline-flex; align-items:center;"></div>
         <button type="button" class="btn-hub-logout" id="btn-worker-logout">Log Out</button>
       </div>
     </header>
@@ -1157,20 +1187,474 @@
           </div>
         </div>
 
-        <!-- 3. Commercial Enterprise & Hotel Opportunities Panel -->
-        <div class="gig-panel" style="margin-top:28px; border:1.5px solid #86efac; background: linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%);">
-          <div class="panel-header" style="border-bottom-color:#bbf7d0;">
-            <h2>
-              <span style="color:#15803d;">🏢</span>
-              <span>Commercial &amp; Cooperative Opportunities (Hotels &amp; Enterprises)</span>
-            </h2>
-            <span class="panel-count" id="count-biz-gigs" style="background:#dcfce7; color:#15803d; border-color:#86efac;">0 available</span>
+        <!-- 3. Local Trade Community & Cooperative Guild (Same Skills & Geo-Location) -->
+        <div class="gig-panel community-panel" id="worker-community-panel" style="margin-top:28px; border:1.5px solid #86efac; background: #ffffff; border-radius:18px; box-shadow:0 4px 20px rgba(0,0,0,0.04); overflow:hidden;">
+          <div class="panel-header" style="border-bottom:1px solid #e2e8f0; padding:18px 24px; background:linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%);">
+            <div>
+              <h2 style="display:flex; align-items:center; gap:8px; margin:0 0 4px; font-size:18px; font-weight:800; color:#0f172a;">
+                <span style="color:#15803d; font-size:22px;">🤝</span>
+                <span id="community-hub-heading">Local Trade Community &amp; Pro Guild</span>
+              </h2>
+              <div style="font-size:13px; color:#64748b; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <span id="community-geo-badge" style="background:#dcfce7; color:#15803d; font-weight:700; font-size:11.5px; padding:2px 10px; border-radius:999px; border:1px solid #bbf7d0;">📍 Loading Geo Hub...</span>
+                <span>Connect with verified trade peers, collaborate on group jobs, and chat in real-time</span>
+              </div>
+            </div>
+            <span class="panel-count" id="community-online-count" style="background:#dcfce7; color:#15803d; border-color:#86efac; font-weight:700;">🟢 Active Guild</span>
           </div>
-          <p style="margin:0 0 16px; font-size:13.5px; color:#475569; line-height:1.5;">
-            Multi-day staff deployment requisitions from verified enterprise partners. Guaranteed daily rates held safely in SevaSathi Cooperative Escrow.
-          </p>
-          <div id="biz-opportunities-container">
-            <!-- Dynamically populated -->
+
+          <!-- Community Workspace Container -->
+          <div class="community-workspace" style="display:flex; flex-direction:column; min-height:480px;">
+            <!-- Top Controls Bar: Switch Mode & Actions -->
+            <div style="padding:12px 20px; border-bottom:1px solid #e2e8f0; background:#f8fafc; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+              <div class="community-tab-group" style="display:flex; gap:6px;">
+                <button type="button" class="btn-community-tab active" data-mode="global" id="tab-comm-global" style="padding:8px 14px; border-radius:8px; border:1px solid #16a34a; background:#16a34a; color:#fff; font-size:12.5px; font-weight:700; cursor:pointer;">
+                  🌐 Global Trade Chat
+                </button>
+                <button type="button" class="btn-community-tab" data-mode="groups" id="tab-comm-groups" style="padding:8px 14px; border-radius:8px; border:1px solid #cbd5e1; background:#fff; color:#475569; font-size:12.5px; font-weight:700; cursor:pointer;">
+                  👥 Work Squads &amp; Groups
+                </button>
+                <button type="button" class="btn-community-tab" data-mode="dm" id="tab-comm-dm" style="padding:8px 14px; border-radius:8px; border:1px solid #cbd5e1; background:#fff; color:#475569; font-size:12.5px; font-weight:700; cursor:pointer;">
+                  💬 Direct Messages (1:1)
+                </button>
+              </div>
+
+              <div style="display:flex; align-items:center; gap:8px;">
+                <button type="button" id="btn-create-squad" style="background:#f0fdf4; border:1.5px solid #86efac; color:#15803d; font-size:12px; font-weight:700; padding:7px 14px; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+                  + Form New Squad
+                </button>
+              </div>
+            </div>
+
+            <!-- Main Community Grid: Sidebar (Channels/Peers) + Chat Stream -->
+            <div class="community-main-grid" style="display:grid; grid-template-columns:280px 1fr; flex:1; min-height:440px;">
+              <!-- Left Sidebar: Channels & Peer List -->
+              <div class="community-sidebar" style="border-right:1px solid #e2e8f0; background:#fbfcfd; display:flex; flex-direction:column; max-height:500px; overflow-y:auto; padding:14px;">
+                <div style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; color:#64748b; margin-bottom:8px;" id="sidebar-section-title">
+                  Active Channels
+                </div>
+                <div id="community-channels-list" style="display:flex; flex-direction:column; gap:4px;">
+                  <!-- Injected dynamically -->
+                </div>
+
+                <div style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; color:#64748b; margin:16px 0 8px;">
+                  Nearby Verified Trade Pros
+                </div>
+                <div id="community-peers-list" style="display:flex; flex-direction:column; gap:6px;">
+                  <!-- Injected dynamically -->
+                </div>
+              </div>
+
+              <!-- Right Chat Window -->
+              <div class="community-chat-window" style="display:flex; flex-direction:column; background:#ffffff; height:500px;">
+                <!-- Chat Window Header -->
+                <div style="padding:12px 18px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; background:#ffffff;">
+                  <div>
+                    <strong id="comm-active-title" style="font-size:14.5px; color:#0f172a; display:block;">📍 Loading Channel...</strong>
+                    <small id="comm-active-subtitle" style="font-size:11.5px; color:#64748b;">Community channel for verified professionals</small>
+                  </div>
+                  <div style="display:flex; gap:6px;">
+                    <button type="button" id="btn-comm-share-job" style="background:#ecfdf5; border:1px solid #a7f3d0; color:#065f46; font-size:11.5px; font-weight:700; padding:5px 12px; border-radius:6px; cursor:pointer;">
+                      📢 Share Overflow Gig Lead
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Messages Stream -->
+                <div id="community-messages-stream" style="flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:10px; background:#f8fafc;">
+                  <!-- Injected dynamically -->
+                </div>
+
+                <!-- Message Input Bar with Icon-Only Voice Typing Mic -->
+                <div style="padding:12px 16px 6px; border-top:1px solid #e2e8f0; background:#ffffff; display:flex; gap:8px; align-items:center;">
+                  <button type="button" id="community-mic-btn" class="community-mic-btn" title="Voice Typing (Speak in English, हिन्दी, বাংলা)" aria-label="Voice Typing" style="width:42px; height:42px; min-width:42px; padding:0; background:#f1f5f9; border:1.5px solid #cbd5e1; border-radius:10px; color:#334155; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.2s cubic-bezier(0.4, 0, 0.2, 1);">
+                    <svg class="comm-mic-svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                      <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                      <line x1="12" y1="19" x2="12" y2="23"></line>
+                      <line x1="8" y1="23" x2="16" y2="23"></line>
+                    </svg>
+                  </button>
+                  <input type="text" id="community-message-input" placeholder="Type a message to your trade community..." style="flex:1; height:42px; padding:0 14px; border:1.5px solid #cbd5e1; border-radius:8px; font-size:13.5px; outline:none;" />
+                  <button type="button" id="community-send-btn" style="height:42px; padding:0 18px; background:#16a34a; color:#fff; border:none; border-radius:8px; font-weight:700; font-size:13.5px; cursor:pointer; display:inline-flex; align-items:center; gap:4px; box-shadow:0 2px 6px rgba(22,163,74,0.25);">
+                    Send <b>↗</b>
+                  </button>
+                </div>
+                <div style="padding:0 16px 10px; background:#ffffff; font-size:11.5px; color:#64748b; display:flex; justify-content:space-between; align-items:center;">
+                  <span>🎙️ Press mic to speak your message without typing</span>
+                  <span id="community-voice-live-status" style="display:none; color:#dc2626; font-weight:700;"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        <!-- 4. Cooperative Equipment & Machinery Rental Hub -->
+        <div class="gig-panel machine-rental-panel" id="worker-tools-panel" style="margin-top:28px; border:1.5px solid #60a5fa; background: #ffffff; border-radius:18px; box-shadow:0 4px 20px rgba(0,0,0,0.04); overflow:hidden;">
+          <div class="panel-header" style="border-bottom:1px solid #e2e8f0; padding:18px 24px; background:linear-gradient(180deg, #ffffff 0%, #eff6ff 100%); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div>
+              <h2 style="display:flex; align-items:center; gap:8px; margin:0 0 4px; font-size:18px; font-weight:800; color:#0f172a;">
+                <span style="color:#2563eb; font-size:22px;">🛠️</span>
+                <span id="tools-hub-heading">Cooperative Machinery &amp; Tool Rental Hub</span>
+              </h2>
+              <div style="font-size:13px; color:#64748b; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <span style="background:#dbeafe; color:#1e40af; font-weight:700; font-size:11.5px; padding:2px 10px; border-radius:999px; border:1px solid #bfdbfe;">⚙️ Peer Equipment Sharing</span>
+                <span>Rent out your idle machines to earn extra income, or borrow specialized tools from local peers</span>
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <button type="button" id="btn-open-add-tool" style="background:#2563eb; color:#fff; border:none; padding:9px 16px; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 8px rgba(37,99,235,0.25); transition:all 0.2s ease;">
+                <span>+ List Machine for Rent</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Upcoming Call & Message Model Spotlight Banner -->
+          <div style="padding:14px 22px; background:linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border-bottom:1.5px solid #86efac; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; max-width:850px;">
+              <span style="background:#16a34a; color:#fff; font-weight:800; font-size:11px; padding:3px 10px; border-radius:999px; text-transform:uppercase; letter-spacing:0.5px;">
+                🚀 Upcoming Cooperative Feature
+              </span>
+              <span style="font-size:13px; color:#166534; font-weight:700;">
+                📞 Voice Call &amp; Dial-Pad Booking with Dual SMS Dispatch:
+              </span>
+              <span style="font-size:12.5px; color:#14532d;">
+                Workers simply call the SevaSathi number, hear nearby available work, select gigs directly via dial-pad, and instant confirmation SMS is sent to both worker &amp; customer.
+              </span>
+            </div>
+            <button type="button" onclick="document.getElementById('tab-tools-upcoming')?.click()" style="padding:7px 16px; background:#16a34a; color:#fff; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(22,163,74,0.25);">
+              Explore Upcoming Model ➔
+            </button>
+          </div>
+
+          <!-- Rental Workspace Controls -->
+          <div style="padding:14px 22px; background:#f8fafc; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <!-- Tabs -->
+            <div class="tools-tab-group" style="display:flex; gap:6px; flex-wrap:wrap;">
+              <button type="button" class="btn-tools-tab active" data-tab="my-tools" id="tab-tools-my" style="padding:8px 16px; border-radius:8px; border:1px solid #2563eb; background:#2563eb; color:#fff; font-size:12.5px; font-weight:700; cursor:pointer;">
+                📦 My Listed Machines (<span id="my-tools-count">0</span>)
+              </button>
+              <button type="button" class="btn-tools-tab" data-tab="browse-tools" id="tab-tools-browse" style="padding:8px 16px; border-radius:8px; border:1px solid #cbd5e1; background:#fff; color:#475569; font-size:12.5px; font-weight:700; cursor:pointer;">
+                🔍 Browse Peer Tools Nearby (<span id="peer-tools-count">0</span>)
+              </button>
+              <button type="button" class="btn-tools-tab" data-tab="rental-requests" id="tab-tools-requests" style="padding:8px 16px; border-radius:8px; border:1px solid #cbd5e1; background:#fff; color:#475569; font-size:12.5px; font-weight:700; cursor:pointer;">
+                📋 Rental Bookings &amp; Earnings (<span id="rental-req-count">0</span>)
+              </button>
+              <button type="button" class="btn-tools-tab" data-tab="upcoming-model" id="tab-tools-upcoming" style="padding:8px 16px; border-radius:8px; border:1px solid #cbd5e1; background:#fff; color:#475569; font-size:12.5px; font-weight:700; cursor:pointer;">
+                🚀 Upcoming: Call &amp; Message Model
+              </button>
+            </div>
+
+            <!-- Stats Badge -->
+            <div id="tools-earnings-summary" style="display:flex; align-items:center; gap:10px; font-size:12px; color:#475569; flex-wrap:wrap;">
+              <span style="background:#ffffff; border:1px solid #e2e8f0; padding:5px 12px; border-radius:8px; font-weight:600;">
+                💰 Rental Income: <strong id="tools-total-income" style="color:#16a34a; font-weight:800;">₹0</strong>
+              </span>
+              <span style="background:#ffffff; border:1px solid #e2e8f0; padding:5px 12px; border-radius:8px; font-weight:600;">
+                🟢 Active for Rent: <strong id="tools-active-avail" style="color:#2563eb; font-weight:800;">0</strong>
+              </span>
+            </div>
+          </div>
+
+          <!-- Add Machine Modal / Inline Drawer -->
+          <div id="add-tool-modal" style="display:none; padding:20px 24px; background:#f0f7ff; border-bottom:1.5px solid #bfdbfe;">
+            <div style="max-width:780px; margin:0 auto; background:#ffffff; border:1px solid #cbd5e1; border-radius:14px; padding:20px 24px; box-shadow:0 8px 24px rgba(0,0,0,0.06);">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <h3 style="margin:0; font-size:16px; font-weight:800; color:#0f172a; display:flex; align-items:center; gap:8px;">
+                  <span>➕</span> List a Machine or Equipment for Rent
+                </h3>
+                <button type="button" id="btn-close-tool-modal" style="background:none; border:none; font-size:20px; cursor:pointer; color:#64748b; line-height:1;">✕</button>
+              </div>
+
+              <form id="form-add-tool" style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+                <div style="grid-column:1/-1;">
+                  <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Machine / Tool Name *</label>
+                  <input type="text" id="tool-input-name" required placeholder="e.g. Bosch Heavy Rotary Hammer Drill GBH 2-26" style="width:100%; height:38px; padding:0 12px; border:1.5px solid #cbd5e1; border-radius:8px; font-size:13px;" />
+                </div>
+
+                <div>
+                  <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Trade Category *</label>
+                  <select id="tool-input-category" style="width:100%; height:38px; padding:0 10px; border:1.5px solid #cbd5e1; border-radius:8px; font-size:13px; background:#fff;">
+                    <option value="Electrical">⚡ Electrical &amp; Wiring</option>
+                    <option value="Plumbing">🔧 Plumbing &amp; Pipe Fitting</option>
+                    <option value="Carpentry">🪚 Carpentry &amp; Woodworking</option>
+                    <option value="Masonry">🧱 Masonry, Tile &amp; Concrete</option>
+                    <option value="Painting & Cleaning">🧹 Pressure Washing &amp; Painting</option>
+                    <option value="AC & Appliance">❄️ AC &amp; Appliance Servicing</option>
+                    <option value="Auto Repair">🚗 Auto &amp; Garage Machinery</option>
+                    <option value="General Machinery">⚙️ General Power Equipment &amp; Ladders</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Machine Icon / Badge</label>
+                  <select id="tool-input-icon" style="width:100%; height:38px; padding:0 10px; border:1.5px solid #cbd5e1; border-radius:8px; font-size:13px; background:#fff;">
+                    <option value="⚡">⚡ Electric Power Tool</option>
+                    <option value="🔨">🔨 Heavy Hammer / Impact</option>
+                    <option value="🪚">🪚 Saw / Cutter / Grinder</option>
+                    <option value="🔧">🔧 Pipe Wrench &amp; Plumbing Kit</option>
+                    <option value="🪜">🪜 Ladder / Scaffold</option>
+                    <option value="🧰">🧰 Full Master Tool Kit</option>
+                    <option value="🚜">🚜 Heavy Machinery / Washer</option>
+                    <option value="⚙️">⚙️ Specialized Gear</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Daily Rental Rate (₹/day) *</label>
+                  <input type="number" id="tool-input-rate" min="50" max="10000" step="10" required placeholder="e.g. 250" style="width:100%; height:38px; padding:0 12px; border:1.5px solid #cbd5e1; border-radius:8px; font-size:13px;" />
+                </div>
+
+                <div>
+                  <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Refundable Security Deposit (₹) *</label>
+                  <input type="number" id="tool-input-deposit" min="0" max="50000" step="50" required placeholder="e.g. 500" style="width:100%; height:38px; padding:0 12px; border:1.5px solid #cbd5e1; border-radius:8px; font-size:13px;" />
+                </div>
+
+                <div>
+                  <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Machine Condition</label>
+                  <select id="tool-input-condition" style="width:100%; height:38px; padding:0 10px; border:1.5px solid #cbd5e1; border-radius:8px; font-size:13px; background:#fff;">
+                    <option value="Brand New">✨ Brand New (Under Warranty)</option>
+                    <option value="Excellent Condition" selected>⭐ Excellent Working Condition</option>
+                    <option value="Good Condition">👍 Good / Fully Functional</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Availability Status *</label>
+                  <select id="tool-input-status" style="width:100%; height:38px; padding:0 10px; border:1.5px solid #cbd5e1; border-radius:8px; font-size:13px; background:#fff;">
+                    <option value="available" selected>🟢 Available for Rent (Not in Use)</option>
+                    <option value="in_use">🔴 Not in Use / In Use by Me</option>
+                  </select>
+                </div>
+
+                <div style="grid-column:1/-1;">
+                  <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Pick-up Location / Area</label>
+                  <input type="text" id="tool-input-location" placeholder="e.g. Koramangala, 5th Block, Bengaluru" style="width:100%; height:38px; padding:0 12px; border:1.5px solid #cbd5e1; border-radius:8px; font-size:13px;" />
+                </div>
+
+                <div style="grid-column:1/-1; display:flex; justify-content:flex-end; gap:10px; margin-top:6px;">
+                  <button type="button" id="btn-cancel-add-tool" style="padding:9px 18px; border:1.5px solid #cbd5e1; background:#fff; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer;">Cancel</button>
+                  <button type="submit" style="padding:9px 22px; border:none; background:#2563eb; color:#fff; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; box-shadow:0 2px 8px rgba(37,99,235,0.25);">List Machine 🚀</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Tab Content 1: My Listed Machines -->
+          <div id="tab-content-my-tools" class="tools-tab-content" style="padding:22px;">
+            <div id="my-tools-list" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:16px;">
+              <!-- Dynamic Cards -->
+            </div>
+          </div>
+
+          <!-- Tab Content 2: Browse Peer Tools Nearby -->
+          <div id="tab-content-browse-tools" class="tools-tab-content" style="padding:22px; display:none;">
+            <div style="margin-bottom:14px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+              <input type="text" id="search-peer-tools" placeholder="Search machines, drill, washer, ladder..." style="flex:1; min-width:220px; height:38px; padding:0 14px; border:1.5px solid #cbd5e1; border-radius:8px; font-size:13px;" />
+              <select id="filter-peer-category" style="height:38px; padding:0 12px; border:1.5px solid #cbd5e1; border-radius:8px; font-size:13px; background:#fff;">
+                <option value="all">All Categories</option>
+                <option value="Electrical">Electrical</option>
+                <option value="Plumbing">Plumbing</option>
+                <option value="Carpentry">Carpentry</option>
+                <option value="Masonry">Masonry &amp; Tile</option>
+                <option value="Painting & Cleaning">Painting &amp; Cleaning</option>
+                <option value="AC & Appliance">AC &amp; Appliance</option>
+              </select>
+            </div>
+            <div id="peer-tools-list" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:16px;">
+              <!-- Dynamic Peer Cards -->
+            </div>
+          </div>
+
+          <!-- Tab Content 3: Active Rentals & Requests -->
+          <div id="tab-content-rental-requests" class="tools-tab-content" style="padding:22px; display:none;">
+            <div id="rental-requests-list" style="display:flex; flex-direction:column; gap:12px;">
+              <!-- Dynamic Rental Rows -->
+            </div>
+          </div>
+
+          <!-- Tab Content 4: Upcoming Voice IVR Call & Message Model -->
+          <div id="tab-content-upcoming-model" class="tools-tab-content" style="padding:22px; display:none;">
+            <!-- Hero Banner -->
+            <div style="background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius:14px; padding:22px 26px; color:#ffffff; margin-bottom:20px; box-shadow:0 6px 20px rgba(0,0,0,0.08);">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px;">
+                <div>
+                  <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(37,99,235,0.3); border:1px solid rgba(96,165,250,0.4); padding:4px 12px; border-radius:999px; font-size:11.5px; font-weight:700; text-transform:uppercase; color:#93c5fd; margin-bottom:10px;">
+                    <span>🚀 Upcoming Cooperative Phase 2 Feature</span>
+                  </div>
+                  <h3 style="margin:0 0 8px 0; font-size:20px; font-weight:800; color:#ffffff;">
+                    📞 Voice Call &amp; Message Autonomous Dispatch Model
+                  </h3>
+                  <p style="margin:0; font-size:13.5px; color:#cbd5e1; line-height:1.5; max-width:780px;">
+                    <strong>Zero-Internet, Feature-Phone Accessibility:</strong> A worker simply calls the SevaSathi toll-free helpline number, listens to available work near him, selects the specific gig by pressing a number on the dial pad, and chooses the date &amp; time through the call. An automated booking confirmation message is instantly sent to both the worker and customer with full details and verification OTP.
+                  </p>
+                </div>
+                <div style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:12px; padding:12px 18px; text-align:right;">
+                  <span style="font-size:11px; color:#94a3b8; display:block;">Toll-Free Helpline</span>
+                  <strong style="font-size:17px; color:#38bdf8; font-family:monospace;">1800-SEVASATHI</strong>
+                  <small style="font-size:10.5px; color:#94a3b8; display:block;">(24x7 Multi-Lingual)</small>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4-Step Structural Flow -->
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)); gap:14px; margin-bottom:20px;">
+              <div style="background:#ffffff; border:1.5px solid #e2e8f0; border-radius:12px; padding:16px;">
+                <div style="width:32px; height:32px; border-radius:8px; background:#eff6ff; color:#2563eb; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; margin-bottom:10px;">1</div>
+                <strong style="font-size:14px; color:#0f172a; display:block; margin-bottom:4px;">📞 Inbound Call</strong>
+                <p style="margin:0; font-size:12.5px; color:#475569; line-height:1.4;">Worker simply dials the SevaSathi helpline from any basic keypad mobile phone.</p>
+              </div>
+
+              <div style="background:#ffffff; border:1.5px solid #e2e8f0; border-radius:12px; padding:16px;">
+                <div style="width:32px; height:32px; border-radius:8px; background:#f0fdf4; color:#166534; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; margin-bottom:10px;">2</div>
+                <strong style="font-size:14px; color:#0f172a; display:block; margin-bottom:4px;">🔊 Hear Nearby Work</strong>
+                <p style="margin:0; font-size:12.5px; color:#475569; line-height:1.4;">AI voice engine reads out matching gigs, rates, and local areas in preferred language.</p>
+              </div>
+
+              <div style="background:#ffffff; border:1.5px solid #e2e8f0; border-radius:12px; padding:16px;">
+                <div style="width:32px; height:32px; border-radius:8px; background:#fef3c7; color:#d97706; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; margin-bottom:10px;">3</div>
+                <strong style="font-size:14px; color:#0f172a; display:block; margin-bottom:4px;">🔢 Dial Pad Booking</strong>
+                <p style="margin:0; font-size:12.5px; color:#475569; line-height:1.4;">Worker presses key to select job, date, and time slot directly through the call.</p>
+              </div>
+
+              <div style="background:#ffffff; border:1.5px solid #e2e8f0; border-radius:12px; padding:16px;">
+                <div style="width:32px; height:32px; border-radius:8px; background:#faf5ff; color:#9333ea; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; margin-bottom:10px;">4</div>
+                <strong style="font-size:14px; color:#0f172a; display:block; margin-bottom:4px;">📩 Dual SMS Sent</strong>
+                <p style="margin:0; font-size:12.5px; color:#475569; line-height:1.4;">Instant confirmation messages sent to both worker and customer with OTP.</p>
+              </div>
+            </div>
+
+            <!-- Live Simulator Matrix -->
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:16px;">
+              <!-- Interactive Dial Pad Mockup -->
+              <div style="background:#0f172a; border-radius:14px; padding:18px; color:#fff;">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; padding-bottom:8px; margin-bottom:12px; font-size:11.5px; color:#94a3b8;">
+                  <span>📶 4G / 2G Keypad Call</span>
+                  <span style="color:#38bdf8; font-weight:700;">00:18</span>
+                  <span>🔋 92%</span>
+                </div>
+                <div style="text-align:center; margin-bottom:12px;">
+                  <span style="font-size:11px; color:#94a3b8; text-transform:uppercase;">Connected to SevaSathi Voice Dispatch</span>
+                  <strong style="font-size:16px; display:block; color:#38bdf8;">1800-7382-7284</strong>
+                </div>
+                <div id="worker-ivr-prompt" style="background:#1e293b; border:1px solid #334155; border-radius:8px; padding:10px 12px; font-size:12px; color:#e2e8f0; line-height:1.45; margin-bottom:12px; min-height:75px; display:flex; align-items:center;">
+                  "🎙️ Welcome Manoj (Electrician, Koramangala). Press [1] for Switchboard Repair in 5th Block (₹450). Press [2] for AC Power Line Fix in HSR Layout (₹600)."
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; max-width:260px; margin:0 auto 10px auto;">
+                  <button type="button" class="btn-worker-ivr-key" data-key="1" style="height:38px; border-radius:8px; background:#334155; color:#fff; font-size:14px; font-weight:800; border:none; cursor:pointer;">1 (₹450)</button>
+                  <button type="button" class="btn-worker-ivr-key" data-key="2" style="height:38px; border-radius:8px; background:#334155; color:#fff; font-size:14px; font-weight:800; border:none; cursor:pointer;">2 (₹600)</button>
+                  <button type="button" class="btn-worker-ivr-key" data-key="3" style="height:38px; border-radius:8px; background:#334155; color:#fff; font-size:14px; font-weight:800; border:none; cursor:pointer;">3 (More)</button>
+                  <button type="button" class="btn-worker-ivr-key" data-key="4" style="height:38px; border-radius:8px; background:#334155; color:#fff; font-size:13px; font-weight:800; border:none; cursor:pointer;">4 (2 PM)</button>
+                  <button type="button" class="btn-worker-ivr-key" data-key="5" style="height:38px; border-radius:8px; background:#334155; color:#fff; font-size:13px; font-weight:800; border:none; cursor:pointer;">5 (10 AM)</button>
+                  <button type="button" class="btn-worker-ivr-key" data-key="9" style="height:38px; border-radius:8px; background:#16a34a; color:#fff; font-size:13px; font-weight:800; border:none; cursor:pointer;">✓ 9 (OK)</button>
+                </div>
+                <div style="text-align:center;">
+                  <button type="button" id="btn-restart-worker-ivr" style="padding:6px 14px; border-radius:999px; background:#3b82f6; color:#fff; font-size:11.5px; font-weight:700; border:none; cursor:pointer;">🔄 Restart IVR Demo</button>
+                </div>
+              </div>
+
+              <!-- Live Dispatched Dual SMS Stream -->
+              <div style="display:flex; flex-direction:column; gap:12px;">
+                <div style="background:#ffffff; border:1.5px solid #bfdbfe; border-radius:12px; padding:14px;">
+                  <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:12px; font-weight:700; color:#1e40af;">
+                    <span>👷 Dispatched SMS to Worker</span>
+                    <span style="font-size:11px; color:#64748b; font-weight:normal;">Just now</span>
+                  </div>
+                  <div id="worker-sms-box" style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:9px 11px; font-size:12px; font-family:monospace; color:#334155;">
+                    [SevaSathi] Task Booked! Job: Switchboard Repair in Koramangala 5th Block. Customer: Ananya Roy (+91 98450 11223). Slot: Today 02:00 PM. Rate: ₹450 (Escrow Locked). Start OTP: 8294.
+                  </div>
+                </div>
+
+                <div style="background:#ffffff; border:1.5px solid #bbf7d0; border-radius:12px; padding:14px;">
+                  <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:12px; font-weight:700; color:#15803d;">
+                    <span>👤 Dispatched SMS to Customer</span>
+                    <span style="font-size:11px; color:#64748b; font-weight:normal;">Just now</span>
+                  </div>
+                  <div id="customer-sms-box" style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:9px 11px; font-size:12px; font-family:monospace; color:#334155;">
+                    [SevaSathi] Specialist Confirmed! Manoj Pillai (4.9★, Certified Electrician, +91 98301 23456) will arrive at Koramangala 5th Block today at 02:00 PM. Rate: ₹450. Share Start OTP 8294 upon arrival.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Both-Side Verification Modal (Handover & Return Inspections) -->
+          <div id="tool-verify-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.65); z-index:99999; backdrop-filter:blur(4px); align-items:center; justify-content:center; padding:16px;">
+            <div style="background:#ffffff; max-width:540px; width:100%; border-radius:16px; box-shadow:0 20px 40px rgba(0,0,0,0.2); overflow:hidden; border:1px solid #cbd5e1; animation:verifyPop 0.2s cubic-bezier(0.16,1,0.3,1);">
+              <!-- Modal Header -->
+              <div id="verify-modal-header" style="background:linear-gradient(135deg, #1e3a8a, #2563eb); color:#ffffff; padding:16px 20px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                  <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; opacity:0.85;" id="verify-modal-badge">
+                    🤝 Both-Side Verification Protocol
+                  </div>
+                  <h3 id="verify-modal-title" style="margin:2px 0 0; font-size:16px; font-weight:800; color:#fff;">
+                    Machine Handover &amp; Escrow Verification
+                  </h3>
+                </div>
+                <button type="button" id="btn-close-verify-modal" style="background:none; border:none; color:#ffffff; font-size:22px; cursor:pointer; opacity:0.8;">✕</button>
+              </div>
+
+              <!-- Modal Body -->
+              <div style="padding:20px;">
+                <!-- Machine Info Summary -->
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center;">
+                  <div>
+                    <strong id="verify-tool-name" style="font-size:13.5px; color:#0f172a; display:block;">Bosch Rotary Hammer Drill</strong>
+                    <small id="verify-parties-info" style="font-size:11.5px; color:#64748b;">Owner: Manoj Pillai ⟷ Borrower: Worker Partner</small>
+                  </div>
+                  <div style="text-align:right;">
+                    <span id="verify-escrow-badge" style="font-size:11px; font-weight:700; background:#dcfce7; color:#15803d; padding:2px 8px; border-radius:6px; border:1px solid #bbf7d0;">
+                      🔒 Escrow Locked: ₹1,100
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Verification Steps & Roles -->
+                <div id="verify-step-content" style="margin-bottom:16px;">
+                  <!-- Dynamic content depending on Handover vs Return -->
+                </div>
+
+                <!-- Physical Inspection Checklist -->
+                <div style="background:#f0fdf4; border:1.5px solid #86efac; border-radius:10px; padding:12px; margin-bottom:16px;">
+                  <strong style="font-size:12px; color:#166534; display:block; margin-bottom:8px;">
+                    📋 Mandatory Dual Physical Checklist (Both Parties Agree):
+                  </strong>
+                  <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:#1e293b; margin-bottom:6px; cursor:pointer;">
+                    <input type="checkbox" id="chk-verify-condition" checked style="accent-color:#16a34a; width:15px; height:15px;" />
+                    <span>Machine tested on live power; motor and switches operate normally</span>
+                  </label>
+                  <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:#1e293b; margin-bottom:6px; cursor:pointer;">
+                    <input type="checkbox" id="chk-verify-accessories" checked style="accent-color:#16a34a; width:15px; height:15px;" />
+                    <span>All chucks, drill bits, cords &amp; carry case accounted for</span>
+                  </label>
+                  <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:#1e293b; cursor:pointer;">
+                    <input type="checkbox" id="chk-verify-safety" checked style="accent-color:#16a34a; width:15px; height:15px;" />
+                    <span>No structural cracks or exposed wiring; safety guards intact</span>
+                  </label>
+                </div>
+
+                <!-- OTP Input / Verification Code -->
+                <div style="margin-bottom:16px;">
+                  <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:6px;" id="verify-code-label">
+                    Enter Verification Code:
+                  </label>
+                  <div style="display:flex; gap:10px;">
+                    <input type="text" id="verify-input-code" maxlength="6" placeholder="e.g. 8492" style="flex:1; height:42px; text-align:center; font-size:18px; font-weight:800; letter-spacing:4px; border:2px solid #cbd5e1; border-radius:8px; outline:none; text-transform:uppercase;" />
+                    <button type="button" id="btn-auto-fill-code" style="padding:0 12px; background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; font-size:11.5px; font-weight:700; border-radius:8px; cursor:pointer;">
+                      ⚡ Auto-Fill Demo Code
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Action Button -->
+                <div style="display:flex; justify-content:flex-end; gap:10px;">
+                  <button type="button" id="btn-cancel-verify-action" style="padding:9px 18px; border:1px solid #cbd5e1; background:#fff; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer;">
+                    Cancel
+                  </button>
+                  <button type="button" id="btn-submit-verify-action" style="padding:9px 24px; background:#16a34a; color:#fff; border:none; border-radius:8px; font-size:13.5px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 2px 8px rgba(22,163,74,0.3);">
+                    <span>✓ Confirm &amp; Sign Off</span>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -1609,8 +2093,8 @@
               }).join('');
             }
 
-            // Load Commercial / Business Opportunities for this Worker
-            await loadWorkerBusinessOpportunities(token);
+            // Initialize Local Trade Community & Pro Guild Hub
+            initWorkerCommunityHub(user);
 
             if (window.SevaSathiI18n && typeof window.SevaSathiI18n.applyTranslations === 'function') {
               window.SevaSathiI18n.applyTranslations();
@@ -1621,110 +2105,489 @@
         }
       }
 
-      // Load Commercial / Enterprise Opportunities
-      async function loadWorkerBusinessOpportunities(token) {
-        const container = document.getElementById('biz-opportunities-container');
-        const countEl = document.getElementById('count-biz-gigs');
-        if (!container) return;
+      // ----------------------------------------------------------------------
+      // Local Trade Community, Geo-Location Global Chat, Groups & DMs Engine
+      // ----------------------------------------------------------------------
+      let commState = {
+        activeCity: 'Kolkata',
+        activeTrade: 'Electrician',
+        currentChannelId: 'global',
+        activeMode: 'global', // 'global' | 'groups' | 'dm'
+        messages: {},
+        peers: [],
+        squads: []
+      };
 
-        try {
-          const res = await fetch(`${BIZ_API_BASE}/worker/opportunities`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-          if (!res.ok) return;
-          const data = await res.json();
-          const opps = data.opportunities || [];
-          if (countEl) countEl.textContent = `${opps.length} available`;
+      function initWorkerCommunityHub(user) {
+        if (!user) return;
+        const activeCity = user.city || localStorage.getItem('hustleSelectedCity') || 'Kolkata';
+        const activeTrade = user.skillCategory || 'Electrician';
 
-          if (opps.length === 0) {
-            container.innerHTML = `
-              <div style="text-align:center; padding: 26px 18px; border: 1.5px dashed #bbf7d0; border-radius: 14px; background: #ffffff;">
-                <span style="font-size:26px; display:block; margin-bottom:6px;">🏢</span>
-                <strong style="color:var(--ink); font-size:14.5px; display:block; margin-bottom:4px;">No Open Commercial Requisitions in Your Trade</strong>
-                <p style="color:var(--muted); font-size:13px; max-width:480px; margin:0 auto; line-height:1.45;">
-                  When hotels or enterprises post multi-worker requisitions matching your trade category, you will receive invitation alerts here with guaranteed daily rates!
-                </p>
+        commState.activeCity = activeCity;
+        commState.activeTrade = activeTrade;
+
+        const geoBadge = document.getElementById('community-geo-badge');
+        if (geoBadge) {
+          geoBadge.textContent = `📍 ${activeCity} · ⚡ ${activeTrade}s Guild`;
+        }
+
+        // Initialize mock peer workers in the same city & trade
+        commState.peers = [
+          { id: 'peer-1', name: activeCity === 'Kolkata' ? 'Subhashish Roy' : 'Ramesh Kumar', locality: activeCity === 'Kolkata' ? 'Salt Lake Sector V' : 'Indiranagar', rating: 4.9, status: 'online', exp: '6 yrs' },
+          { id: 'peer-2', name: activeCity === 'Kolkata' ? 'Anirban Das' : 'Suresh Nair', locality: activeCity === 'Kolkata' ? 'New Town Action Area 1' : 'Koramangala', rating: 4.85, status: 'online', exp: '4 yrs' },
+          { id: 'peer-3', name: activeCity === 'Kolkata' ? 'Sourav Banerjee' : 'Deepak Verma', locality: activeCity === 'Kolkata' ? 'Gariahat South' : 'Whitefield', rating: 4.95, status: 'busy', exp: '8 yrs' },
+          { id: 'peer-4', name: activeCity === 'Kolkata' ? 'Bikramjit Ghosh' : 'K. Venkatesh', locality: activeCity === 'Kolkata' ? 'Howrah Station Area' : 'HSR Layout', rating: 4.8, status: 'online', exp: '5 yrs' }
+        ];
+
+        // Initialize Squads
+        commState.squads = [
+          { id: 'squad-1', name: `⚡ ${activeCity} Rapid Response Squad`, members: 6, desc: `Emergency ${activeTrade.toLowerCase()} support across ${activeCity}` },
+          { id: 'squad-2', name: `🏢 ${activeCity} Commercial Projects Crew`, members: 4, desc: `Multi-pro hotel & corporate installation deployments` }
+        ];
+
+        // Initialize Channels and Message history
+        const globalChannelId = `global-${activeCity}-${activeTrade}`;
+        commState.currentChannelId = globalChannelId;
+
+        if (!commState.messages[globalChannelId]) {
+          commState.messages[globalChannelId] = [
+            {
+              sender: `${commState.peers[0].name} (${commState.peers[0].locality})`,
+              trade: activeTrade,
+              text: `Hello everyone! Power line upgrade works happening in ${commState.peers[0].locality} today. Anyone free to partner on a 3-phase commercial call this afternoon?`,
+              time: '09:15 AM',
+              incoming: true
+            },
+            {
+              sender: `${commState.peers[1].name} (${commState.peers[1].locality})`,
+              trade: activeTrade,
+              text: `I'm wrapping up a quick home booking here by 1 PM, count me in for the commercial backup!`,
+              time: '09:22 AM',
+              incoming: true
+            }
+          ];
+        }
+
+        renderCommunitySidebar();
+        renderCommunityMessages();
+        attachCommunityEvents();
+      }
+
+      function renderCommunitySidebar() {
+        const channelsList = document.getElementById('community-channels-list');
+        const peersList = document.getElementById('community-peers-list');
+        if (!channelsList || !peersList) return;
+
+        const globalChannelId = `global-${commState.activeCity}-${commState.activeTrade}`;
+
+        // Render Channels & Groups
+        let channelsHtml = '';
+        if (commState.activeMode === 'global' || commState.activeMode === 'groups') {
+          channelsHtml += `
+            <div class="comm-channel-item ${commState.currentChannelId === globalChannelId ? 'active' : ''}" onclick="switchCommunityChannel('${globalChannelId}', '📍 ${commState.activeCity} — ${commState.activeTrade}s Guild Global Chat', 'Global community chat for all ${commState.activeTrade.toLowerCase()}s in ${commState.activeCity}')" style="padding:8px 10px; border-radius:8px; cursor:pointer; font-size:12.5px; font-weight:700; color:#0f172a; display:flex; justify-content:space-between; align-items:center; background:${commState.currentChannelId === globalChannelId ? '#dcfce7' : 'transparent'}; border:1px solid ${commState.currentChannelId === globalChannelId ? '#86efac' : 'transparent'};">
+              <span>🌐 Global ${commState.activeTrade} Guild</span>
+              <span style="font-size:10px; background:#16a34a; color:#fff; padding:1px 6px; border-radius:999px;">Live</span>
+            </div>
+          `;
+
+          commState.squads.forEach(sq => {
+            channelsHtml += `
+              <div class="comm-channel-item ${commState.currentChannelId === sq.id ? 'active' : ''}" onclick="switchCommunityChannel('${sq.id}', '${sq.name}', '${sq.desc}')" style="padding:8px 10px; border-radius:8px; cursor:pointer; font-size:12.5px; font-weight:600; color:#334155; display:flex; justify-content:space-between; align-items:center; background:${commState.currentChannelId === sq.id ? '#dcfce7' : 'transparent'}; border:1px solid ${commState.currentChannelId === sq.id ? '#86efac' : 'transparent'};">
+                <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px;">👥 ${sq.name}</span>
+                <span style="font-size:10px; background:#e0f2fe; color:#0369a1; padding:1px 6px; border-radius:999px;">${sq.members} Pros</span>
               </div>
             `;
+          });
+        }
+
+        channelsList.innerHTML = channelsHtml;
+
+        // Render Peers list
+        peersList.innerHTML = commState.peers.map(p => `
+          <div style="padding:8px 10px; background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div style="font-size:12.5px; font-weight:700; color:#0f172a; display:flex; align-items:center; gap:5px;">
+                <span style="width:7px; height:7px; border-radius:50%; background:${p.status === 'online' ? '#16a34a' : '#f59e0b'};"></span>
+                ${p.name}
+              </div>
+              <small style="font-size:11px; color:#64748b; display:block;">📍 ${p.locality} · ★ ${p.rating}</small>
+            </div>
+            <button type="button" onclick="startPeerDirectMessage('${p.id}', '${p.name}')" style="background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; font-size:11px; font-weight:700; padding:4px 8px; border-radius:6px; cursor:pointer;">
+              💬 DM
+            </button>
+          </div>
+        `).join('');
+      }
+
+      function renderCommunityMessages() {
+        const stream = document.getElementById('community-messages-stream');
+        if (!stream) return;
+
+        const msgs = commState.messages[commState.currentChannelId] || [];
+        const lang = (window.SevaSathiI18n ? window.SevaSathiI18n.getLanguage() : localStorage.getItem('sevasathi_lang')) || 'en';
+        const translate = (txt) => {
+          if (!txt || lang === 'en') return txt;
+          if (window.SevaSathiI18n && typeof window.SevaSathiI18n.translate === 'function') {
+            return window.SevaSathiI18n.translate(txt, lang);
+          }
+          if (typeof window.translateChatText === 'function') {
+            return window.translateChatText(txt, lang);
+          }
+          return txt;
+        };
+
+        if (msgs.length === 0) {
+          stream.innerHTML = `
+            <div style="text-align:center; padding:30px 16px; color:#64748b;">
+              <span style="font-size:28px; display:block; margin-bottom:6px;">💬</span>
+              <strong style="font-size:14px; color:#0f172a; display:block;">${translate('Channel Ready')}</strong>
+              <p style="font-size:12.5px; margin:4px 0 0;">${translate('Be the first to post a message or coordination lead to this channel.')}</p>
+            </div>
+          `;
+          return;
+        }
+
+        stream.innerHTML = msgs.map(m => {
+          const isYou = m.sender === 'You' || m.sender === 'আপনি' || m.sender === 'आप' || !m.incoming;
+          const senderDisplay = isYou ? (lang === 'bn' ? 'আপনি' : (lang === 'hi' ? 'आप' : 'You')) : translate(m.sender);
+          const textDisplay = translate(m.text);
+          const tradeDisplay = m.trade ? translate(m.trade) : '';
+          return `
+            <div style="display:flex; flex-direction:column; align-items:${m.incoming ? 'flex-start' : 'flex-end'}; max-width:85%; align-self:${m.incoming ? 'flex-start' : 'flex-end'};">
+              <div style="font-size:11px; font-weight:700; color:#475569; margin-bottom:2px; display:flex; gap:6px;">
+                <span>${senderDisplay}</span>
+                ${tradeDisplay ? `<span style="background:#e2e8f0; color:#334155; font-size:9.5px; padding:0 5px; border-radius:4px;">${tradeDisplay}</span>` : ''}
+              </div>
+              <div style="padding:9px 13px; border-radius:12px; font-size:13px; line-height:1.45; background:${m.incoming ? '#ffffff' : '#16a34a'}; color:${m.incoming ? '#0f172a' : '#ffffff'}; border:1px solid ${m.incoming ? '#e2e8f0' : '#16a34a'}; box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+                ${textDisplay}
+              </div>
+              <span style="font-size:10px; color:#94a3b8; margin-top:3px;">${m.time}</span>
+            </div>
+          `;
+        }).join('');
+
+        stream.scrollTop = stream.scrollHeight;
+      }
+
+      function switchCommunityChannel(channelId, title, subtitle) {
+        commState.currentChannelId = channelId;
+        const lang = (window.SevaSathiI18n ? window.SevaSathiI18n.getLanguage() : localStorage.getItem('sevasathi_lang')) || 'en';
+        const translate = (txt) => {
+          if (!txt || lang === 'en') return txt;
+          if (window.SevaSathiI18n && typeof window.SevaSathiI18n.translate === 'function') {
+            return window.SevaSathiI18n.translate(txt, lang);
+          }
+          return txt;
+        };
+
+        const titleEl = document.getElementById('comm-active-title');
+        const subEl = document.getElementById('comm-active-subtitle');
+        if (titleEl) titleEl.textContent = translate(title);
+        if (subEl) subEl.textContent = translate(subtitle);
+
+        renderCommunitySidebar();
+        renderCommunityMessages();
+      }
+      window.switchCommunityChannel = switchCommunityChannel;
+
+      function startPeerDirectMessage(peerId, peerName) {
+        const dmChannelId = `dm-${peerId}`;
+        if (!commState.messages[dmChannelId]) {
+          commState.messages[dmChannelId] = [
+            {
+              sender: `${peerName}`,
+              trade: commState.activeTrade,
+              text: `Hey brother! Glad to connect on the SevaSathi ${commState.activeCity} guild. Let me know if you ever need extra hands or tools on site!`,
+              time: 'Just now',
+              incoming: true
+            }
+          ];
+        }
+        switchCommunityChannel(dmChannelId, `💬 Direct Message with ${peerName}`, `Private 1-on-1 chat with verified pro (${commState.activeTrade} · ${commState.activeCity})`);
+      }
+      window.startPeerDirectMessage = startPeerDirectMessage;
+
+      function attachCommunityEvents() {
+        // Tab buttons
+        document.querySelectorAll('.btn-community-tab').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('.btn-community-tab').forEach(b => {
+              b.classList.remove('active');
+              b.style.background = '#fff';
+              b.style.color = '#475569';
+              b.style.borderColor = '#cbd5e1';
+            });
+            btn.classList.add('active');
+            btn.style.background = '#16a34a';
+            btn.style.color = '#fff';
+            btn.style.borderColor = '#16a34a';
+
+            commState.activeMode = btn.dataset.mode;
+            renderCommunitySidebar();
+          });
+        });
+
+        // Send message
+        const sendBtn = document.getElementById('community-send-btn');
+        const input = document.getElementById('community-message-input');
+        const micBtn = document.getElementById('community-mic-btn');
+        const voiceStatus = document.getElementById('community-voice-live-status');
+
+        function sendMsg() {
+          if (!input) return;
+          const text = input.value.trim();
+          if (!text) return;
+
+          if (!commState.messages[commState.currentChannelId]) {
+            commState.messages[commState.currentChannelId] = [];
+          }
+
+          commState.messages[commState.currentChannelId].push({
+            sender: 'You',
+            trade: commState.activeTrade,
+            text,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            incoming: false
+          });
+
+          input.value = '';
+          renderCommunityMessages();
+        }
+
+        if (sendBtn) sendBtn.onclick = sendMsg;
+        if (input) {
+          input.onkeypress = (e) => {
+            if (e.key === 'Enter') sendMsg();
+          };
+        }
+
+        /* ----------------------------------------------------------------------
+           Optimized Speech-To-Text Voice Typing for Worker Trade Community Chat
+           High accuracy confidence scoring, Indic acoustic tuning, and Auto-Send
+           on Sentence / Speech Completion Detection
+           ---------------------------------------------------------------------- */
+        let commRecognition = null;
+        let isCommListening = false;
+        let commInitialText = '';
+        let commSilenceTimer = null;
+        let commAutoSendTimer = null;
+        const SpeechRecAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        function resetCommSilenceTimer() {
+          if (commSilenceTimer) clearTimeout(commSilenceTimer);
+          commSilenceTimer = setTimeout(() => {
+            if (isCommListening) {
+              stopCommVoiceTyping(true);
+            }
+          }, 12000); // 12s idle timeout
+        }
+
+        function stopCommVoiceTyping(autoSend = false) {
+          isCommListening = false;
+          if (commSilenceTimer) {
+            clearTimeout(commSilenceTimer);
+            commSilenceTimer = null;
+          }
+          if (commAutoSendTimer) {
+            clearTimeout(commAutoSendTimer);
+            commAutoSendTimer = null;
+          }
+          if (micBtn) {
+            micBtn.classList.remove('listening');
+            micBtn.setAttribute('title', 'Voice Typing (Speak in English, हिन्दी, বাংলা)');
+          }
+          if (voiceStatus) {
+            voiceStatus.style.display = 'none';
+            voiceStatus.textContent = '';
+          }
+          if (input && input.hasAttribute('data-orig-ph')) {
+            input.placeholder = input.getAttribute('data-orig-ph');
+          }
+          if (commRecognition) {
+            try {
+              commRecognition.stop();
+            } catch (e) {}
+          }
+          if (autoSend && input && input.value.trim().length > 0) {
+            sendMsg();
+          }
+        }
+
+        function startCommVoiceTyping() {
+          if (!SpeechRecAPI) {
+            alert('Voice typing is not supported in your browser. Please type your message.');
             return;
           }
 
-          container.innerHTML = opps.map(op => {
-            return `
-              <div class="gig-item" style="border-left: 4px solid var(--primary-green, #16a34a); background: #ffffff; margin-bottom:14px;">
-                <div class="gig-header-row">
-                  <div>
-                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-                      <h3 class="gig-title" style="margin:0; font-size:16px;">🏢 ${op.businessName}</h3>
-                      <span class="status-pill open" style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; font-size:11px; padding:2px 8px; border-radius:999px;">
-                        ${op.serviceCategory} · ${op.workersNeeded} Pro(s) Needed
-                      </span>
-                    </div>
-                    <div class="gig-meta" style="font-size:12px; color:#64748b; margin-bottom:8px; gap:12px;">
-                      <span>📍 <strong>${op.location}, ${op.city}</strong></span>
-                      <span>📅 <strong>${op.startDate} to ${op.endDate}</strong></span>
-                      <span>⏰ ${op.schedule}</span>
-                    </div>
-                  </div>
-                  <div style="text-align:right;">
-                    <div class="gig-price" style="color:#166534; font-size:18px;">₹${op.ratePerWorker}</div>
-                    <small style="color:var(--muted); font-size:11px; display:block;">per pro / day guaranteed</small>
-                  </div>
-                </div>
+          try {
+            if (commRecognition) {
+              try { commRecognition.abort(); } catch (e) {}
+            }
 
-                ${op.additionalRequirements ? `
-                  <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:8px 12px; font-size:12px; color:#475569; margin-bottom:12px;">
-                    <strong>Enterprise Notes:</strong> ${op.additionalRequirements}
-                  </div>
-                ` : ''}
+            commRecognition = new SpeechRecAPI();
+            commRecognition.continuous = true;
+            commRecognition.interimResults = true;
+            commRecognition.maxAlternatives = 5;
 
-                <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
-                  ${op.hasAccepted ? `
-                    <span style="display:inline-flex; align-items:center; gap:6px; background:#dcfce7; color:#15803d; font-weight:700; font-size:12px; padding:6px 14px; border-radius:999px; border:1px solid #86efac;">
-                      ✓ Opportunity Accepted &amp; Scheduled
-                    </span>
-                  ` : `
-                    <button type="button" class="btn-biz-decline" onclick="respondToBizOpportunity('${op.requirementId}', 'decline')" style="background:#f1f5f9; border:1px solid #cbd5e1; color:#475569; padding:7px 16px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer;">
-                      ✕ Decline
-                    </button>
-                    <button type="button" class="btn-biz-accept" onclick="respondToBizOpportunity('${op.requirementId}', 'accept')" style="background:linear-gradient(135deg, #16a34a, #15803d); border:none; color:#fff; padding:7px 18px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; box-shadow:0 2px 8px rgba(22,163,74,0.3);">
-                      ✓ Accept Commercial Gig (₹${op.ratePerWorker}/day)
-                    </button>
-                  `}
-                </div>
-              </div>
-            `;
-          }).join('');
-        } catch (err) {
-          console.error('Error loading business opportunities:', err);
-        }
-      }
+            const currentLang = localStorage.getItem('sevasathi_lang') || 'en';
+            if (currentLang === 'bn') {
+              commRecognition.lang = 'bn-IN';
+            } else if (currentLang === 'hi') {
+              commRecognition.lang = 'hi-IN';
+            } else {
+              commRecognition.lang = 'en-IN';
+            }
 
-      async function respondToBizOpportunity(reqId, action) {
-        const token = window.SevaSathiSession ? SevaSathiSession.getToken() : localStorage.getItem('hustleToken');
-        if (!token) return;
+            commInitialText = input ? input.value.trim() : '';
 
-        try {
-          const res = await fetch(`${BIZ_API_BASE}/worker/opportunities/${reqId}/respond`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ action })
-          });
-          const data = await res.json();
-          if (data.success) {
-            showWorkerToast(data.message, 'success');
-            await loadWorkerBusinessOpportunities(token);
-          } else {
-            showWorkerToast(data.message || 'Failed to update response', 'error');
+            commRecognition.onstart = () => {
+              isCommListening = true;
+              resetCommSilenceTimer();
+              if (micBtn) {
+                micBtn.classList.add('listening');
+                micBtn.setAttribute('title', '🔴 Listening... Speak now (Click to stop & send)');
+              }
+              if (voiceStatus) {
+                voiceStatus.style.display = 'inline';
+                voiceStatus.textContent = '🔴 Listening... Auto-sends when done';
+              }
+              if (input) {
+                if (!input.hasAttribute('data-orig-ph')) {
+                  input.setAttribute('data-orig-ph', input.placeholder);
+                }
+                input.placeholder = '🎙️ Listening... बोलिए / বলুন...';
+              }
+            };
+
+            commRecognition.onresult = (event) => {
+              resetCommSilenceTimer();
+              if (commAutoSendTimer) clearTimeout(commAutoSendTimer);
+
+              let finalTrans = '';
+              let interimTrans = '';
+              let hasFinal = false;
+
+              for (let i = 0; i < event.results.length; ++i) {
+                const res = event.results[i];
+                let best = res[0];
+                for (let j = 1; j < res.length; ++j) {
+                  if (res[j].confidence > best.confidence) {
+                    best = res[j];
+                  }
+                }
+                const chunk = best.transcript || '';
+                if (res.isFinal) {
+                  hasFinal = true;
+                  finalTrans += chunk + ' ';
+                } else {
+                  interimTrans += chunk;
+                }
+              }
+
+              if (input) {
+                let merged = (commInitialText ? commInitialText + ' ' : '') + finalTrans + interimTrans;
+                merged = merged.replace(/\s+/g, ' ').trim();
+                input.value = merged;
+
+                // Auto-send on sentence/message completion detection
+                if (input.value.trim().length > 1) {
+                  const debounceMs = hasFinal ? 1250 : 2000;
+                  commAutoSendTimer = setTimeout(() => {
+                    if (isCommListening && input && input.value.trim().length > 1) {
+                      stopCommVoiceTyping(true);
+                    }
+                  }, debounceMs);
+                }
+              }
+            };
+
+            commRecognition.onerror = (event) => {
+              console.warn('[Community Voice Chat] Speech Recognition error:', event.error);
+              if (event.error === 'not-allowed') {
+                alert('Microphone permission denied. Please allow microphone access to use voice typing.');
+                stopCommVoiceTyping(false);
+              } else if (event.error !== 'no-speech') {
+                stopCommVoiceTyping(false);
+              }
+            };
+
+            commRecognition.onend = () => {
+              if (isCommListening) {
+                try {
+                  commInitialText = input ? input.value.trim() : '';
+                  commRecognition.start();
+                } catch (e) {
+                  stopCommVoiceTyping(false);
+                }
+              } else {
+                stopCommVoiceTyping(false);
+              }
+            };
+
+            commRecognition.start();
+          } catch (err) {
+            console.warn('Community speech recognition start failed:', err);
+            stopCommVoiceTyping(false);
           }
-        } catch (err) {
-          showWorkerToast(err.message || 'Network error', 'error');
         }
+
+        if (micBtn) {
+          micBtn.onclick = () => {
+            if (isCommListening) {
+              stopCommVoiceTyping(true);
+            } else {
+              startCommVoiceTyping();
+            }
+          };
+        }
+
+        // Form New Squad button
+        const squadBtn = document.getElementById('btn-create-squad');
+        if (squadBtn) {
+          squadBtn.onclick = () => {
+            const name = prompt(`Enter name for the new ${commState.activeCity} ${commState.activeTrade} Squad (e.g., "${commState.activeCity} High-Rise Wiring Crew"):`);
+            if (name && name.trim()) {
+              const newSquadId = `squad-${Date.now()}`;
+              commState.squads.push({
+                id: newSquadId,
+                name: `👥 ${name.trim()}`,
+                members: 1,
+                desc: `Formed by you in ${commState.activeCity}`
+              });
+              renderCommunitySidebar();
+              switchCommunityChannel(newSquadId, `👥 ${name.trim()}`, `Squad coordination group created by you in ${commState.activeCity}`);
+              showWorkerToast('New work squad created! Fellow pros can now join.', 'success');
+            }
+          };
+        }
+
+        // Share Gig Lead button
+        const shareJobBtn = document.getElementById('btn-comm-share-job');
+        if (shareJobBtn) {
+          shareJobBtn.onclick = () => {
+            const details = prompt('Enter overflow gig details to broadcast to nearby trade peers (e.g., "Need 2 pros for MCB box rewiring in Salt Lake, ₹1,800 total"):');
+            if (details && details.trim()) {
+              if (!commState.messages[commState.currentChannelId]) {
+                commState.messages[commState.currentChannelId] = [];
+              }
+              commState.messages[commState.currentChannelId].push({
+                sender: 'You (Gig Lead Broadcast)',
+                trade: commState.activeTrade,
+                text: `📢 OVERFLOW LEAD: ${details.trim()}`,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                incoming: false
+              });
+              renderCommunityMessages();
+              showWorkerToast('Lead broadcasted to nearby trade peers!', 'success');
+            }
+          };
+        }
+
+        window.addEventListener('language-changed', () => {
+          renderCommunitySidebar();
+          renderCommunityMessages();
+        });
       }
-      window.respondToBizOpportunity = respondToBizOpportunity;
 
       // Toast notification helper
       function showWorkerToast(msg, type = 'success') {
@@ -1939,6 +2802,1167 @@
         }
       });
 
+      /* ==========================================================================
+         4. Cooperative Equipment & Machinery Rental Hub Controller
+         Allows workers to rent out their idle tools/machines & toggle availability
+         ========================================================================== */
+
+      const DEFAULT_COMMUNITY_TOOLS = [
+        {
+          id: 'tool-peer-1',
+          name: 'DeWalt 20V Max XR Cordless Hammer Drill & Driver Set',
+          category: 'Electrical',
+          icon: '⚡',
+          rate: 220,
+          deposit: 600,
+          condition: 'Excellent Condition',
+          status: 'available',
+          location: 'Koramangala, 4th Block, Bengaluru',
+          ownerName: 'Ramesh Kumar',
+          ownerTrade: 'Electrician Specialist',
+          ownerRating: '4.9 ★',
+          rentedCount: 14,
+          isMine: false
+        },
+        {
+          id: 'tool-peer-2',
+          name: 'Kärcher K3 High Pressure Jet Washer 1600W with Foam Lance',
+          category: 'Painting & Cleaning',
+          icon: '🧹',
+          rate: 350,
+          deposit: 1000,
+          condition: 'Excellent Condition',
+          status: 'available',
+          location: 'Indiranagar 100ft Rd, Bengaluru',
+          ownerName: 'Rajesh Sharma',
+          ownerTrade: 'Deep Cleaning Pro',
+          ownerRating: '4.95 ★',
+          rentedCount: 22,
+          isMine: false
+        },
+        {
+          id: 'tool-peer-3',
+          name: 'Heavy Duty 16.5ft Multi-Position Aluminum Telescopic Ladder',
+          category: 'General Machinery',
+          icon: '🪜',
+          rate: 180,
+          deposit: 500,
+          condition: 'Brand New',
+          status: 'available',
+          location: 'HSR Layout Sector 2, Bengaluru',
+          ownerName: 'Suresh Naik',
+          ownerTrade: 'Painting Specialist',
+          ownerRating: '4.85 ★',
+          rentedCount: 9,
+          isMine: false
+        },
+        {
+          id: 'tool-peer-4',
+          name: 'Bosch GDC 120 Professional Tile & Marble Cutter 1250W',
+          category: 'Masonry',
+          icon: '🪚',
+          rate: 250,
+          deposit: 700,
+          condition: 'Excellent Condition',
+          status: 'available',
+          location: 'Whitefield Main Rd, Bengaluru',
+          ownerName: 'Venkatesh Murthy',
+          ownerTrade: 'Masonry & Flooring Pro',
+          ownerRating: '4.9 ★',
+          rentedCount: 18,
+          isMine: false
+        },
+        {
+          id: 'tool-peer-5',
+          name: 'Rothenberger Super Ego Heavy Duty Pipe Threading Machine 1/2"-2"',
+          category: 'Plumbing',
+          icon: '🔧',
+          rate: 380,
+          deposit: 1200,
+          condition: 'Good Condition',
+          status: 'available',
+          location: 'Jayanagar 4th T Block, Bengaluru',
+          ownerName: 'Anil Deshmukh',
+          ownerTrade: 'Master Plumber',
+          ownerRating: '5.0 ★',
+          rentedCount: 31,
+          isMine: false
+        },
+        {
+          id: 'tool-peer-6',
+          name: 'Master AC Digital Refrigerant Gas Charging & Vacuum Gauge Set',
+          category: 'AC & Appliance',
+          icon: '❄️',
+          rate: 200,
+          deposit: 500,
+          condition: 'Excellent Condition',
+          status: 'available',
+          location: 'BTM Layout 2nd Stage, Bengaluru',
+          ownerName: 'Sunil Rao',
+          ownerTrade: 'HVAC Specialist',
+          ownerRating: '4.9 ★',
+          rentedCount: 11,
+          isMine: false
+        },
+        {
+          id: 'tool-peer-7',
+          name: 'Fronius Inverter MIG/MMA 200A Portable Welding Unit',
+          category: 'Electrical',
+          icon: '⚡',
+          rate: 400,
+          deposit: 1500,
+          condition: 'Excellent Condition',
+          status: 'available',
+          location: 'Electronics City Phase 1, Bengaluru',
+          ownerName: 'Jagdish Prasad',
+          ownerTrade: 'Auto & Fabrication Pro',
+          ownerRating: '4.95 ★',
+          rentedCount: 19,
+          isMine: false
+        },
+        {
+          id: 'tool-peer-8',
+          name: 'Festool Plunge Cut Track Saw TS 55 FEQ with Guide Rail',
+          category: 'Carpentry',
+          icon: '🪚',
+          rate: 340,
+          deposit: 900,
+          condition: 'Brand New',
+          status: 'available',
+          location: 'Marathahalli Ring Rd, Bengaluru',
+          ownerName: 'Balaji Carpenter',
+          ownerTrade: 'Master Woodcrafter',
+          ownerRating: '4.9 ★',
+          rentedCount: 12,
+          isMine: false
+        },
+        {
+          id: 'tool-peer-9',
+          name: 'Rigid K-400 Drain Cleaner Snake Machine with Cable Kit',
+          category: 'Plumbing',
+          icon: '🔧',
+          rate: 300,
+          deposit: 800,
+          condition: 'Excellent Condition',
+          status: 'available',
+          location: 'Rajajinagar 3rd Block, Bengaluru',
+          ownerName: 'Ganesh Gowda',
+          ownerTrade: 'Senior Plumber',
+          ownerRating: '4.85 ★',
+          rentedCount: 25,
+          isMine: false
+        },
+        {
+          id: 'tool-peer-10',
+          name: 'Bosch Professional Heavy Demolition Breaker Jackhammer 1500W GSH 11 E',
+          category: 'Masonry',
+          icon: '🔨',
+          rate: 500,
+          deposit: 1800,
+          condition: 'Excellent Condition',
+          status: 'available',
+          location: 'Banashankari 2nd Stage, Bengaluru',
+          ownerName: 'Mahendra Yadav',
+          ownerTrade: 'Demolition Specialist',
+          ownerRating: '5.0 ★',
+          rentedCount: 34,
+          isMine: false
+        },
+        {
+          id: 'tool-peer-11',
+          name: 'Wagner Control Pro 150 High Efficiency Airless Paint Sprayer',
+          category: 'Painting & Cleaning',
+          icon: '🧹',
+          rate: 280,
+          deposit: 750,
+          condition: 'Excellent Condition',
+          status: 'available',
+          location: 'Bellandur Outer Ring Rd, Bengaluru',
+          ownerName: 'Vikas Verma',
+          ownerTrade: 'Painting Contractor',
+          ownerRating: '4.88 ★',
+          rentedCount: 16,
+          isMine: false
+        },
+        {
+          id: 'tool-peer-12',
+          name: 'Honda GX160 Petrol Engine High Output Sludge Water Pump 3-Inch',
+          category: 'General Machinery',
+          icon: '🚜',
+          rate: 420,
+          deposit: 1100,
+          condition: 'Good Condition',
+          status: 'available',
+          location: 'Hebbal Flyover Junction, Bengaluru',
+          ownerName: 'Prabhakar Reddy',
+          ownerTrade: 'Site Machinery Pro',
+          ownerRating: '4.9 ★',
+          rentedCount: 21,
+          isMine: false
+        }
+      ];
+
+      function getToolsStorageKey() {
+        const user = window.SevaSathiSession ? SevaSathiSession.getUser() : JSON.parse(localStorage.getItem('hustleCurrentUser') || 'null');
+        return `sevasathi_worker_tools_${user?.id || user?.phone || 'active_worker'}`;
+      }
+
+      function getRentalBookingsKey() {
+        const user = window.SevaSathiSession ? SevaSathiSession.getUser() : JSON.parse(localStorage.getItem('hustleCurrentUser') || 'null');
+        return `sevasathi_worker_tool_rentals_${user?.id || user?.phone || 'active_worker'}`;
+      }
+
+      function loadMyTools() {
+        const initialTools = [
+          {
+            id: 'tool-my-1',
+            name: 'Bosch GBH 2-26 DRE Rotary Hammer Drill 800W',
+            category: 'Electrical',
+            icon: '⚡',
+            rate: 250,
+            deposit: 500,
+            condition: 'Excellent Condition',
+            status: 'available', // 'available' or 'in_use'
+            location: 'Koramangala, Bengaluru',
+            rentedCount: 6,
+            earnings: 1500,
+            isMine: true,
+            createdAt: new Date().toISOString()
+          },
+          {
+            id: 'tool-my-2',
+            name: 'Total Tools Heavy Duty Tile Cutter 600mm with Laser Guide',
+            category: 'Masonry',
+            icon: '🪚',
+            rate: 200,
+            deposit: 450,
+            condition: 'Good Condition',
+            status: 'in_use', // Not in use / in use by me
+            location: 'Koramangala, Bengaluru',
+            rentedCount: 3,
+            earnings: 600,
+            isMine: true,
+            createdAt: new Date().toISOString()
+          },
+          {
+            id: 'tool-my-3',
+            name: 'Stanley 1800W Portable Table Saw with High Precision Rip Fence',
+            category: 'Carpentry',
+            icon: '🪚',
+            rate: 320,
+            deposit: 800,
+            condition: 'Excellent Condition',
+            status: 'available',
+            location: 'Koramangala, Bengaluru',
+            rentedCount: 8,
+            earnings: 2560,
+            isMine: true,
+            createdAt: new Date().toISOString()
+          },
+          {
+            id: 'tool-my-4',
+            name: 'Havells Heavy Duty Industrial Concrete Vibrator & Needle 2HP',
+            category: 'Masonry',
+            icon: '⚙️',
+            rate: 450,
+            deposit: 1200,
+            condition: 'Brand New',
+            status: 'available',
+            location: 'Koramangala, Bengaluru',
+            rentedCount: 4,
+            earnings: 1800,
+            isMine: true,
+            createdAt: new Date().toISOString()
+          },
+          {
+            id: 'tool-my-5',
+            name: 'Makita 18V Cordless Blower & Vacuum Mulcher DUB182',
+            category: 'Painting & Cleaning',
+            icon: '🧹',
+            rate: 160,
+            deposit: 400,
+            condition: 'Excellent Condition',
+            status: 'available',
+            location: 'Koramangala, Bengaluru',
+            rentedCount: 5,
+            earnings: 800,
+            isMine: true,
+            createdAt: new Date().toISOString()
+          }
+        ];
+
+        try {
+          const key = getToolsStorageKey();
+          const stored = localStorage.getItem(key);
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed) && parsed.length >= initialTools.length) {
+              return parsed;
+            }
+          }
+        } catch (e) {}
+
+        saveMyTools(initialTools);
+        return initialTools;
+      }
+
+      function saveMyTools(tools) {
+        try {
+          localStorage.setItem(getToolsStorageKey(), JSON.stringify(tools));
+        } catch (e) {}
+      }
+
+      function loadRentalBookings() {
+        const initialBookings = [
+          {
+            id: 'rental-demo-1',
+            toolName: 'Bosch GBH 2-26 DRE Rotary Hammer Drill 800W',
+            borrowerName: 'Manoj Pillai',
+            borrowerTrade: 'Electrician Pro',
+            ownerName: 'Worker Partner (You)',
+            ownerTrade: 'Trade Specialist',
+            days: 2,
+            rate: 250,
+            totalAmount: 500,
+            deposit: 500,
+            status: 'handover_pending', // 'handover_pending', 'in_use', 'completed'
+            handoverCode: '8492',
+            returnCode: '3914',
+            startDate: 'Today',
+            type: 'incoming', // someone rented my tool
+            returnDate: 'In 2 Days',
+            handoverVerifiedAt: null,
+            returnVerifiedAt: null
+          },
+          {
+            id: 'rental-demo-2',
+            toolName: 'Kärcher K3 High Pressure Jet Washer 1600W with Foam Lance',
+            borrowerName: 'Worker Partner (You)',
+            borrowerTrade: 'Trade Specialist',
+            ownerName: 'Rajesh Sharma',
+            ownerTrade: 'Deep Cleaning Pro',
+            days: 1,
+            rate: 350,
+            totalAmount: 350,
+            deposit: 1000,
+            status: 'in_use', // Active on Job · Handover verified
+            handoverCode: '6217',
+            returnCode: '3914',
+            startDate: 'Today',
+            type: 'outgoing', // I rented from peer
+            returnDate: 'Today 06:00 PM',
+            handoverVerifiedAt: 'Today 09:30 AM (Mutual Code 6217 Verified)',
+            returnVerifiedAt: null
+          },
+          {
+            id: 'rental-demo-3',
+            toolName: 'Stanley 1800W Portable Table Saw with High Precision Rip Fence',
+            borrowerName: 'Vikram Sen',
+            borrowerTrade: 'Carpentry Specialist',
+            ownerName: 'Worker Partner (You)',
+            ownerTrade: 'Trade Specialist',
+            days: 2,
+            rate: 320,
+            totalAmount: 640,
+            deposit: 800,
+            status: 'handover_pending',
+            handoverCode: '5193',
+            returnCode: '2841',
+            startDate: 'Today',
+            type: 'incoming',
+            returnDate: 'In 2 Days',
+            handoverVerifiedAt: null,
+            returnVerifiedAt: null
+          },
+          {
+            id: 'rental-demo-4',
+            toolName: 'Rigid K-400 Drain Cleaner Snake Machine with Cable Kit',
+            borrowerName: 'Worker Partner (You)',
+            borrowerTrade: 'Trade Specialist',
+            ownerName: 'Ganesh Gowda',
+            ownerTrade: 'Master Plumber',
+            days: 1,
+            rate: 300,
+            totalAmount: 300,
+            deposit: 800,
+            status: 'in_use',
+            handoverCode: '7352',
+            returnCode: '9164',
+            startDate: 'Today',
+            type: 'outgoing',
+            returnDate: 'Today 05:00 PM',
+            handoverVerifiedAt: 'Today 08:30 AM (Mutual Code 7352 Verified)',
+            returnVerifiedAt: null
+          },
+          {
+            id: 'rental-demo-5',
+            toolName: 'Total Tools Heavy Duty Tile Cutter 600mm with Laser Guide',
+            borrowerName: 'Suresh Naik',
+            borrowerTrade: 'Masonry Specialist',
+            ownerName: 'Worker Partner (You)',
+            ownerTrade: 'Trade Specialist',
+            days: 2,
+            rate: 200,
+            totalAmount: 400,
+            deposit: 450,
+            status: 'completed',
+            handoverCode: '4418',
+            returnCode: '7183',
+            startDate: 'Yesterday',
+            type: 'incoming',
+            returnDate: 'Yesterday',
+            handoverVerifiedAt: 'Yesterday 08:00 AM (OTP 4418 Verified)',
+            returnVerifiedAt: 'Yesterday 07:00 PM (OTP 7183 Verified & Inspected)'
+          },
+          {
+            id: 'rental-demo-6',
+            toolName: 'Wagner Control Pro 150 High Efficiency Airless Paint Sprayer',
+            borrowerName: 'Imran Khan',
+            borrowerTrade: 'Painting Pro',
+            ownerName: 'Worker Partner (You)',
+            ownerTrade: 'Trade Specialist',
+            days: 2,
+            rate: 280,
+            totalAmount: 560,
+            deposit: 750,
+            status: 'completed',
+            handoverCode: '3829',
+            returnCode: '6410',
+            startDate: '2 Days Ago',
+            type: 'incoming',
+            returnDate: 'Yesterday',
+            handoverVerifiedAt: '2 Days Ago (OTP 3829 Verified)',
+            returnVerifiedAt: 'Yesterday 06:00 PM (OTP 6410 Verified & Inspected)'
+          }
+        ];
+
+        try {
+          const stored = localStorage.getItem(getRentalBookingsKey());
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed) && parsed.length >= initialBookings.length) {
+              return parsed;
+            }
+          }
+        } catch (e) {}
+
+        saveRentalBookings(initialBookings);
+        return initialBookings;
+      }
+
+      function saveRentalBookings(bookings) {
+        try {
+          localStorage.setItem(getRentalBookingsKey(), JSON.stringify(bookings));
+        } catch (e) {}
+      }
+
+      function renderMyToolsList(myTools) {
+        const container = document.getElementById('my-tools-list');
+        if (!container) return;
+
+        if (myTools.length === 0) {
+          container.innerHTML = `
+            <div style="grid-column:1/-1; text-align:center; padding:40px; background:#f8fafc; border-radius:12px; border:1px dashed #cbd5e1;">
+              <span style="font-size:32px; display:block; margin-bottom:8px;">📦</span>
+              <h4 style="margin:0 0 6px 0; color:#334155;">No Machines Listed Yet</h4>
+              <p style="margin:0 0 16px 0; color:#64748b; font-size:13px;">List your idle tools and equipment to start earning passive rental income from verified peers!</p>
+              <button type="button" onclick="document.getElementById('btn-open-add-tool')?.click()" style="padding:8px 18px; background:#2563eb; color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer;">
+                + List Your First Machine
+              </button>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = myTools.map(t => {
+          const isAvail = t.status === 'available';
+          return `
+            <div class="my-tool-card" data-tool-id="${t.id}" style="background:#ffffff; border:1.5px solid ${isAvail ? '#bfdbfe' : '#e2e8f0'}; border-radius:14px; padding:18px; display:flex; flex-direction:column; justify-content:space-between; gap:14px; box-shadow:0 2px 10px rgba(0,0,0,0.03); transition:all 0.2s ease;">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+                  <div style="display:flex; align-items:center; gap:10px;">
+                    <div style="width:42px; height:42px; border-radius:10px; background:${isAvail ? '#eff6ff' : '#f8fafc'}; display:flex; align-items:center; justify-content:center; font-size:22px; border:1px solid ${isAvail ? '#bfdbfe' : '#cbd5e1'};">
+                      ${t.icon || '⚙️'}
+                    </div>
+                    <div>
+                      <span style="font-size:11px; font-weight:700; color:#2563eb; text-transform:uppercase; letter-spacing:0.5px; display:block;">${t.category}</span>
+                      <strong style="font-size:14.5px; color:#0f172a; line-height:1.3; display:block;">${t.name}</strong>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px;">
+                  <span style="font-size:11px; padding:3px 8px; border-radius:6px; background:#f1f5f9; color:#475569; font-weight:600;">
+                    📍 ${t.location}
+                  </span>
+                  <span style="font-size:11px; padding:3px 8px; border-radius:6px; background:#f0fdf4; color:#166534; font-weight:600;">
+                    ✨ ${t.condition}
+                  </span>
+                </div>
+
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px 12px; display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:12px; margin-bottom:12px;">
+                  <div>
+                    <span style="color:#64748b; font-size:11px; display:block;">Daily Rental Rate</span>
+                    <strong style="color:#16a34a; font-size:15px; font-weight:800;">₹${t.rate}</strong><small style="color:#64748b;">/day</small>
+                  </div>
+                  <div>
+                    <span style="color:#64748b; font-size:11px; display:block;">Security Deposit</span>
+                    <strong style="color:#0f172a; font-size:14px; font-weight:700;">₹${t.deposit}</strong>
+                  </div>
+                  <div style="border-top:1px dashed #cbd5e1; padding-top:6px; grid-column:1/-1; display:flex; justify-content:space-between; align-items:center;">
+                    <span style="color:#64748b; font-size:11px;">Rented: <strong>${t.rentedCount || 0} times</strong></span>
+                    <span style="color:#2563eb; font-size:11.5px; font-weight:700;">Earned: ₹${(t.earnings || 0).toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div style="display:flex; gap:8px; align-items:center;">
+                <button type="button" class="btn-toggle-tool-status" data-id="${t.id}" style="flex:1; padding:9px 12px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; transition:all 0.2s ease; border:1.5px solid ${isAvail ? '#86efac' : '#cbd5e1'}; background:${isAvail ? '#f0fdf4' : '#f8fafc'}; color:${isAvail ? '#166534' : '#64748b'};">
+                  <span>${isAvail ? '🟢 Available for Rent' : '🔴 In Use by Me'}</span>
+                  <small style="font-size:10px; opacity:0.8;">(Toggle)</small>
+                </button>
+                <button type="button" class="btn-remove-my-tool" data-id="${t.id}" title="Remove Listing" style="padding:8px 11px; background:#fff; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; color:#ef4444; cursor:pointer;">
+                  🗑️
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        // Attach listeners for status toggle
+        container.querySelectorAll('.btn-toggle-tool-status').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const toolId = e.currentTarget.getAttribute('data-id');
+            const tools = loadMyTools();
+            const tool = tools.find(t => t.id === toolId);
+            if (tool) {
+              tool.status = tool.status === 'available' ? 'in_use' : 'available';
+              saveMyTools(tools);
+              renderToolRentalHub();
+              const newStatusText = tool.status === 'available' ? 'Available for Rent 🟢' : 'In Use / Unavailable 🔴';
+              showWorkerToast(`"${tool.name}" is now marked as ${newStatusText}!`, 'success');
+            }
+          });
+        });
+
+        // Attach listeners for tool removal
+        container.querySelectorAll('.btn-remove-my-tool').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const toolId = e.currentTarget.getAttribute('data-id');
+            if (confirm('Are you sure you want to remove this machine from your listed tools?')) {
+              let tools = loadMyTools();
+              tools = tools.filter(t => t.id !== toolId);
+              saveMyTools(tools);
+              renderToolRentalHub();
+              showWorkerToast('Machine removed from listing.', 'info');
+            }
+          });
+        });
+      }
+
+      function renderPeerToolsList(searchQuery = '', filterCategory = 'all') {
+        const container = document.getElementById('peer-tools-list');
+        if (!container) return;
+
+        let filtered = DEFAULT_COMMUNITY_TOOLS;
+        if (filterCategory && filterCategory !== 'all') {
+          filtered = filtered.filter(t => t.category === filterCategory);
+        }
+        if (searchQuery && searchQuery.trim()) {
+          const q = searchQuery.toLowerCase().trim();
+          filtered = filtered.filter(t =>
+            t.name.toLowerCase().includes(q) ||
+            t.category.toLowerCase().includes(q) ||
+            t.location.toLowerCase().includes(q) ||
+            (t.ownerName && t.ownerName.toLowerCase().includes(q))
+          );
+        }
+
+        if (filtered.length === 0) {
+          container.innerHTML = `
+            <div style="grid-column:1/-1; text-align:center; padding:40px; background:#f8fafc; border-radius:12px; border:1px dashed #cbd5e1;">
+              <span style="font-size:32px; display:block; margin-bottom:8px;">🔍</span>
+              <h4 style="margin:0 0 6px 0; color:#334155;">No Peer Tools Found</h4>
+              <p style="margin:0; color:#64748b; font-size:13px;">Try clearing your search query or selecting a different category filter.</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = filtered.map(t => {
+          return `
+            <div class="peer-tool-card" data-tool-id="${t.id}" style="background:#ffffff; border:1.5px solid #e2e8f0; border-radius:14px; padding:18px; display:flex; flex-direction:column; justify-content:space-between; gap:14px; box-shadow:0 2px 10px rgba(0,0,0,0.03); transition:all 0.2s ease;">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+                  <div style="display:flex; align-items:center; gap:10px;">
+                    <div style="width:42px; height:42px; border-radius:10px; background:#eff6ff; display:flex; align-items:center; justify-content:center; font-size:22px; border:1px solid #bfdbfe;">
+                      ${t.icon || '⚙️'}
+                    </div>
+                    <div>
+                      <span style="font-size:11px; font-weight:700; color:#2563eb; text-transform:uppercase; letter-spacing:0.5px; display:block;">${t.category}</span>
+                      <strong style="font-size:14.5px; color:#0f172a; line-height:1.3; display:block;">${t.name}</strong>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:7px 10px; margin-bottom:10px; font-size:12px; color:#475569; display:flex; justify-content:space-between; align-items:center;">
+                  <span>👤 <strong>${t.ownerName}</strong> <small>(${t.ownerTrade || 'Verified Peer'})</small></span>
+                  <span style="color:#d97706; font-weight:700;">${t.ownerRating || '4.9 ★'}</span>
+                </div>
+
+                <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px;">
+                  <span style="font-size:11px; padding:3px 8px; border-radius:6px; background:#f1f5f9; color:#475569; font-weight:600;">
+                    📍 ${t.location}
+                  </span>
+                  <span style="font-size:11px; padding:3px 8px; border-radius:6px; background:#f0fdf4; color:#166534; font-weight:600;">
+                    ✨ ${t.condition}
+                  </span>
+                </div>
+
+                <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:10px 12px; display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:12px; margin-bottom:12px;">
+                  <div>
+                    <span style="color:#166534; font-size:11px; display:block;">Daily Rental Rate</span>
+                    <strong style="color:#15803d; font-size:15px; font-weight:800;">₹${t.rate}</strong><small style="color:#166534;">/day</small>
+                  </div>
+                  <div>
+                    <span style="color:#166534; font-size:11px; display:block;">Refundable Deposit</span>
+                    <strong style="color:#0f172a; font-size:14px; font-weight:700;">₹${t.deposit}</strong>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <button type="button" class="btn-request-peer-tool" data-id="${t.id}" style="width:100%; padding:10px 14px; background:#2563eb; color:#fff; border:none; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 2px 6px rgba(37,99,235,0.25); transition:all 0.2s ease;">
+                  <span>🤝 Rent This Tool (Dual Verify)</span>
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        // Attach listeners for renting peer tool
+        container.querySelectorAll('.btn-request-peer-tool').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const toolId = e.currentTarget.getAttribute('data-id');
+            requestPeerTool(toolId);
+          });
+        });
+      }
+
+      function renderToolRentalHub() {
+        const myTools = loadMyTools();
+        const rentalBookings = loadRentalBookings();
+
+        // Update counts
+        const myCountEl = document.getElementById('my-tools-count');
+        const peerCountEl = document.getElementById('peer-tools-count');
+        const reqCountEl = document.getElementById('rental-req-count');
+        const totalIncomeEl = document.getElementById('tools-total-income');
+        const activeAvailEl = document.getElementById('tools-active-avail');
+
+        const activeAvailable = myTools.filter(t => t.status === 'available').length;
+        const totalIncome = myTools.reduce((acc, t) => acc + (t.earnings || 0), 0);
+
+        if (myCountEl) myCountEl.textContent = myTools.length;
+        if (peerCountEl) peerCountEl.textContent = DEFAULT_COMMUNITY_TOOLS.length;
+        if (reqCountEl) reqCountEl.textContent = rentalBookings.filter(b => b.status !== 'completed').length;
+        if (totalIncomeEl) totalIncomeEl.textContent = `₹${totalIncome.toLocaleString()}`;
+        if (activeAvailEl) activeAvailEl.textContent = activeAvailable;
+
+        renderMyToolsList(myTools);
+        renderPeerToolsList();
+        renderRentalBookingsList(rentalBookings);
+      }
+
+      function renderRentalBookingsList(bookings) {
+        const container = document.getElementById('rental-requests-list');
+        if (!container) return;
+
+        if (bookings.length === 0) {
+          container.innerHTML = `
+            <div style="text-align:center; padding:30px; background:#f8fafc; border-radius:12px;">
+              <p style="margin:0; color:#64748b; font-size:13px;">No active tool rentals at the moment.</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = bookings.map(b => {
+          const isHandoverPending = b.status === 'handover_pending';
+          const isInUse = b.status === 'in_use';
+          const isCompleted = b.status === 'completed';
+
+          let statusBadge = '';
+          if (isHandoverPending) {
+            statusBadge = `<span style="font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; background:#fef3c7; color:#b45309; border:1px solid #fde68a;">🟡 Handover Verification Pending</span>`;
+          } else if (isInUse) {
+            statusBadge = `<span style="font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; background:#dcfce7; color:#15803d; border:1px solid #bbf7d0;">🟢 In Use on Job · Escrow Active</span>`;
+          } else {
+            statusBadge = `<span style="font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1;">✓ Completed &amp; Dual-Verified</span>`;
+          }
+
+          return `
+            <div class="rental-booking-card" data-rental-id="${b.id}" style="background:#ffffff; border:1.5px solid ${isInUse ? '#86efac' : (isHandoverPending ? '#fcd34d' : '#e2e8f0')}; border-radius:14px; padding:16px 20px; display:flex; flex-direction:column; gap:12px; box-shadow:0 2px 10px rgba(0,0,0,0.03);">
+              <!-- Top Row: Name & Status -->
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px;">
+                <div>
+                  <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                    <strong style="font-size:15px; color:#0f172a;">${b.toolName}</strong>
+                    ${statusBadge}
+                  </div>
+                  <div style="font-size:12.5px; color:#475569; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                    <span>👤 <strong>Owner:</strong> ${b.ownerName || 'Verified Peer'}</span>
+                    <span>⟷</span>
+                    <span>👷 <strong>Borrower:</strong> ${b.borrowerName}</span>
+                    <span>·</span>
+                    <span>⏱️ Duration: <strong>${b.days} Days</strong> (Return: ${b.returnDate})</span>
+                  </div>
+                </div>
+
+                <div style="text-align:right;">
+                  <span style="font-size:11px; color:#64748b; display:block;">Rent + Deposit Escrow</span>
+                  <strong style="font-size:16px; color:#16a34a; font-weight:800;">₹${b.totalAmount}</strong>
+                  <small style="font-size:11px; color:#64748b; display:block;">(+ ₹${b.deposit} Deposit Locked)</small>
+                </div>
+              </div>
+
+              <!-- Middle Row: Verification Protocol Status Bar -->
+              <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px 14px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; font-size:11.5px;">
+                <div>
+                  <small style="color:#64748b; display:block; font-size:10px; text-transform:uppercase; font-weight:700;">1. Handover Verification</small>
+                  <strong style="color:${b.handoverVerifiedAt ? '#15803d' : '#b45309'};">
+                    ${b.handoverVerifiedAt ? `✓ Verified (${b.handoverCode})` : `⏳ Pending OTP (${b.handoverCode})`}
+                  </strong>
+                </div>
+                <div>
+                  <small style="color:#64748b; display:block; font-size:10px; text-transform:uppercase; font-weight:700;">2. Physical Check</small>
+                  <strong style="color:${b.handoverVerifiedAt ? '#15803d' : '#64748b'};">
+                    ${b.handoverVerifiedAt ? '✓ Passed (Motor & Safety OK)' : '⏳ Awaiting Inspection'}
+                  </strong>
+                </div>
+                <div>
+                  <small style="color:#64748b; display:block; font-size:10px; text-transform:uppercase; font-weight:700;">3. Return & Deposit Refund</small>
+                  <strong style="color:${isCompleted ? '#15803d' : '#64748b'};">
+                    ${isCompleted ? `✓ Settled (Refunded ₹${b.deposit})` : `⏳ Code: ${b.returnCode}`}
+                  </strong>
+                </div>
+              </div>
+
+              <!-- Bottom Row: Interactive Verification Actions -->
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border-top:1px solid #f1f5f9; padding-top:10px;">
+                <div style="font-size:12px; color:#64748b; display:flex; align-items:center; gap:6px;">
+                  <span>🔒 Escrow Protected · Mutual OTP Required</span>
+                </div>
+
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                  ${isHandoverPending ? `
+                    <button type="button" class="btn-open-verify-modal" data-id="${b.id}" data-mode="handover" style="padding:8px 16px; background:#2563eb; color:#fff; border:none; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(37,99,235,0.25);">
+                      <span>🤝 Both-Side Handover Verification (OTP ${b.handoverCode})</span>
+                    </button>
+                  ` : ''}
+
+                  ${isInUse ? `
+                    <button type="button" class="btn-open-verify-modal" data-id="${b.id}" data-mode="return" style="padding:8px 16px; background:#16a34a; color:#fff; border:none; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(22,163,74,0.25);">
+                      <span>🔍 Both-Side Return &amp; Inspection (Code ${b.returnCode})</span>
+                    </button>
+                  ` : ''}
+
+                  ${isCompleted ? `
+                    <button type="button" class="btn-view-cert" data-id="${b.id}" style="padding:7px 14px; background:#f0fdf4; border:1px solid #86efac; color:#15803d; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer;">
+                      📜 View Verification Certificate
+                    </button>
+                  ` : ''}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        // Attach listeners
+        container.querySelectorAll('.btn-open-verify-modal').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const rentalId = e.currentTarget.getAttribute('data-id');
+            const mode = e.currentTarget.getAttribute('data-mode');
+            openVerificationModal(rentalId, mode);
+          });
+        });
+
+        container.querySelectorAll('.btn-view-cert').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const rentalId = e.currentTarget.getAttribute('data-id');
+            const bookings = loadRentalBookings();
+            const b = bookings.find(item => item.id === rentalId);
+            if (b) {
+              alert(`🤝 COOPERATIVE DUAL VERIFICATION CERTIFICATE\n\n• Machine: ${b.toolName}\n• Owner: ${b.ownerName}\n• Borrower: ${b.borrowerName}\n• Handover Sign-off: ${b.handoverVerifiedAt || 'Verified'}\n• Return & Inspection Sign-off: ${b.returnVerifiedAt || 'Verified'}\n• Rental Earnings Released: ₹${b.totalAmount}\n• Security Deposit Refunded: ₹${b.deposit}\n• Status: 100% Settled & Audited`);
+            }
+          });
+        });
+      }
+
+      let activeVerifyRentalId = null;
+      let activeVerifyMode = 'handover';
+
+      function openVerificationModal(rentalId, mode) {
+        const bookings = loadRentalBookings();
+        const b = bookings.find(item => item.id === rentalId);
+        if (!b) return;
+
+        activeVerifyRentalId = rentalId;
+        activeVerifyMode = mode;
+
+        const modal = document.getElementById('tool-verify-modal');
+        const badge = document.getElementById('verify-modal-badge');
+        const title = document.getElementById('verify-modal-title');
+        const toolNameEl = document.getElementById('verify-tool-name');
+        const partiesEl = document.getElementById('verify-parties-info');
+        const escrowEl = document.getElementById('verify-escrow-badge');
+        const stepContent = document.getElementById('verify-step-content');
+        const codeLabel = document.getElementById('verify-code-label');
+        const inputCode = document.getElementById('verify-input-code');
+
+        if (toolNameEl) toolNameEl.textContent = b.toolName;
+        if (partiesEl) partiesEl.textContent = `Owner: ${b.ownerName} ⟷ Borrower: ${b.borrowerName}`;
+        if (escrowEl) escrowEl.textContent = `🔒 Escrow Locked: ₹${b.totalAmount + b.deposit}`;
+        if (inputCode) inputCode.value = '';
+
+        if (mode === 'handover') {
+          if (badge) badge.textContent = '🤝 Stage 1: Handover & Pickup Verification';
+          if (title) title.textContent = 'Machine Handover & Dual Physical Check';
+          if (codeLabel) codeLabel.textContent = `Enter Owner's Handover Verification Code (Demo Code: ${b.handoverCode}):`;
+          if (stepContent) {
+            stepContent.innerHTML = `
+              <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:12px; font-size:12.5px; color:#1e40af; line-height:1.45;">
+                <strong>Dual Handover Protocol:</strong><br>
+                1. <strong>Owner (${b.ownerName}):</strong> Hands over machine, power cords &amp; accessories and shows verification code <strong>${b.handoverCode}</strong>.<br>
+                2. <strong>Borrower (${b.borrowerName}):</strong> Tests machine on power, verifies safety guards, and enters the code to confirm pickup.<br>
+                3. <strong>Escrow System:</strong> Once verified by both parties, tool security deposit (₹${b.deposit}) and rent (₹${b.totalAmount}) lock in escrow.
+              </div>
+            `;
+          }
+        } else {
+          if (badge) badge.textContent = '🔍 Stage 2: Return & Inspection Verification';
+          if (title) title.textContent = 'Machine Return, Inspection & Deposit Refund';
+          if (codeLabel) codeLabel.textContent = `Enter Borrower's Return Code (Demo Code: ${b.returnCode}):`;
+          if (stepContent) {
+            stepContent.innerHTML = `
+              <div style="background:#f0fdf4; border:1px solid #86efac; border-radius:10px; padding:12px; font-size:12.5px; color:#166534; line-height:1.45;">
+                <strong>Dual Return &amp; Refund Protocol:</strong><br>
+                1. <strong>Borrower (${b.borrowerName}):</strong> Returns machine clean and presents return code <strong>${b.returnCode}</strong>.<br>
+                2. <strong>Owner (${b.ownerName}):</strong> Inspects tool for physical integrity &amp; tests motor operation.<br>
+                3. <strong>Escrow Settlement:</strong> Instant 100% refund of ₹${b.deposit} deposit to borrower &amp; ₹${b.totalAmount} earnings release to owner.
+              </div>
+            `;
+          }
+        }
+
+        if (modal) {
+          modal.style.display = 'flex';
+        }
+      }
+
+      function closeVerificationModal() {
+        const modal = document.getElementById('tool-verify-modal');
+        if (modal) modal.style.display = 'none';
+        activeVerifyRentalId = null;
+      }
+
+      // Auto-fill demo code handler
+      document.getElementById('btn-auto-fill-code')?.addEventListener('click', () => {
+        if (!activeVerifyRentalId) return;
+        const bookings = loadRentalBookings();
+        const b = bookings.find(item => item.id === activeVerifyRentalId);
+        if (!b) return;
+
+        const inputCode = document.getElementById('verify-input-code');
+        if (inputCode) {
+          inputCode.value = (activeVerifyMode === 'handover') ? b.handoverCode : b.returnCode;
+        }
+      });
+
+      document.getElementById('btn-close-verify-modal')?.addEventListener('click', closeVerificationModal);
+      document.getElementById('btn-cancel-verify-action')?.addEventListener('click', closeVerificationModal);
+
+      // Submit Verification Handler
+      document.getElementById('btn-submit-verify-action')?.addEventListener('click', () => {
+        if (!activeVerifyRentalId) return;
+
+        const bookings = loadRentalBookings();
+        const b = bookings.find(item => item.id === activeVerifyRentalId);
+        if (!b) return;
+
+        const inputCode = document.getElementById('verify-input-code')?.value.trim();
+        const expectedCode = (activeVerifyMode === 'handover') ? b.handoverCode : b.returnCode;
+
+        if (!inputCode) {
+          showWorkerToast(`Please enter the verification code (${expectedCode}) to proceed.`, 'error');
+          return;
+        }
+
+        if (inputCode !== expectedCode) {
+          showWorkerToast(`Invalid verification code. Please enter "${expectedCode}".`, 'error');
+          return;
+        }
+
+        const chkCondition = document.getElementById('chk-verify-condition')?.checked;
+        const chkAccessories = document.getElementById('chk-verify-accessories')?.checked;
+        const chkSafety = document.getElementById('chk-verify-safety')?.checked;
+
+        if (!chkCondition || !chkAccessories || !chkSafety) {
+          showWorkerToast('Please ensure all physical and safety checklist items are confirmed by both sides.', 'error');
+          return;
+        }
+
+        const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        if (activeVerifyMode === 'handover') {
+          b.status = 'in_use';
+          b.handoverVerifiedAt = `Today ${nowTime} (Mutual Code ${expectedCode} Verified)`;
+          saveRentalBookings(bookings);
+          renderToolRentalHub();
+          closeVerificationModal();
+          showWorkerToast(`🤝 Both-Side Handover Verified! "${b.toolName}" is now marked In-Use on Job & Escrow is active.`, 'success');
+        } else {
+          b.status = 'completed';
+          b.returnVerifiedAt = `Today ${nowTime} (Mutual Code ${expectedCode} Verified & Inspected)`;
+          saveRentalBookings(bookings);
+
+          // Credit worker earnings if owner
+          const myTools = loadMyTools();
+          const tool = myTools.find(t => t.name === b.toolName);
+          if (tool) {
+            tool.earnings = (tool.earnings || 0) + b.totalAmount;
+            tool.rentedCount = (tool.rentedCount || 0) + 1;
+            saveMyTools(myTools);
+          }
+
+          renderToolRentalHub();
+          closeVerificationModal();
+          showWorkerToast(`✅ Both-Side Return Verified! Security deposit of ₹${b.deposit} refunded to borrower & ₹${b.totalAmount} rental earnings released to owner!`, 'success');
+        }
+      });
+
+      function requestPeerTool(toolId) {
+        const tool = DEFAULT_COMMUNITY_TOOLS.find(t => t.id === toolId);
+        if (!tool) return;
+
+        const daysInput = prompt(`How many days would you like to rent "${tool.name}"?\n(Daily Rate: ₹${tool.rate}/day · Refundable Deposit: ₹${tool.deposit})`, '2');
+        if (!daysInput) return;
+
+        const days = parseInt(daysInput, 10);
+        if (isNaN(days) || days <= 0) {
+          showWorkerToast('Please enter a valid number of days.', 'error');
+          return;
+        }
+
+        const totalRent = tool.rate * days;
+        const totalPayable = totalRent + tool.deposit;
+
+        const confirmed = confirm(`Rental Confirmation Summary:\n• Machine: ${tool.name}\n• Owner: ${tool.ownerName} (${tool.location})\n• Duration: ${days} day(s)\n• Total Rent: ₹${totalRent}\n• Security Deposit: ₹${tool.deposit}\n• Total Payable in Escrow: ₹${totalPayable}\n\nProceed with rental request & start Both-Side Verification?`);
+
+        if (!confirmed) return;
+
+        const bookings = loadRentalBookings();
+        const user = window.SevaSathiSession ? SevaSathiSession.getUser() : JSON.parse(localStorage.getItem('hustleCurrentUser') || 'null');
+
+        const randHandover = Math.floor(1000 + Math.random() * 9000).toString();
+        const randReturn = Math.floor(1000 + Math.random() * 9000).toString();
+
+        bookings.unshift({
+          id: `rental-req-${Date.now()}`,
+          toolName: tool.name,
+          borrowerName: user?.name || 'Worker Partner (You)',
+          borrowerTrade: user?.trade || 'Trade Specialist',
+          ownerName: tool.ownerName,
+          ownerTrade: tool.ownerTrade || 'Verified Peer',
+          days: days,
+          rate: tool.rate,
+          totalAmount: totalRent,
+          deposit: tool.deposit,
+          status: 'handover_pending',
+          handoverCode: randHandover,
+          returnCode: randReturn,
+          startDate: 'Today',
+          type: 'outgoing',
+          returnDate: `In ${days} Days`,
+          handoverVerifiedAt: null,
+          returnVerifiedAt: null
+        });
+
+        saveRentalBookings(bookings);
+        renderToolRentalHub();
+
+        // Switch to Rentals tab
+        document.getElementById('tab-tools-requests')?.click();
+        showWorkerToast(`Rental request for "${tool.name}" created! Proceed with Both-Side Handover Verification.`, 'success');
+      }
+
+      function initToolRentalHub() {
+        // Tab switching
+        document.querySelectorAll('.btn-tools-tab').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const targetTab = e.currentTarget.getAttribute('data-tab');
+            document.querySelectorAll('.btn-tools-tab').forEach(b => {
+              b.classList.remove('active');
+              b.style.background = '#fff';
+              b.style.color = '#475569';
+              b.style.borderColor = '#cbd5e1';
+            });
+            e.currentTarget.classList.add('active');
+            e.currentTarget.style.background = '#2563eb';
+            e.currentTarget.style.color = '#fff';
+            e.currentTarget.style.borderColor = '#2563eb';
+
+            document.querySelectorAll('.tools-tab-content').forEach(c => c.style.display = 'none');
+            const targetContent = document.getElementById(`tab-content-${targetTab}`);
+            if (targetContent) targetContent.style.display = 'block';
+          });
+        });
+
+        // Open/Close Add Tool Modal
+        const addModal = document.getElementById('add-tool-modal');
+        document.getElementById('btn-open-add-tool')?.addEventListener('click', () => {
+          if (addModal) {
+            addModal.style.display = (addModal.style.display === 'none' || !addModal.style.display) ? 'block' : 'none';
+          }
+        });
+        document.getElementById('btn-close-tool-modal')?.addEventListener('click', () => {
+          if (addModal) addModal.style.display = 'none';
+        });
+        document.getElementById('btn-cancel-add-tool')?.addEventListener('click', () => {
+          if (addModal) addModal.style.display = 'none';
+        });
+
+        // Add Tool Form Submission
+        document.getElementById('form-add-tool')?.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const name = document.getElementById('tool-input-name')?.value.trim();
+          const category = document.getElementById('tool-input-category')?.value;
+          const icon = document.getElementById('tool-input-icon')?.value || '⚙️';
+          const rate = parseInt(document.getElementById('tool-input-rate')?.value, 10);
+          const deposit = parseInt(document.getElementById('tool-input-deposit')?.value, 10);
+          const condition = document.getElementById('tool-input-condition')?.value;
+          const status = document.getElementById('tool-input-status')?.value || 'available';
+          const location = document.getElementById('tool-input-location')?.value.trim() || 'Koramangala, Bengaluru';
+
+          if (!name || isNaN(rate) || isNaN(deposit)) {
+            showWorkerToast('Please fill out all required tool details.', 'error');
+            return;
+          }
+
+          const myTools = loadMyTools();
+          const newTool = {
+            id: `tool-my-${Date.now()}`,
+            name,
+            category,
+            icon,
+            rate,
+            deposit,
+            condition,
+            status,
+            location,
+            rentedCount: 0,
+            earnings: 0,
+            isMine: true,
+            createdAt: new Date().toISOString()
+          };
+
+          myTools.unshift(newTool);
+          saveMyTools(myTools);
+          renderToolRentalHub();
+
+          // Reset form & close modal
+          e.target.reset();
+          if (addModal) addModal.style.display = 'none';
+
+          showWorkerToast(`"${name}" listed for rent successfully!`, 'success');
+
+          // Switch to My Tools tab
+          document.getElementById('tab-tools-my')?.click();
+        });
+
+        // Peer tools search & filter
+        const searchInput = document.getElementById('search-peer-tools');
+        const filterSelect = document.getElementById('filter-peer-category');
+
+        searchInput?.addEventListener('input', () => {
+          renderPeerToolsList(searchInput.value, filterSelect?.value || 'all');
+        });
+        filterSelect?.addEventListener('change', () => {
+          renderPeerToolsList(searchInput?.value || '', filterSelect.value);
+        });
+
+        // Worker IVR Demo Simulator Handlers
+        const workerPromptEl = document.getElementById('worker-ivr-prompt');
+        const workerSmsEl = document.getElementById('worker-sms-box');
+        const customerSmsEl = document.getElementById('customer-sms-box');
+        let selectedWorkerJob = null;
+        let selectedWorkerSlot = null;
+
+        document.querySelectorAll('.btn-worker-ivr-key').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const key = btn.getAttribute('data-key');
+            btn.style.transform = 'scale(0.92)';
+            setTimeout(() => { btn.style.transform = ''; }, 150);
+
+            if (key === '1') {
+              selectedWorkerJob = { title: 'Switchboard Repair in Koramangala 5th Block', customer: 'Ananya Roy (+91 98450 11223)', rate: 450, area: 'Koramangala 5th Block' };
+              if (workerPromptEl) workerPromptEl.innerHTML = `<em>[Key 1 Pressed]</em> "Selected: <strong>${selectedWorkerJob.title} (₹${selectedWorkerJob.rate})</strong>. Choose slot: Press [4] for Today 02:00 PM, or Press [5] for Tomorrow 10:00 AM."`;
+            } else if (key === '2') {
+              selectedWorkerJob = { title: 'AC Power Line Fix in HSR Layout Sector 2', customer: 'Rajeev Menon (+91 98455 67890)', rate: 600, area: 'HSR Layout Sector 2' };
+              if (workerPromptEl) workerPromptEl.innerHTML = `<em>[Key 2 Pressed]</em> "Selected: <strong>${selectedWorkerJob.title} (₹${selectedWorkerJob.rate})</strong>. Choose slot: Press [4] for Today 02:00 PM, or Press [5] for Tomorrow 10:00 AM."`;
+            } else if (key === '3') {
+              if (workerPromptEl) workerPromptEl.innerHTML = `<em>[Key 3 Pressed]</em> "Option 3: Ceiling Fan Installation in Indiranagar (₹350). Press [1] for Koramangala, Press [2] for HSR."`;
+            } else if (key === '4' || key === '5') {
+              selectedWorkerSlot = (key === '4') ? 'Today 02:00 PM' : 'Tomorrow 10:00 AM';
+              if (!selectedWorkerJob) {
+                selectedWorkerJob = { title: 'Switchboard Repair in Koramangala 5th Block', customer: 'Ananya Roy (+91 98450 11223)', rate: 450, area: 'Koramangala 5th Block' };
+              }
+              if (workerPromptEl) workerPromptEl.innerHTML = `<em>[Key ${key} Pressed]</em> "Slot selected: <strong>${selectedWorkerSlot}</strong>. Press [9] to confirm booking and dispatch dual SMS."`;
+            } else if (key === '9') {
+              if (!selectedWorkerJob) {
+                selectedWorkerJob = { title: 'Switchboard Repair in Koramangala 5th Block', customer: 'Ananya Roy (+91 98450 11223)', rate: 450, area: 'Koramangala 5th Block' };
+              }
+              if (!selectedWorkerSlot) {
+                selectedWorkerSlot = 'Today 02:00 PM';
+              }
+              const otp = Math.floor(1000 + Math.random() * 9000);
+              if (workerPromptEl) {
+                workerPromptEl.innerHTML = `✅ <strong>[Booking Confirmed!]</strong> "Thank you Manoj! Task booked for ${selectedWorkerSlot}. Dual SMS dispatched with Start OTP ${otp}."`;
+              }
+              if (workerSmsEl) {
+                workerSmsEl.innerHTML = `[SevaSathi] Task Booked! Job: ${selectedWorkerJob.title}. Customer: ${selectedWorkerJob.customer}. Slot: ${selectedWorkerSlot}. Rate: ₹${selectedWorkerJob.rate} (Escrow Locked). Start OTP: ${otp}.`;
+                workerSmsEl.style.background = '#f0fdf4';
+                workerSmsEl.style.borderColor = '#86efac';
+              }
+              if (customerSmsEl) {
+                customerSmsEl.innerHTML = `[SevaSathi] Specialist Confirmed! Manoj Pillai (4.9★, Certified Electrician, +91 98301 23456) will arrive at ${selectedWorkerJob.area} on ${selectedWorkerSlot}. Rate: ₹${selectedWorkerJob.rate}. Share Start OTP ${otp} upon arrival.`;
+                customerSmsEl.style.background = '#f0fdf4';
+                customerSmsEl.style.borderColor = '#86efac';
+              }
+            }
+          });
+        });
+
+        document.getElementById('btn-restart-worker-ivr')?.addEventListener('click', () => {
+          selectedWorkerJob = null;
+          selectedWorkerSlot = null;
+          if (workerPromptEl) {
+            workerPromptEl.innerHTML = `"🎙️ Welcome Manoj (Electrician, Koramangala). Press [1] for Switchboard Repair in 5th Block (₹450). Press [2] for AC Power Line Fix in HSR Layout (₹600)."`;
+          }
+          if (workerSmsEl) {
+            workerSmsEl.style.background = '#f8fafc';
+            workerSmsEl.style.borderColor = '#cbd5e1';
+          }
+          if (customerSmsEl) {
+            customerSmsEl.style.background = '#f8fafc';
+            customerSmsEl.style.borderColor = '#cbd5e1';
+          }
+        });
+
+        // Initial render
+        renderToolRentalHub();
+      }
+
       // Logout handler
       document.querySelector('#btn-worker-logout')?.addEventListener('click', () => {
         if (window.SevaSathiSession) {
@@ -1962,6 +3986,7 @@
       });
 
       loadWorkerDashboard();
+      initToolRentalHub();
     </script>
   </body>
 </html>

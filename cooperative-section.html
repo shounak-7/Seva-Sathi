@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SevaSathi — Worker Cooperative Federation</title>
+
+  <!-- Google Fonts: Latin, Bengali, and Devanagari typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..800;1,9..40,400..800&family=Noto+Sans+Bengali:wght@400;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Isolated Cooperative Stylesheet -->
+  <link rel="stylesheet" href="cooperative.css" />
+
+  <!-- External Library CDNs -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <link rel="icon" type="image/png" href="favicon.png" />
+</head>
+<body class="coop-body">
+
+  <!-- =========================================================================
+       Header & Cooperative Language Switcher
+       ========================================================================= -->
+  <header class="coop-header">
+    <div class="coop-shell coop-header-inner">
+      <a href="/" class="coop-brand-wrap" aria-label="SevaSathi Cooperative Home">
+        <div class="coop-logo-badge">⚡</div>
+        <div class="coop-brand-titles">
+          <span class="coop-main-title" data-i18n="coop_title">SevaSathi Cooperative Federation</span>
+          <span class="coop-badge-pill" data-i18n="coop_badge">Worker Cooperative Federation</span>
+        </div>
+      </a>
+
+      <div class="coop-header-actions">
+        <!-- Multilingual Language Selector (en, bn, hi) -->
+        <select id="coop-lang-select" class="coop-lang-select" aria-label="Select Language">
+          <option value="en">🇬🇧 English</option>
+          <option value="bn">🇮🇳 বাংলা (Bengali)</option>
+          <option value="hi">🇮🇳 हिन्दी (Hindi)</option>
+        </select>
+
+        <a href="/" class="coop-nav-btn" data-i18n="nav_back">← Back to SevaSathi</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- =========================================================================
+       Hero & Navigation Tabs
+       ========================================================================= -->
+  <section class="coop-hero">
+    <div class="coop-shell coop-hero-content">
+      <h1 data-i18n="coop_title">SevaSathi Cooperative Federation</h1>
+      <p data-i18n="coop_subtitle">Democratically owned & operated by frontline service professionals</p>
+
+      <!-- Scrollable Tabs Navigation -->
+      <div class="coop-tabs-wrapper">
+        <nav class="coop-tabs-bar" role="tablist">
+          <button class="coop-tab-btn active" data-tab="dashboard" role="tab" data-i18n="tab_dashboard">📊 Federation Dashboard</button>
+          <button class="coop-tab-btn" data-tab="onboarding" role="tab" data-i18n="tab_onboarding">🪪 Worker Verification & QR ID</button>
+          <button class="coop-tab-btn" data-tab="wages" role="tab" data-i18n="tab_wages">⚖️ Fair Wages & Invoice Breakdown</button>
+          <button class="coop-tab-btn" data-tab="welfare" role="tab" data-i18n="tab_welfare">🛡️ Welfare & Insurance</button>
+          <button class="coop-tab-btn" data-tab="grievances" role="tab" data-i18n="tab_grievances">🗳️ Grievance Redressal</button>
+          <button class="coop-tab-btn" data-tab="reallocation" role="tab" data-i18n="tab_reallocation">🔄 Resource & Machine Sharing</button>
+          <button class="coop-tab-btn" data-tab="chat" role="tab" data-i18n="tab_chat">💬 Cooperative Chat</button>
+          <button class="coop-tab-btn" data-tab="upcoming" role="tab" data-i18n="tab_upcoming">🚀 Upcoming Voice &amp; SMS Dispatch</button>
+        </nav>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       Main Content Panes
+       ========================================================================= -->
+  <main class="coop-shell coop-main-container">
+
+    <!-- -----------------------------------------------------------------------
+         TAB 1: FEDERATION ADMIN DASHBOARD
+         ----------------------------------------------------------------------- -->
+    <div id="tab-pane-dashboard" class="coop-tab-pane active">
+      <!-- Metrics Row -->
+      <div class="coop-grid-4" style="margin-bottom:24px;">
+        <div class="coop-stat-card">
+          <span class="coop-stat-label" data-i18n="stat_total_members">Active Members</span>
+          <span class="coop-stat-value">3,480</span>
+          <span class="coop-stat-sub">+42 this week across 12 cities</span>
+        </div>
+        <div class="coop-stat-card">
+          <span class="coop-stat-label" data-i18n="stat_welfare_fund">Welfare Pool</span>
+          <span class="coop-stat-value">₹24.8 Lakh</span>
+          <span class="coop-stat-sub">100% transparent reserve</span>
+        </div>
+        <div class="coop-stat-card">
+          <span class="coop-stat-label" data-i18n="stat_fair_wage_payout">Fair Wage Payouts</span>
+          <span class="coop-stat-value">₹1.12 Cr</span>
+          <span class="coop-stat-sub">85% direct to workers</span>
+        </div>
+        <div class="coop-stat-card">
+          <span class="coop-stat-label" data-i18n="stat_avg_rating">Avg Worker Rating</span>
+          <span class="coop-stat-value">★ 4.88</span>
+          <span class="coop-stat-sub">Verified customer satisfaction</span>
+        </div>
+      </div>
+
+      <!-- Split Chart & AI Forecast Grid -->
+      <div class="coop-grid-2">
+        <!-- Chart.js Revenue Split -->
+        <div class="coop-card">
+          <div class="coop-card-header">
+            <div class="coop-card-title-group">
+              <h3 data-i18n="chart_revenue_title">Transparent Revenue Distribution</h3>
+              <p data-i18n="chart_revenue_desc">Every rupee earned is accounted for. Compare our cooperative model against extractive 30% platform commissions.</p>
+            </div>
+          </div>
+          <div style="position:relative; height:240px; width:100%;">
+            <canvas id="coopRevenueChart"></canvas>
+          </div>
+        </div>
+
+        <!-- AI Demand Forecast & Work Balancing -->
+        <div class="coop-card">
+          <div class="coop-card-header">
+            <div class="coop-card-title-group">
+              <h3 data-i18n="forecast_title">AI Demand-Forecast & Work Balancing</h3>
+              <p data-i18n="forecast_desc">Machine-learning predictions analyzing upcoming 7-day trade demand across metropolitan hubs.</p>
+            </div>
+          </div>
+          <div style="background:#fef3c7;border:1px solid #fde68a;padding:12px 14px;border-radius:10px;margin-bottom:16px;font-size:13px;color:#92400e;" data-i18n="forecast_surge_alert">
+            ⚡ High demand detected in Kolkata for AC & Electricians. Recommended reallocation from nearby zones.
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px;font-size:13.5px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--coop-border);">
+              <span><strong>Kolkata:</strong> AC & Appliance Servicing</span>
+              <span class="coop-badge coop-badge-danger" data-i18n="forecast_high">+45% Surge</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--coop-border);">
+              <span><strong>Bengaluru:</strong> Plumbers & Electricians</span>
+              <span class="coop-badge coop-badge-success" data-i18n="forecast_normal">Balanced (98%)</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--coop-border);">
+              <span><strong>Delhi NCR:</strong> Carpenters & Painters</span>
+              <span class="coop-badge coop-badge-info" data-i18n="forecast_normal">Steady Demand</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Verification Queue (Pending Review) -->
+      <div class="coop-card">
+        <div class="coop-card-header">
+          <div class="coop-card-title-group">
+            <h3 data-i18n="queue_title">Verification Queue (Pending Applications)</h3>
+            <p data-i18n="queue_desc">Review identity, trade licenses, and safety certifications submitted by prospective worker-owners.</p>
+          </div>
+        </div>
+        <div class="coop-table-responsive">
+          <table class="coop-table">
+            <thead>
+              <tr>
+                <th>App ID</th>
+                <th data-i18n="th_name">Worker Name</th>
+                <th data-i18n="th_trade">Primary Trade</th>
+                <th data-i18n="th_city">City</th>
+                <th>KYC / Proof</th>
+                <th data-i18n="th_actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="coop-queue-tbody">
+              <!-- Dynamically rendered -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Active Worker Roster -->
+      <div class="coop-card">
+        <div class="coop-card-header">
+          <div class="coop-card-title-group">
+            <h3 data-i18n="roster_title">Worker Cooperative Roster</h3>
+            <p data-i18n="roster_desc">Verified worker members across all trades and federation branches.</p>
+          </div>
+          <div>
+            <input type="text" id="coop-roster-search" class="coop-input" style="width:260px;min-height:38px;font-size:13px;" placeholder="Search by name, skill, or city..." data-i18n-placeholder="roster_search_placeholder" />
+          </div>
+        </div>
+        <div class="coop-table-responsive">
+          <table class="coop-table">
+            <thead>
+              <tr>
+                <th data-i18n="th_member_id">Member ID</th>
+                <th data-i18n="th_name">Worker Name</th>
+                <th data-i18n="th_trade">Primary Trade</th>
+                <th data-i18n="th_city">City</th>
+                <th data-i18n="th_rating">Rating</th>
+                <th data-i18n="th_equity">Coop Shares</th>
+                <th data-i18n="th_status">Status</th>
+                <th data-i18n="th_actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="coop-roster-tbody">
+              <!-- Dynamically populated from cooperative.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Welfare Fund Ledger -->
+      <div class="coop-card">
+        <div class="coop-card-header">
+          <div class="coop-card-title-group">
+            <h3 data-i18n="ledger_title">Welfare Fund Ledger & Recent Claims</h3>
+            <p data-i18n="ledger_desc">Community-governed financial reserves supporting health emergencies, pension contributions, and zero-interest loans.</p>
+          </div>
+          <button class="coop-btn coop-btn-primary coop-btn-sm coop-enroll-btn" data-scheme="Emergency Welfare Fund" data-i18n="btn_submit_claim">+ Submit Benefit Claim</button>
+        </div>
+        <div class="coop-table-responsive">
+          <table class="coop-table">
+            <thead>
+              <tr>
+                <th data-i18n="th_date">Date</th>
+                <th data-i18n="th_type">Disbursement Type</th>
+                <th data-i18n="th_beneficiary">Beneficiary</th>
+                <th data-i18n="th_amount">Amount</th>
+                <th data-i18n="th_tx_status">Status</th>
+              </tr>
+            </thead>
+            <tbody id="coop-ledger-tbody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Upcoming Voice IVR Spotlight Card -->
+      <div class="coop-card" style="background:linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border:1.5px solid #86efac; margin-top:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+          <div style="max-width:750px;">
+            <div style="display:inline-flex; align-items:center; gap:6px; background:#dcfce7; color:#166534; font-size:11px; font-weight:800; padding:3px 10px; border-radius:999px; text-transform:uppercase; margin-bottom:8px;">
+              <span>🚀 Upcoming Phase 2 Feature</span>
+            </div>
+            <h3 style="margin:0 0 6px 0; font-size:16px; font-weight:800; color:#064e3b;" data-i18n="dash_ivr_banner_title">
+              📞 Voice IVR &amp; Dual SMS Autonomous Dispatch Model
+            </h3>
+            <p style="margin:0; font-size:13px; color:#166534; line-height:1.45;" data-i18n="dash_ivr_banner_desc">
+              Workers can simply call the SevaSathi toll-free helpline from basic keypad phones, listen to nearby available work, select gigs and schedule dates directly via dial-pad, and instant dual-party confirmation messages are sent to both worker and customer.
+            </p>
+          </div>
+          <button type="button" onclick="document.querySelector('.coop-tab-btn[data-tab=\'upcoming\']')?.click()" class="coop-btn coop-btn-primary" style="white-space:nowrap; background:#059669;" data-i18n="btn_explore_upcoming">
+            Explore Upcoming Model ➔
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- -----------------------------------------------------------------------
+         TAB 2: WORKER ONBOARDING & SMART QR ID CARD
+         ----------------------------------------------------------------------- -->
+    <div id="tab-pane-onboarding" class="coop-tab-pane">
+      <div class="coop-grid-2">
+        <!-- Onboarding Form -->
+        <div class="coop-card">
+          <div class="coop-card-header">
+            <div class="coop-card-title-group">
+              <h3 data-i18n="onboard_title">Worker Onboarding & Skill Profiling</h3>
+              <p data-i18n="onboard_desc">Join our worker-owned society. Get fair wages, democratic voting rights, insurance coverage, and a tamper-proof Smart QR ID.</p>
+            </div>
+          </div>
+          <form id="coop-onboarding-form">
+            <div class="coop-form-group">
+              <label class="coop-form-label" data-i18n="label_full_name">Full Name</label>
+              <input type="text" id="onboard-name" class="coop-input" required placeholder="e.g. Subhashish Roy" />
+            </div>
+            <div class="coop-form-group">
+              <label class="coop-form-label" data-i18n="label_phone">Phone Number</label>
+              <input type="tel" id="onboard-phone" class="coop-input" required placeholder="+91 98300 00000" />
+            </div>
+            <div class="coop-grid-2">
+              <div class="coop-form-group">
+                <label class="coop-form-label" data-i18n="label_city">Operating City</label>
+                <select id="onboard-city" class="coop-select">
+                  <option value="Kolkata">Kolkata</option>
+                  <option value="Bengaluru">Bengaluru</option>
+                  <option value="Delhi NCR">Delhi NCR</option>
+                  <option value="Mumbai">Mumbai</option>
+                  <option value="Hyderabad">Hyderabad</option>
+                  <option value="Chennai">Chennai</option>
+                  <option value="Pune">Pune</option>
+                </select>
+              </div>
+              <div class="coop-form-group">
+                <label class="coop-form-label" data-i18n="label_primary_trade">Primary Trade / Specialization</label>
+                <select id="onboard-trade" class="coop-select">
+                  <option value="Electrician">Electrician</option>
+                  <option value="Plumber">Plumber</option>
+                  <option value="AC & HVAC Specialist">AC & HVAC Specialist</option>
+                  <option value="Carpenter">Carpenter</option>
+                  <option value="Home Cleaning Specialist">Home Cleaning Specialist</option>
+                  <option value="Painter">Painter</option>
+                  <option value="Appliance Technician">Appliance Technician</option>
+                </select>
+              </div>
+            </div>
+            <div class="coop-grid-2">
+              <div class="coop-form-group">
+                <label class="coop-form-label" data-i18n="label_experience">Years of Experience</label>
+                <input type="number" id="onboard-exp" class="coop-input" min="1" max="45" value="5" />
+              </div>
+              <div class="coop-form-group">
+                <label class="coop-form-label" data-i18n="label_gov_id">Govt ID (Aadhaar / Voter ID Number)</label>
+                <input type="text" id="onboard-govid" class="coop-input" placeholder="XXXX-XXXX-XXXX" />
+              </div>
+            </div>
+            <div class="coop-form-group">
+              <label class="coop-form-label" data-i18n="label_bank_upi">Bank Account / UPI ID (for instant direct payouts)</label>
+              <input type="text" id="onboard-bank" class="coop-input" placeholder="worker@upi or A/C Number" />
+            </div>
+            <button type="submit" class="coop-btn coop-btn-primary" style="width:100%;" data-i18n="btn_generate_qr">Register Member & Generate QR Card</button>
+          </form>
+        </div>
+
+        <!-- Generated QR ID Card Preview -->
+        <div class="coop-card" id="coop-qr-card-result">
+          <div class="coop-card-header">
+            <div class="coop-card-title-group">
+              <h3 data-i18n="qr_card_title">Worker Cooperative Smart QR ID</h3>
+              <p data-i18n="qr_card_sub">Official Member of SevaSathi Labor Cooperative Society</p>
+            </div>
+            <button class="coop-btn coop-btn-secondary coop-btn-sm" id="btn-print-qr-card" data-i18n="btn_print_id">🖨️ Print ID Card</button>
+          </div>
+
+          <div class="coop-qr-preview-wrapper">
+            <div class="coop-qr-id-card">
+              <div class="coop-qr-card-header">
+                <h4>SEVASATHI COOPERATIVE</h4>
+                <p>CERTIFIED SKILLED TRADE MEMBER</p>
+              </div>
+              <div class="coop-qr-card-body">
+                <div class="coop-worker-avatar-large" id="card-worker-avatar">SR</div>
+                <h3 style="margin:0 0 4px;font-size:18px;color:#0f172a;" id="card-worker-name">Subhashish Roy</h3>
+                <span class="coop-badge coop-badge-success" id="card-worker-trade">Electrician · Kolkata</span>
+
+                <!-- QR Container -->
+                <div class="coop-qr-code-box" id="coop-qrcode-container"></div>
+
+                <div class="coop-qr-card-meta">
+                  <div><span>Member ID:</span><strong id="card-member-id">SSC-KOL-1024</strong></div>
+                  <div><span>Experience:</span><span id="card-worker-exp">5 Years</span></div>
+                  <div><span>Direct Phone:</span><span id="card-worker-phone">+91 98301 23456</span></div>
+                  <div><span>Coop Equity:</span><span style="color:#059669;font-weight:700;">100 Founder Shares</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p style="text-align:center;font-size:12px;color:#64748b;margin-top:8px;" data-i18n="qr_scan_instruction">Scan QR to verify authentic cooperative registration & safety credentials</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- -----------------------------------------------------------------------
+         TAB 3: FAIR WAGES & TRANSPARENT INVOICE BREAKDOWN
+         ----------------------------------------------------------------------- -->
+    <div id="tab-pane-wages" class="coop-tab-pane">
+      <div class="coop-card">
+        <div class="coop-card-header">
+          <div class="coop-card-title-group">
+            <h3 data-i18n="wages_title">Fair-Wage Floor & Transparent Invoice Calculator</h3>
+            <p data-i18n="wages_desc">We establish dignity-backed living wages calculated with local labor syndicates. Zero hidden deductions.</p>
+          </div>
+        </div>
+
+        <!-- Wage Floor Grid -->
+        <h4 style="margin:0 0 14px;color:#0f172a;" data-i18n="wage_floor_card_title">Guaranteed Living Wage Floors (By Trade)</h4>
+        <div class="coop-grid-3" style="margin-bottom:28px;">
+          <div style="background:#f0fdf4;border:1.5px solid #a7f3d0;padding:16px;border-radius:12px;">
+            <div style="font-weight:800;font-size:15px;color:#065f46;">⚡ Electricians & HVAC</div>
+            <div style="font-size:20px;font-weight:800;color:#0f172a;margin:6px 0;">₹450 <span style="font-size:13px;color:#64748b;">/ hour min</span></div>
+            <small style="color:#047857;">Guaranteed ₹1,200 emergency visit minimum</small>
+          </div>
+          <div style="background:#f0fdf4;border:1.5px solid #a7f3d0;padding:16px;border-radius:12px;">
+            <div style="font-weight:800;font-size:15px;color:#065f46;">🔧 Plumbers & Pipe Fitters</div>
+            <div style="font-size:20px;font-weight:800;color:#0f172a;margin:6px 0;">₹400 <span style="font-size:13px;color:#64748b;">/ hour min</span></div>
+            <small style="color:#047857;">Guaranteed ₹1,000 baseline booking floor</small>
+          </div>
+          <div style="background:#f0fdf4;border:1.5px solid #a7f3d0;padding:16px;border-radius:12px;">
+            <div style="font-weight:800;font-size:15px;color:#065f46;">🧹 Deep Cleaning Specialists</div>
+            <div style="font-size:20px;font-weight:800;color:#0f172a;margin:6px 0;">₹350 <span style="font-size:13px;color:#64748b;">/ hour min</span></div>
+            <small style="color:#047857;">Hazard pay & eco-friendly materials allowance included</small>
+          </div>
+        </div>
+
+        <!-- Interactive Calculator -->
+        <div class="coop-invoice-calc-box">
+          <div class="coop-card-title-group" style="margin-bottom:16px;">
+            <h4 style="margin:0 0 4px;font-size:17px;" data-i18n="calc_title">Interactive Job Invoice Breakdown</h4>
+            <p style="margin:0;font-size:13px;color:#64748b;" data-i18n="calc_desc">Enter any customer job amount to see the exact fair allocation breakdown in real time.</p>
+          </div>
+
+          <div class="coop-calc-slider-wrap">
+            <label class="coop-form-label" data-i18n="label_job_amount">Total Job Value (₹)</label>
+            <input type="number" id="coop-invoice-number" class="coop-input" style="max-width:240px;font-size:18px;font-weight:800;" min="100" max="50000" step="50" value="2500" />
+            <input type="range" id="coop-invoice-slider" class="coop-range-slider" min="500" max="25000" step="100" value="2500" />
+          </div>
+
+          <div class="coop-breakdown-row highlight">
+            <span data-i18n="breakdown_worker_receives">Worker Direct Earnings (85%)</span>
+            <span id="calc-worker-share">₹2,125</span>
+          </div>
+          <div class="coop-breakdown-row">
+            <span data-i18n="breakdown_welfare_pool">Welfare & Emergency Fund (10%)</span>
+            <span id="calc-welfare-share" style="font-weight:700;color:#d97706;">₹250</span>
+          </div>
+          <div class="coop-breakdown-row">
+            <span data-i18n="breakdown_ops_cost">Federation Tech & Insurance Ops (5%)</span>
+            <span id="calc-ops-share" style="font-weight:700;color:#0284c7;">₹125</span>
+          </div>
+          <div class="coop-breakdown-row" style="background:#fee2e2;border-radius:8px;padding:10px 14px;color:#991b1b;margin-top:8px;">
+            <span>Predatory Corporate Platform Commission Cut (30% on other apps):</span>
+            <span id="calc-predatory-cut" style="font-weight:800;">₹750 deducted from worker</span>
+          </div>
+
+          <p style="font-size:12.5px;color:#64748b;margin:16px 0 0;" data-i18n="breakdown_comparison_note">
+            Traditional gig platforms deduct 25% - 35% as corporate profit margins. In our cooperative, 95% of value stays within worker welfare and direct pay.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- -----------------------------------------------------------------------
+         TAB 4: WELFARE & INSURANCE ENROLLMENT PANEL
+         ----------------------------------------------------------------------- -->
+    <div id="tab-pane-welfare" class="coop-tab-pane">
+      <div class="coop-card">
+        <div class="coop-card-header">
+          <div class="coop-card-title-group">
+            <h3 data-i18n="welfare_title">Welfare Schemes & Social Security</h3>
+            <p data-i18n="welfare_desc">Comprehensive social safety net funded by collective surplus for all registered worker-owners.</p>
+          </div>
+        </div>
+
+        <div class="coop-grid-2">
+          <!-- Scheme 1 -->
+          <div style="background:#ffffff;border:1.5px solid var(--coop-border);border-radius:14px;padding:20px;box-shadow:var(--coop-shadow-sm);">
+            <span class="coop-badge coop-badge-success" style="margin-bottom:8px;">Active Shield</span>
+            <h4 style="margin:0 0 6px;font-size:16px;" data-i18n="scheme_accident_title">24/7 Medical & Accident Cover</h4>
+            <p style="font-size:13.5px;color:#64748b;margin:0 0 14px;" data-i18n="scheme_accident_desc">Up to ₹3,00,000 cashless hospitalization for on-duty injuries and emergency care.</p>
+            <button class="coop-btn coop-btn-primary coop-btn-sm coop-enroll-btn" data-scheme="Medical & Accident Cover" data-i18n="btn_enroll_scheme">Enroll / Claim Scheme</button>
+          </div>
+
+          <!-- Scheme 2 -->
+          <div style="background:#ffffff;border:1.5px solid var(--coop-border);border-radius:14px;padding:20px;box-shadow:var(--coop-shadow-sm);">
+            <span class="coop-badge coop-badge-info" style="margin-bottom:8px;">Micro-Finance</span>
+            <h4 style="margin:0 0 6px;font-size:16px;" data-i18n="scheme_equipment_title">0% Interest Equipment Loan</h4>
+            <p style="font-size:13.5px;color:#64748b;margin:0 0 14px;" data-i18n="scheme_equipment_desc">Micro-finance up to ₹25,000 for high-grade professional tooling and power equipment.</p>
+            <button class="coop-btn coop-btn-primary coop-btn-sm coop-enroll-btn" data-scheme="0% Interest Tool Loan" data-i18n="btn_enroll_scheme">Enroll / Claim Scheme</button>
+          </div>
+
+          <!-- Scheme 3 -->
+          <div style="background:#ffffff;border:1.5px solid var(--coop-border);border-radius:14px;padding:20px;box-shadow:var(--coop-shadow-sm);">
+            <span class="coop-badge coop-badge-warning" style="margin-bottom:8px;">Retirement</span>
+            <h4 style="margin:0 0 6px;font-size:16px;" data-i18n="scheme_pension_title">Cooperative Pension Pool</h4>
+            <p style="font-size:13.5px;color:#64748b;margin:0 0 14px;" data-i18n="scheme_pension_desc">Monthly matching contribution towards long-term retirement security.</p>
+            <button class="coop-btn coop-btn-primary coop-btn-sm coop-enroll-btn" data-scheme="Cooperative Pension Pool" data-i18n="btn_enroll_scheme">Enroll / Claim Scheme</button>
+          </div>
+
+          <!-- Scheme 4 -->
+          <div style="background:#ffffff;border:1.5px solid var(--coop-border);border-radius:14px;padding:20px;box-shadow:var(--coop-shadow-sm);">
+            <span class="coop-badge coop-badge-success" style="margin-bottom:8px;">Education Grant</span>
+            <h4 style="margin:0 0 6px;font-size:16px;" data-i18n="scheme_education_title">Child Education & Upskilling Grant</h4>
+            <p style="font-size:13.5px;color:#64748b;margin:0 0 14px;" data-i18n="scheme_education_desc">Annual scholastic grants for worker children & free advanced trade certifications.</p>
+            <button class="coop-btn coop-btn-primary coop-btn-sm coop-enroll-btn" data-scheme="Child Education & Upskilling Grant" data-i18n="btn_enroll_scheme">Enroll / Claim Scheme</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- -----------------------------------------------------------------------
+         TAB 5: GRIEVANCE REDRESSAL FORM & TICKETS
+         ----------------------------------------------------------------------- -->
+    <div id="tab-pane-grievances" class="coop-tab-pane">
+      <div class="coop-grid-2">
+        <!-- Grievance Form -->
+        <div class="coop-card">
+          <div class="coop-card-header">
+            <div class="coop-card-title-group">
+              <h3 data-i18n="grievance_title">Grievance Redressal & Worker Protection</h3>
+              <p data-i18n="grievance_desc">Democratically mediated dispute resolution. Every grievance is tracked by the elected worker council.</p>
+            </div>
+          </div>
+          <form id="coop-grievance-form">
+            <div class="coop-form-group">
+              <label class="coop-form-label" data-i18n="label_grievance_type">Grievance Category</label>
+              <select id="grievance-type" class="coop-select">
+                <option value="Wage Dispute & Underpayment">Wage Dispute & Underpayment</option>
+                <option value="Customer Misconduct / Harassment">Customer Misconduct / Harassment</option>
+                <option value="Safety & Hazardous Worksite">Safety & Hazardous Worksite</option>
+                <option value="Insurance Claim Delay">Insurance Claim Delay</option>
+                <option value="Platform Bug / Payout Discrepancy">Platform Bug / Payout Discrepancy</option>
+              </select>
+            </div>
+            <div class="coop-form-group">
+              <label class="coop-form-label" data-i18n="label_grievance_desc">Describe the Issue / Incident</label>
+              <textarea id="grievance-desc" class="coop-textarea" required placeholder="Provide clear details regarding the incident..."></textarea>
+            </div>
+            <div class="coop-form-group">
+              <label class="coop-form-label" data-i18n="label_evidence">Reference Booking ID / Customer Phone (Optional)</label>
+              <input type="text" id="grievance-evidence" class="coop-input" placeholder="e.g. BK-9821 or Customer phone" />
+            </div>
+            <button type="submit" class="coop-btn coop-btn-primary" style="width:100%;" data-i18n="btn_submit_grievance">Submit Grievance Ticket</button>
+          </form>
+        </div>
+
+        <!-- Active Grievances List -->
+        <div class="coop-card">
+          <div class="coop-card-header">
+            <div class="coop-card-title-group">
+              <h3 data-i18n="grievance_tickets_title">Active Grievance Tickets</h3>
+            </div>
+          </div>
+          <div id="coop-grievance-list">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- -----------------------------------------------------------------------
+         TAB 6: COOPERATIVE RESOURCE & MACHINE SHARING POOL
+         ----------------------------------------------------------------------- -->
+    <div id="tab-pane-reallocation" class="coop-tab-pane">
+      <div class="coop-card">
+        <div class="coop-card-header">
+          <div class="coop-card-title-group">
+            <h3 data-i18n="machines_title">Cooperative Machine & Heavy Tool Sharing Pool</h3>
+            <p data-i18n="machines_desc">Borrow or lend specialized machinery (high-pressure jet washers, rotary hammer drills, AC vacuum pumps, tile cutters) at ₹0 or low member rates.</p>
+          </div>
+        </div>
+
+        <!-- Machine Sharing Pool Grid -->
+        <div class="coop-grid-3" id="coop-machines-container" style="margin-bottom:28px;">
+          <!-- Dynamically populated from cooperative.js -->
+        </div>
+
+        <!-- Form: Share Your Machine / Equipment -->
+        <div style="background:#f8fafc;border:1.5px solid var(--coop-border);border-radius:14px;padding:24px;margin-bottom:28px;">
+          <h4 style="margin:0 0 4px;font-size:16px;color:#0f172a;" data-i18n="btn_list_machine">+ Share Your Machine / Tool</h4>
+          <p style="font-size:13px;color:#64748b;margin:0 0 16px;">Put your idle tools to work for fellow members and earn maintenance support credits.</p>
+
+          <form id="coop-add-machine-form">
+            <div class="coop-grid-2">
+              <div class="coop-form-group">
+                <label class="coop-form-label" data-i18n="label_machine_name">Machine / Equipment Name</label>
+                <input type="text" id="machine-input-name" class="coop-input" required placeholder="e.g. Makita 1100W Demolition Breaker" />
+              </div>
+              <div class="coop-form-group">
+                <label class="coop-form-label" data-i18n="label_machine_cat">Tool Category</label>
+                <select id="machine-input-category" class="coop-select">
+                  <option value="Heavy Drilling & Masonry">Heavy Drilling & Masonry</option>
+                  <option value="AC & Refrigeration">AC & Refrigeration</option>
+                  <option value="Deep Cleaning & HVAC Wash">Deep Cleaning & HVAC Wash</option>
+                  <option value="Tile & Flooring">Tile & Flooring</option>
+                  <option value="Welding & Fabrication">Welding & Fabrication</option>
+                  <option value="Painting & Waterproofing">Painting & Waterproofing</option>
+                  <option value="Carpentry Power Tools">Carpentry Power Tools</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="coop-grid-3">
+              <div class="coop-form-group">
+                <label class="coop-form-label" data-i18n="label_city">Operating City</label>
+                <select id="machine-input-city" class="coop-select">
+                  <option value="Kolkata">Kolkata</option>
+                  <option value="Bengaluru">Bengaluru</option>
+                  <option value="Delhi NCR">Delhi NCR</option>
+                  <option value="Mumbai">Mumbai</option>
+                  <option value="Hyderabad">Hyderabad</option>
+                  <option value="Chennai">Chennai</option>
+                  <option value="Pune">Pune</option>
+                </select>
+              </div>
+              <div class="coop-form-group">
+                <label class="coop-form-label" data-i18n="label_machine_rate">Daily Member Rate (₹ / day, 0 = Free)</label>
+                <input type="number" id="machine-input-rate" class="coop-input" min="0" max="1000" step="10" value="0" />
+              </div>
+              <div class="coop-form-group">
+                <label class="coop-form-label">Condition & Notes</label>
+                <input type="text" id="machine-input-condition" class="coop-input" placeholder="e.g. Serviced, with extra blades" />
+              </div>
+            </div>
+
+            <button type="submit" class="coop-btn coop-btn-primary" data-i18n="btn_save_machine">List Machine in Sharing Pool</button>
+          </form>
+        </div>
+
+        <!-- Inter-City Worker Reallocations -->
+        <h4 style="margin:0 0 12px;font-size:16px;color:#0f172a;" data-i18n="realloc_opp_title">Active Regional Worker Reallocations</h4>
+        <div id="coop-reallocation-container">
+          <!-- Populated dynamically from cooperative.js -->
+        </div>
+      </div>
+    </div>
+
+    <!-- -----------------------------------------------------------------------
+         TAB 7: LOCATION & PROFESSION-BASED WORKER CHAT
+         ----------------------------------------------------------------------- -->
+    <div id="tab-pane-chat" class="coop-tab-pane">
+      <div class="coop-card" style="padding:0;overflow:hidden;">
+
+        <!-- Dropdowns Bar: Separate Arrow Dropdowns for City & Work -->
+        <div class="coop-chat-dropdowns-bar">
+          <div class="coop-chat-dropdown-group">
+            <label for="coop-chat-city-select" data-i18n="chat_select_city_label">📍 Select City:</label>
+            <select id="coop-chat-city-select" class="coop-chat-arrow-select" aria-label="Select City">
+              <option value="Kolkata" data-i18n="chat_opt_kolkata">Kolkata</option>
+              <option value="Bengaluru" data-i18n="chat_opt_bengaluru">Bengaluru</option>
+              <option value="Delhi NCR" data-i18n="chat_opt_delhi">Delhi NCR</option>
+              <option value="Mumbai" data-i18n="chat_opt_mumbai">Mumbai</option>
+              <option value="Hyderabad" data-i18n="chat_opt_hyderabad">Hyderabad</option>
+              <option value="Chennai" data-i18n="chat_opt_chennai">Chennai</option>
+              <option value="Pune" data-i18n="chat_opt_pune">Pune</option>
+              <option value="Ahmedabad" data-i18n="chat_opt_ahmedabad">Ahmedabad</option>
+              <option value="Jaipur" data-i18n="chat_opt_jaipur">Jaipur</option>
+              <option value="Lucknow" data-i18n="chat_opt_lucknow">Lucknow</option>
+            </select>
+          </div>
+
+          <div class="coop-chat-dropdown-group">
+            <label for="coop-chat-work-select" data-i18n="chat_select_work_label">⚡ Select Profession / Trade:</label>
+            <select id="coop-chat-work-select" class="coop-chat-arrow-select" aria-label="Select Profession">
+              <option value="Electrician" data-i18n="chat_opt_electrician">Electrician</option>
+              <option value="Plumber" data-i18n="chat_opt_plumber">Plumber</option>
+              <option value="AC & HVAC Specialist" data-i18n="chat_opt_hvac">AC & HVAC Specialist</option>
+              <option value="Carpenter" data-i18n="chat_opt_carpenter">Carpenter</option>
+              <option value="Painter" data-i18n="chat_opt_painter">Painter</option>
+              <option value="Home Cleaning Specialist" data-i18n="chat_opt_cleaning">Home Cleaning Specialist</option>
+              <option value="Appliance Technician" data-i18n="chat_opt_appliance">Appliance Technician</option>
+              <option value="Masonry & Construction" data-i18n="chat_opt_masonry">Masonry & Construction</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="coop-chat-container">
+          <!-- Chat Sidebar -->
+          <div class="coop-chat-sidebar">
+            <div class="coop-chat-sidebar-header" data-i18n="chat_channel_select">
+              Select Channel / Conversation
+            </div>
+            <div class="coop-chat-channels-list">
+              <div class="coop-channel-group-title" data-i18n="channel_city_trade">Featured Channels</div>
+              <div class="coop-channel-item active" data-channel="channel-Kolkata-Electrician">
+                <span class="channel-name">📍 Kolkata — Electricians</span>
+                <span class="coop-badge coop-badge-success" style="font-size:10px;" data-i18n="chat_badge_live">Live</span>
+              </div>
+              <div class="coop-channel-item" data-channel="channel-Bengaluru-Plumber">
+                <span class="channel-name">📍 Bengaluru — Plumbers</span>
+              </div>
+              <div class="coop-channel-item" data-channel="channel-Delhi NCR-Carpenter">
+                <span class="channel-name">📍 Delhi NCR — Carpenters</span>
+              </div>
+
+              <div class="coop-channel-group-title" style="margin-top:12px;" data-i18n="channel_group_jobs">Active Group-Job Squads</div>
+              <div class="coop-channel-item" data-channel="channel-squad-101">
+                <span class="channel-name">👥 Squad #101: Grand Heritage</span>
+                <span class="coop-badge coop-badge-info" style="font-size:10px;" data-i18n="chat_badge_pros">6 Pros</span>
+              </div>
+
+              <div class="coop-channel-group-title" style="margin-top:12px;" data-i18n="channel_dm">Direct Messages (Worker-to-Worker)</div>
+              <div class="coop-channel-item" data-channel="channel-dm-ramesh">
+                <span class="channel-name">💬 Ramesh Kumar (Plumber)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Main Chat Panel -->
+          <div class="coop-chat-main">
+            <div class="coop-chat-main-header">
+              <div>
+                <strong id="coop-chat-current-title">📍 Kolkata — Electricians</strong>
+                <div style="font-size:11.5px;color:#64748b;" data-i18n="chat_squad_archived_notice">ℹ️ Note: Group job squads are automatically archived upon verified project completion.</div>
+              </div>
+              <button class="coop-btn coop-btn-danger coop-btn-sm" id="coop-btn-report-chat" data-i18n="btn_report_worker">🛡️ Report / Block</button>
+            </div>
+
+            <!-- Messages Stream -->
+            <div class="coop-chat-messages-area" id="coop-chat-messages">
+              <!-- Dynamically rendered -->
+            </div>
+
+            <!-- Input Bar with Icon-Only Voice Typing Button -->
+            <div class="coop-chat-input-wrapper">
+              <div class="coop-chat-input-bar">
+                <button type="button" class="coop-btn-mic" id="coop-chat-voice-btn" data-i18n-title="tooltip_voice_speak" title="Click to speak (English, हिन्दी, বাংলা)" aria-label="Voice Typing">
+                  <svg class="mic-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                    <line x1="12" y1="19" x2="12" y2="23"></line>
+                    <line x1="8" y1="23" x2="16" y2="23"></line>
+                  </svg>
+                </button>
+                <input type="text" id="coop-chat-input" class="coop-input" placeholder="Type a message to the cooperative channel..." data-i18n-placeholder="chat_input_placeholder" />
+                <button class="coop-btn coop-btn-primary" id="coop-chat-send-btn" data-i18n="btn_send">Send</button>
+              </div>
+              <div class="coop-chat-footer-hint">
+                <span class="coop-voice-hint" data-i18n="chat_voice_hint">🎙️ Press mic to speak your message without typing</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- -----------------------------------------------------------------------
+         TAB 8: UPCOMING INNOVATIONS & CALL/MESSAGE DISPATCH MODEL
+         ----------------------------------------------------------------------- -->
+    <div id="tab-pane-upcoming" class="coop-tab-pane">
+      <!-- Section Header -->
+      <div class="coop-card" style="margin-bottom:20px; background:linear-gradient(135deg, #064e3b 0%, #065f46 100%); color:#ffffff; border:none; box-shadow:0 8px 24px rgba(6, 78, 59, 0.2);">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px;">
+          <div>
+            <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,0.15); padding:4px 12px; border-radius:999px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px;">
+              <span data-i18n="upcoming_badge">🚀 Roadmap &amp; Future Innovations</span>
+              <span>·</span>
+              <span style="color:#a7f3d0;" data-i18n="upcoming_phase">Phase 2 Initiative</span>
+            </div>
+            <h2 style="margin:0 0 8px 0; font-size:24px; font-weight:800; color:#ffffff;" data-i18n="upcoming_title">
+              📞 Voice IVR &amp; Dual SMS Dispatch Model
+            </h2>
+            <p style="margin:0; font-size:14.5px; line-height:1.5; color:#d1fae5; max-width:820px;" data-i18n="upcoming_desc">
+              Enabling zero-internet, feature-phone accessibility for all frontline workers. Workers simply call the SevaSathi toll-free helpline, hear live available jobs near them, book directly using their phone dial-pad, select date and time over the call, and instant SMS confirmations are automatically dispatched to both worker and customer.
+            </p>
+          </div>
+          <div style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); border-radius:14px; padding:12px 18px; text-align:right;">
+            <span style="font-size:11.5px; color:#a7f3d0; display:block; font-weight:600;" data-i18n="upcoming_helpline_label">Helpline / Dial Access</span>
+            <strong style="font-size:18px; color:#ffffff; font-family:monospace; letter-spacing:1px;">1800-SEVASATHI</strong>
+            <small style="font-size:11px; color:#d1fae5; display:block;" data-i18n="upcoming_helpline_sub">(Toll-Free 24x7 Multi-Lingual)</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4-Step Structural Architecture Card -->
+      <div class="coop-card" style="margin-bottom:24px;">
+        <div class="coop-card-header" style="margin-bottom:18px;">
+          <div class="coop-card-title-group">
+            <h3 style="font-size:18px; font-weight:800; color:#0f172a; display:flex; align-items:center; gap:8px;" data-i18n="upcoming_steps_title">
+              <span>🔄</span> Complete Call &amp; Message Workflow Architecture
+            </h3>
+            <p style="font-size:13px; color:#64748b; margin:4px 0 0 0;" data-i18n="upcoming_steps_desc">
+              How the automated voice and message dispatch engine connects workers and customers without requiring smartphones, apps, or mobile internet:
+            </p>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:16px;">
+          <!-- Step 1 -->
+          <div style="background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:14px; padding:18px; position:relative;">
+            <div style="width:36px; height:36px; border-radius:10px; background:#eff6ff; color:#2563eb; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:16px; margin-bottom:12px; border:1px solid #bfdbfe;">
+              1
+            </div>
+            <strong style="font-size:15px; color:#0f172a; display:block; margin-bottom:6px;" data-i18n="step1_title">
+              📞 Inbound Worker Call
+            </strong>
+            <p style="margin:0; font-size:13px; color:#475569; line-height:1.45;" data-i18n="step1_desc">
+              A registered worker simply dials the SevaSathi toll-free helpline. The AI IVR identifies their trade, location, and preferred language (English, हिन्दी, বাংলা).
+            </p>
+          </div>
+
+          <!-- Step 2 -->
+          <div style="background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:14px; padding:18px; position:relative;">
+            <div style="width:36px; height:36px; border-radius:10px; background:#f0fdf4; color:#166534; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:16px; margin-bottom:12px; border:1px solid #bbf7d0;">
+              2
+            </div>
+            <strong style="font-size:15px; color:#0f172a; display:block; margin-bottom:6px;" data-i18n="step2_title">
+              🔢 Dial-Pad Job Selection
+            </strong>
+            <p style="margin:0; font-size:13px; color:#475569; line-height:1.45;" data-i18n="step2_desc">
+              The system reads out nearby open jobs with rates and localities. The worker selects their desired job by pressing the matching number on their dial-pad (e.g. Press 1, 2, or 3).
+            </p>
+          </div>
+
+          <!-- Step 3 -->
+          <div style="background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:14px; padding:18px; position:relative;">
+            <div style="width:36px; height:36px; border-radius:10px; background:#fef3c7; color:#d97706; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:16px; margin-bottom:12px; border:1px solid #fde68a;">
+              3
+            </div>
+            <strong style="font-size:15px; color:#0f172a; display:block; margin-bottom:6px;" data-i18n="step3_title">
+              ⏱️ Direct Schedule Confirmation
+            </strong>
+            <p style="margin:0; font-size:13px; color:#475569; line-height:1.45;" data-i18n="step3_desc">
+              The worker selects their available service date and time slot right on the call via key-press or voice input. The job is instantly locked and assigned.
+            </p>
+          </div>
+
+          <!-- Step 4 -->
+          <div style="background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:14px; padding:18px; position:relative;">
+            <div style="width:36px; height:36px; border-radius:10px; background:#faf5ff; color:#9333ea; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:16px; margin-bottom:12px; border:1px solid #e9d5ff;">
+              4
+            </div>
+            <strong style="font-size:15px; color:#0f172a; display:block; margin-bottom:6px;" data-i18n="step4_title">
+              📩 Dual SMS Confirmation
+            </strong>
+            <p style="margin:0; font-size:13px; color:#475569; line-height:1.45;" data-i18n="step4_desc">
+              Instant booking confirmation messages are simultaneously dispatched via SMS/WhatsApp to <strong>both the Worker and the Customer</strong> with contact details, address, and verification OTP.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interactive IVR Call & SMS Simulation -->
+      <div class="coop-grid-2" style="margin-bottom:24px;">
+        <!-- Left: Interactive Dialpad Simulator -->
+        <div class="coop-card">
+          <div class="coop-card-header">
+            <div class="coop-card-title-group">
+              <h3 style="font-size:17px; font-weight:800; color:#0f172a; display:flex; align-items:center; gap:8px;" data-i18n="ivr_sim_title">
+                <span>📱</span> Interactive IVR Call Simulator (Demo)
+              </h3>
+              <p style="font-size:12.5px; color:#64748b;" data-i18n="ivr_sim_desc">
+                Simulate a live phone call from a worker without smartphone apps.
+              </p>
+            </div>
+            <span class="coop-badge coop-badge-success" style="font-size:11px;" data-i18n="badge_live_demo">Live Interactive Demo</span>
+          </div>
+
+          <!-- Phone Screen Mockup -->
+          <div style="background:#0f172a; border-radius:16px; padding:20px; color:#ffffff; font-family:system-ui, -apple-system, sans-serif; box-shadow:0 8px 24px rgba(0,0,0,0.15);">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; padding-bottom:10px; margin-bottom:14px; font-size:12px; color:#94a3b8;">
+              <span>📶 4G / 2G VoLTE</span>
+              <span id="ivr-timer" style="font-weight:700; color:#38bdf8;">00:14</span>
+              <span>🔋 94%</span>
+            </div>
+
+            <div style="text-align:center; margin-bottom:14px;">
+              <span style="font-size:12px; color:#94a3b8; text-transform:uppercase; letter-spacing:1px; display:block;" data-i18n="ivr_calling_label">Calling SevaSathi Voice Dispatch</span>
+              <strong style="font-size:18px; color:#ffffff; letter-spacing:1px; display:block; margin-top:2px;">1800-7382-7284</strong>
+              <span class="coop-badge coop-badge-success" style="font-size:10.5px; margin-top:6px;" data-i18n="ivr_connected_badge">🟢 Connected · IVR Prompt Active</span>
+            </div>
+
+            <!-- Live Voice Prompt Message Box -->
+            <div id="ivr-audio-prompt" style="background:#1e293b; border:1px solid #334155; border-radius:10px; padding:12px 14px; font-size:12.5px; color:#e2e8f0; line-height:1.45; margin-bottom:14px; min-height:85px; display:flex; align-items:center;">
+              "🎙️ Welcome Subhashish (Electrician, Kolkata). We found 2 tasks near Salt Lake. Press [1] for Switchboard & Wiring in Sector V (₹450). Press [2] for AC Power Line Repair in New Town (₹600)."
+            </div>
+
+            <!-- Keypad Matrix -->
+            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; max-width:260px; margin:0 auto 14px auto;">
+              <button type="button" class="btn-ivr-key" data-key="1" style="height:44px; border-radius:10px; background:#334155; color:#fff; font-size:15px; font-weight:800; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; transition:all 0.15s ease;">
+                <span>1</span>
+                <small style="font-size:8.5px; color:#94a3b8; line-height:1;">SECTOR V (₹450)</small>
+              </button>
+              <button type="button" class="btn-ivr-key" data-key="2" style="height:44px; border-radius:10px; background:#334155; color:#fff; font-size:15px; font-weight:800; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; transition:all 0.15s ease;">
+                <span>2</span>
+                <small style="font-size:8.5px; color:#94a3b8; line-height:1;">NEW TOWN (₹600)</small>
+              </button>
+              <button type="button" class="btn-ivr-key" data-key="3" style="height:44px; border-radius:10px; background:#334155; color:#fff; font-size:15px; font-weight:800; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; transition:all 0.15s ease;">
+                <span>3</span>
+                <small style="font-size:8.5px; color:#94a3b8; line-height:1;">MORE JOBS</small>
+              </button>
+              <button type="button" class="btn-ivr-key" data-key="4" style="height:44px; border-radius:10px; background:#334155; color:#fff; font-size:15px; font-weight:800; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; transition:all 0.15s ease;">
+                <span>4</span>
+                <small style="font-size:8.5px; color:#94a3b8; line-height:1;">TODAY 2 PM</small>
+              </button>
+              <button type="button" class="btn-ivr-key" data-key="5" style="height:44px; border-radius:10px; background:#334155; color:#fff; font-size:15px; font-weight:800; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; transition:all 0.15s ease;">
+                <span>5</span>
+                <small style="font-size:8.5px; color:#94a3b8; line-height:1;">TOMORROW 10 AM</small>
+              </button>
+              <button type="button" class="btn-ivr-key" data-key="9" style="height:44px; border-radius:10px; background:#166534; color:#fff; font-size:15px; font-weight:800; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; transition:all 0.15s ease;">
+                <span>✓ 9</span>
+                <small style="font-size:8.5px; color:#bbf7d0; line-height:1;">CONFIRM</small>
+              </button>
+            </div>
+
+            <!-- Call Control Buttons -->
+            <div style="display:flex; justify-content:center; gap:10px;">
+              <button type="button" id="btn-ivr-demo-call" style="padding:8px 18px; border-radius:999px; background:#16a34a; color:#fff; font-size:12.5px; font-weight:700; border:none; cursor:pointer; display:flex; align-items:center; gap:6px;" data-i18n="btn_restart_demo_call">
+                <span>📞 Restart Demo Call</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Dual SMS Dispatch Preview -->
+        <div class="coop-card">
+          <div class="coop-card-header">
+            <div class="coop-card-title-group">
+              <h3 style="font-size:17px; font-weight:800; color:#0f172a; display:flex; align-items:center; gap:8px;" data-i18n="sms_stream_title">
+                <span>📩</span> Dual-Party SMS Dispatch Stream
+              </h3>
+              <p style="font-size:12.5px; color:#64748b;" data-i18n="sms_stream_desc">
+                Real-time booking confirmation messages dispatched to both phone numbers upon dial-pad confirmation:
+              </p>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:14px;">
+            <!-- Message 1: Worker's SMS -->
+            <div style="background:#f8fafc; border:1.5px solid #bfdbfe; border-radius:12px; padding:14px; position:relative;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="font-size:12px; font-weight:700; color:#1e40af; display:flex; align-items:center; gap:6px;">
+                  <span data-i18n="sms_worker_title">👷 SMS to Worker (+91 98301 23456)</span>
+                </span>
+                <span style="font-size:11px; color:#64748b;" data-i18n="sms_status_delivered">Just now · Delivered</span>
+              </div>
+              <div id="sms-worker-content" style="background:#ffffff; border:1px solid #cbd5e1; border-radius:8px; padding:10px 12px; font-size:12.5px; color:#334155; line-height:1.45; font-family:monospace;">
+                [SevaSathi] Task Booked! Job: Electrical Switchboard Wiring in Salt Lake Sec V. Customer: Priya Banerjee (+91 98310 98765). Slot: Today 02:00 PM. Agreed Rate: ₹450 (Escrow Protected). Start OTP: 5491.
+              </div>
+            </div>
+
+            <!-- Message 2: Customer's SMS -->
+            <div style="background:#f8fafc; border:1.5px solid #bbf7d0; border-radius:12px; padding:14px; position:relative;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="font-size:12px; font-weight:700; color:#15803d; display:flex; align-items:center; gap:6px;">
+                  <span data-i18n="sms_customer_title">👤 SMS to Customer (+91 98310 98765)</span>
+                </span>
+                <span style="font-size:11px; color:#64748b;" data-i18n="sms_status_delivered">Just now · Delivered</span>
+              </div>
+              <div id="sms-customer-content" style="background:#ffffff; border:1px solid #cbd5e1; border-radius:8px; padding:10px 12px; font-size:12.5px; color:#334155; line-height:1.45; font-family:monospace;">
+                [SevaSathi] Specialist Confirmed! Subhashish Roy (Rating: 4.9★, Certified Electrician, +91 98301 23456) will arrive at Salt Lake Sec V today at 02:00 PM. Total: ₹450. Share Start OTP 5491 upon arrival.
+              </div>
+            </div>
+
+            <!-- Inclusion & Protection Badges -->
+            <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:12px 14px; font-size:12px; color:#1e40af; line-height:1.45;">
+              <strong data-i18n="inclusion_title">🛡️ Zero-Internet Democratic Inclusion:</strong><br>
+              • <span data-i18n="inclusion_bullet1"><strong>100% Feature-Phone Support:</strong> Works across standard 2G/3G keypad mobile phones.</span><br>
+              • <span data-i18n="inclusion_bullet2"><strong>Instant Escrow Security:</strong> Protects worker wage floor and customer payment through dual-party OTP validation.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Universal & Cooperative i18n Engines -->
+  <script src="i18n.js"></script>
+  <!-- Cooperative ES6 Module Application -->
+  <script type="module" src="cooperative.js"></script>
+</body>
+</html>
